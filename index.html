@@ -394,11 +394,11 @@
     let slotMachineResult = null; // Result of slot machine
     
     // Physics Constants
-    const MAX_SPEED = 6;
-    const BOOST_SPEED = 12;
-    const OFFROAD_SPEED = 2;
-    const ACCELERATION = 0.1;
-    const TURN_SPEED = 0.06;
+    const MAX_SPEED = 8.5; // Increased from 6 for faster racing
+    const BOOST_SPEED = 15; // Increased from 12
+    const OFFROAD_SPEED = 3; // Increased from 2
+    const ACCELERATION = 0.15; // Increased from 0.1 for quicker acceleration
+    const TURN_SPEED = 0.08; // Increased from 0.06 for better control at higher speeds
     const FRICTION = 0.96;
     
     // Track Logic (Waypoints for AI and Drawing)
@@ -715,7 +715,7 @@
             this.x = startX;
             this.y = startY;
             this.target = targetKart;
-            this.speed = 8;
+            this.speed = 11; // Increased from 8 to catch faster karts
             this.active = true;
         }
 
