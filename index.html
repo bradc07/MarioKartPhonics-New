@@ -545,15 +545,13 @@
             // Draw Player Image if loaded, otherwise fallback to procedural drawing
             if (this.isPlayer && playerKartImgLoaded) {
                 // Calculate aspect ratio to prevent squashing
-                // Target width is 45px
-                const targetWidth = 45;
+                // Target width is 70px (matches AI kart size better)
+                const targetWidth = 70;
                 const scaleFactor = targetWidth / playerKartImg.width;
                 const targetHeight = playerKartImg.height * scaleFactor;
 
                 // Draw centered
                 ctx.drawImage(playerKartImg, -targetWidth / 2, -targetHeight / 2, targetWidth, targetHeight);
-
-                console.log('Drawing player image at', this.x, this.y);
             }
 
             // Draw procedural kart for AI or if player image not loaded
