@@ -161,11 +161,19 @@
                 <div class="space-y-4">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 bg-yellow-400 rounded flex items-center justify-center font-bold text-white shadow">?</div>
-                        <p class="text-sm">Hit boxes to answer phonics questions!</p>
+                        <p class="text-sm">Hit boxes to answer phonics & comprehension questions!</p>
                     </div>
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 bg-green-600 rounded flex items-center justify-center font-bold text-white shadow">✓</div>
-                        <p class="text-sm">Correct answers give a <span class="font-bold text-green-600">TURBO BOOST</span>.</p>
+                        <p class="text-sm">Correct answers give a <span class="font-bold text-green-600">TURBO BOOST</span>!</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-red-600 rounded flex items-center justify-center font-bold text-white shadow">✗</div>
+                        <p class="text-sm">Wrong answers cause a <span class="font-bold text-red-600">SPIN OUT</span>!</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-purple-600 rounded flex items-center justify-center font-bold text-white shadow">📈</div>
+                        <p class="text-sm">Questions get <span class="font-bold text-purple-600">HARDER</span> each lap!</p>
                     </div>
                 </div>
                 <button onclick="startGame()" class="w-full mt-8 bg-green-800 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition shadow-lg">Start Engines!</button>
@@ -174,7 +182,15 @@
 
         <!-- Quiz Modal -->
         <div id="quiz-modal" class="overlay hidden">
-            <div class="modal-card">
+            <div class="modal-card" style="max-width: 600px;">
+                <div id="difficulty-badge" class="inline-block px-3 py-1 rounded-full text-xs font-bold mb-3 bg-green-200 text-green-800">Easy</div>
+                <div id="passage-container" class="hidden mb-4 p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
+                    <div class="flex items-start gap-2 mb-2">
+                        <span class="text-2xl">📖</span>
+                        <h3 class="font-bold text-blue-900">Read this story:</h3>
+                    </div>
+                    <p id="passage-text" class="text-base leading-relaxed text-gray-800"></p>
+                </div>
                 <h2 id="question-text" class="text-xl font-bold mb-4 text-center">Question goes here</h2>
                 <div id="options-container">
                     <!-- Buttons injected via JS -->
@@ -199,21 +215,138 @@
     </div>
 
 <script>
-    /** * Year 2 Phonics Data
-     * Includes: Split digraphs, homophones, suffixes, alternative spellings.
+    /**
+     * Year 2 Educational Content
+     * Includes: Phonics, spelling, comprehension with difficulty progression
      */
-    const PHONICS_DATA = [
-        { q: "Which word has a split digraph?", options: ["Rain", "Time", "Boat"], a: 1 },
+
+    // EASY QUESTIONS (Lap 1)
+    const EASY_QUESTIONS = [
+        { q: "Which word has the /ai/ sound?", options: ["Rain", "Time", "Boat"], a: 0 },
         { q: "Choose the correct spelling:", options: ["Nite", "Night", "Nighght"], a: 1 },
+        { q: "Which word rhymes with 'cat'?", options: ["Bat", "Car", "Cup"], a: 0 },
+        { q: "Pick the word with 'oo':", options: ["Book", "Cake", "Tree"], a: 0 },
+        { q: "Which is spelled correctly?", options: ["Sed", "Said", "Sayd"], a: 1 },
+        { q: "What letter makes the /sh/ sound in 'ship'?", options: ["s", "sh", "ch"], a: 1 },
+        { q: "Which word has the /ee/ sound?", options: ["Tree", "Train", "Truck"], a: 0 },
+        { q: "Choose the real word:", options: ["Frog", "Frug", "Frag"], a: 0 },
+        { q: "Which word starts with 'ch'?", options: ["Shop", "Chip", "Fish"], a: 1 },
+        { q: "Pick the correct spelling:", options: ["Wen", "When", "Whn"], a: 1 },
+        { q: "Which word ends with 'ck'?", options: ["Duck", "Cake", "Dog"], a: 0 },
+        { q: "What sound does 'oa' make?", options: ["Oat", "Cat", "Dot"], a: 0 },
+        { q: "Which is a real word?", options: ["Splam", "Star", "Trup"], a: 1 },
+        { q: "Pick the word with 'ar':", options: ["Car", "Cup", "Cat"], a: 0 },
+        { q: "Which word has 'ing'?", options: ["Running", "Run", "Ran"], a: 0 }
+    ];
+
+    // MEDIUM QUESTIONS (Lap 2)
+    const MEDIUM_QUESTIONS = [
+        { q: "Which word has a split digraph?", options: ["Rain", "Time", "Boat"], a: 1 },
         { q: "Finish the word: Hap__", options: ["py", "pie", "pee"], a: 0 },
         { q: "Which word uses 'a-e'?", options: ["Wait", "Day", "Cake"], a: 2 },
         { q: "Find the homophone for 'Sea'", options: ["See", "Cee", "Say"], a: 0 },
-        { q: "Which is a real word?", options: ["Thramp", "Cloud", "Sploy"], a: 1 },
         { q: "Past tense of 'jump':", options: ["Jumped", "Jumpt", "Jumping"], a: 0 },
         { q: "Which word has the /igh/ sound?", options: ["Bright", "Plate", "Tree"], a: 0 },
         { q: "Plural of 'baby':", options: ["Babys", "Babies", "Baby's"], a: 1 },
-        { q: "Which word rhymes with 'Blue'?", options: ["Grew", "Go", "Bow"], a: 0 }
+        { q: "Which word rhymes with 'Blue'?", options: ["Grew", "Go", "Bow"], a: 0 },
+        { q: "Pick the homophone for 'Two':", options: ["To", "Too", "Both"], a: 2 },
+        { q: "Which suffix means 'more'?", options: ["-ed", "-er", "-est"], a: 1 },
+        { q: "Add suffix to 'play': play__", options: ["ing", "ed", "s"], a: 0 },
+        { q: "Which has the 'ow' sound in 'cow'?", options: ["Snow", "Now", "Know"], a: 1 },
+        { q: "Correct spelling of the number:", options: ["Ate", "Eight", "Eigh"], a: 1 },
+        { q: "Which word has 'tion'?", options: ["Station", "Stone", "String"], a: 0 },
+        { q: "Pick the contraction:", options: ["Cannot", "Can't", "Will not"], a: 1 },
+        { q: "Homophone for 'Flower':", options: ["Floor", "Flour", "Flow"], a: 1 },
+        { q: "Which uses 'ie' for /ee/?", options: ["Field", "Friend", "Find"], a: 0 },
+        { q: "Past tense of 'stop':", options: ["Stoped", "Stopped", "Stopping"], a: 1 },
+        { q: "Which word has 'kn' making /n/?", options: ["King", "Knee", "Keep"], a: 1 },
+        { q: "Plural of 'fox':", options: ["Foxs", "Foxes", "Fox's"], a: 1 }
     ];
+
+    // HARD QUESTIONS (Lap 3)
+    const HARD_QUESTIONS = [
+        { q: "Which has the silent 'b'?", options: ["Crab", "Lamb", "Cab"], a: 1 },
+        { q: "Choose the tricky word:", options: ["Should", "Shoud", "Shood"], a: 0 },
+        { q: "Which is the homophone for 'There'?", options: ["Their", "They're", "Both"], a: 2 },
+        { q: "Add suffix: happy + est =", options: ["Happyest", "Happiest", "Hapiest"], a: 1 },
+        { q: "Which word has 'ph' for /f/?", options: ["Photo", "Fish", "Phrase"], a: 0 },
+        { q: "Correct spelling:", options: ["Beutiful", "Beautiful", "Beatiful"], a: 1 },
+        { q: "Homophone for 'Piece':", options: ["Peace", "Peas", "Please"], a: 0 },
+        { q: "Which has suffix '-ful'?", options: ["Careful", "Careless", "Caring"], a: 0 },
+        { q: "Past tense of 'try':", options: ["Tryed", "Tried", "Tryd"], a: 1 },
+        { q: "Which word has 'ough'?", options: ["Tough", "Touch", "Teach"], a: 0 },
+        { q: "Add prefix: un + happy =", options: ["Unhappy", "Dishappy", "Nonhappy"], a: 0 },
+        { q: "Correct spelling:", options: ["Wich", "Which", "Witch"], a: 1 },
+        { q: "Homophone: 'I ____ a bike'", options: ["Road", "Rode", "Rowed"], a: 1 },
+        { q: "Which is an adjective?", options: ["Quickly", "Quick", "Quickness"], a: 1 },
+        { q: "Opposite with prefix: re + do =", options: ["Redo", "Undo", "Dodo"], a: 0 }
+    ];
+
+    // COMPREHENSION PASSAGES
+    const COMPREHENSION_DATA = [
+        {
+            passage: "Lily found a tiny kitten in the garden. It was wet and cold. She wrapped it in a warm towel and gave it some milk. The kitten purred happily.",
+            questions: [
+                { q: "Where did Lily find the kitten?", options: ["In the house", "In the garden", "At school"], a: 1 },
+                { q: "How did the kitten feel at first?", options: ["Happy", "Wet and cold", "Hungry"], a: 1 },
+                { q: "What did Lily give the kitten?", options: ["Food", "Milk", "Water"], a: 1 },
+                { q: "How did the kitten feel at the end?", options: ["Scared", "Happy", "Tired"], a: 1 }
+            ]
+        },
+        {
+            passage: "Tom loved racing his toy cars. His favourite was the red one with yellow stripes. One day, he lost it in the park. He searched everywhere but couldn't find it.",
+            questions: [
+                { q: "What did Tom love doing?", options: ["Racing toy cars", "Playing football", "Reading"], a: 0 },
+                { q: "What colour was his favourite car?", options: ["Blue", "Red with yellow stripes", "Green"], a: 1 },
+                { q: "Where did he lose it?", options: ["At home", "At school", "In the park"], a: 2 },
+                { q: "Did Tom find his car?", options: ["Yes", "No", "Maybe"], a: 1 }
+            ]
+        },
+        {
+            passage: "The sun was shining brightly. Sam and Maya decided to go to the beach. They built a giant sandcastle with towers and a moat. They were very proud of it!",
+            questions: [
+                { q: "What was the weather like?", options: ["Rainy", "Sunny", "Cloudy"], a: 1 },
+                { q: "Who went to the beach?", options: ["Sam", "Maya", "Both"], a: 2 },
+                { q: "What did they build?", options: ["A sandcastle", "A boat", "A house"], a: 0 },
+                { q: "How did they feel about their sandcastle?", options: ["Sad", "Proud", "Bored"], a: 1 }
+            ]
+        },
+        {
+            passage: "The little bird couldn't fly yet. Every day, its mother brought worms to the nest. One morning, the little bird hopped to the edge and flapped its wings. Whoosh! It was flying!",
+            questions: [
+                { q: "What couldn't the bird do at first?", options: ["Sing", "Fly", "Eat"], a: 1 },
+                { q: "What did the mother bring?", options: ["Worms", "Seeds", "Water"], a: 0 },
+                { q: "What did the little bird do one morning?", options: ["Slept", "Flew", "Sang"], a: 1 },
+                { q: "How does the bird probably feel at the end?", options: ["Scared", "Excited", "Hungry"], a: 1 }
+            ]
+        },
+        {
+            passage: "Max had a loose tooth. It wobbled when he ate. At breakfast, he bit into an apple. Crunch! His tooth came out. He put it under his pillow for the tooth fairy.",
+            questions: [
+                { q: "What was wrong with Max's tooth?", options: ["It hurt", "It was loose", "It was dirty"], a: 1 },
+                { q: "When did his tooth come out?", options: ["At night", "At breakfast", "At lunch"], a: 1 },
+                { q: "What was he eating?", options: ["A banana", "An apple", "Bread"], a: 1 },
+                { q: "Where did Max put his tooth?", options: ["In a box", "Under his pillow", "In the bin"], a: 1 }
+            ]
+        },
+        {
+            passage: "Ruby loved painting. She painted flowers, trees, and animals. Her teacher said her pictures were wonderful. Ruby decided she wanted to be an artist when she grew up.",
+            questions: [
+                { q: "What did Ruby love?", options: ["Painting", "Dancing", "Singing"], a: 0 },
+                { q: "What did she paint?", options: ["Only flowers", "Flowers, trees and animals", "Houses"], a: 1 },
+                { q: "What did her teacher think?", options: ["They were wonderful", "They were bad", "They were okay"], a: 0 },
+                { q: "What does Ruby want to be?", options: ["A teacher", "An artist", "A doctor"], a: 1 }
+            ]
+        }
+    ];
+
+    // Combine all questions with metadata
+    const ALL_QUESTIONS = {
+        easy: EASY_QUESTIONS,
+        medium: MEDIUM_QUESTIONS,
+        hard: HARD_QUESTIONS,
+        comprehension: COMPREHENSION_DATA
+    };
 
     // --- Engine Configuration ---
     const canvas = document.getElementById('gameCanvas');
@@ -222,7 +355,9 @@
     // Game State
     let gameState = 'start'; // start, racing, quiz, finished
     let frameId;
-    let questionsPool = [...PHONICS_DATA];
+    let currentDifficulty = 'easy'; // easy, medium, hard
+    let questionsAsked = []; // Track asked questions to avoid repeats
+    let comprehensionPassageUsed = []; // Track used passages
     
     // Physics Constants
     const MAX_SPEED = 6;
@@ -653,12 +788,19 @@
         if(p.passedMidpoint && dist < 100) {
             p.lap++;
             p.passedMidpoint = false;
-            
+
             // Respawn item boxes on new lap
             ITEM_BOXES.forEach(b => b.active = true);
 
+            // Update difficulty based on lap
+            if(p.lap === 2) {
+                currentDifficulty = 'medium';
+            } else if(p.lap === 3) {
+                currentDifficulty = 'hard';
+            }
+
             document.getElementById('hud-lap').innerText = `Lap: ${p.lap}/${lapsTotal}`;
-            
+
             if(p.lap > lapsTotal) {
                 finishGame();
             }
@@ -743,10 +885,78 @@
         const modal = document.getElementById('quiz-modal');
         const container = document.getElementById('options-container');
         const qText = document.getElementById('question-text');
-        
-        // Pick random question
-        const qObj = questionsPool[Math.floor(Math.random() * questionsPool.length)];
-        
+        const passageContainer = document.getElementById('passage-container');
+        const passageText = document.getElementById('passage-text');
+        const difficultyBadge = document.getElementById('difficulty-badge');
+
+        // Decide: 25% chance for comprehension, 75% for regular phonics
+        const isComprehension = Math.random() < 0.25 && comprehensionPassageUsed.length < COMPREHENSION_DATA.length;
+
+        let qObj;
+        let questionKey;
+
+        if (isComprehension) {
+            // Pick a comprehension passage we haven't used yet
+            let availablePassages = COMPREHENSION_DATA.filter((p, idx) => !comprehensionPassageUsed.includes(idx));
+
+            if(availablePassages.length === 0) {
+                // Reset if all used
+                comprehensionPassageUsed = [];
+                availablePassages = COMPREHENSION_DATA;
+            }
+
+            const passageObj = availablePassages[Math.floor(Math.random() * availablePassages.length)];
+            const passageIdx = COMPREHENSION_DATA.indexOf(passageObj);
+            comprehensionPassageUsed.push(passageIdx);
+
+            // Pick one question from this passage
+            qObj = passageObj.questions[Math.floor(Math.random() * passageObj.questions.length)];
+
+            // Show passage
+            passageContainer.classList.remove('hidden');
+            passageText.innerText = passageObj.passage;
+
+            // Update badge
+            difficultyBadge.innerText = 'Comprehension';
+            difficultyBadge.className = 'inline-block px-3 py-1 rounded-full text-xs font-bold mb-3 bg-purple-200 text-purple-800';
+
+        } else {
+            // Hide passage container
+            passageContainer.classList.add('hidden');
+
+            // Get questions for current difficulty
+            let pool = ALL_QUESTIONS[currentDifficulty];
+
+            // Filter out already asked questions
+            let availableQuestions = pool.filter((q, idx) => {
+                questionKey = `${currentDifficulty}-${idx}`;
+                return !questionsAsked.includes(questionKey);
+            });
+
+            // Reset if all questions asked
+            if(availableQuestions.length === 0) {
+                questionsAsked = questionsAsked.filter(q => !q.startsWith(currentDifficulty));
+                availableQuestions = pool;
+            }
+
+            // Pick random question
+            const randomIdx = Math.floor(Math.random() * availableQuestions.length);
+            qObj = availableQuestions[randomIdx];
+
+            // Track this question
+            const actualIdx = pool.indexOf(qObj);
+            questionKey = `${currentDifficulty}-${actualIdx}`;
+            questionsAsked.push(questionKey);
+
+            // Update difficulty badge
+            let badgeColor = currentDifficulty === 'easy' ? 'bg-green-200 text-green-800' :
+                           currentDifficulty === 'medium' ? 'bg-yellow-200 text-yellow-800' :
+                           'bg-red-200 text-red-800';
+            difficultyBadge.innerText = currentDifficulty.charAt(0).toUpperCase() + currentDifficulty.slice(1);
+            difficultyBadge.className = `inline-block px-3 py-1 rounded-full text-xs font-bold mb-3 ${badgeColor}`;
+        }
+
+        // Display question
         qText.innerText = qObj.q;
         container.innerHTML = '';
 
