@@ -26,8 +26,9 @@
         }
 
         canvas {
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border-radius: 12px;
+            display: block;
+            width: 100vw;
+            height: 100vh;
             background: #4ade80; /* Bright grass */
         }
 
@@ -489,27 +490,66 @@
     let RED_SHELL_SPEED = SPEED_PRESETS.medium.RED_SHELL_SPEED;
     const FRICTION = 0.96;
     
-    // Track Logic (Waypoints for AI and Drawing)
-    // A squiggly loop
-    const TRACK_POINTS = [
-        {x: 100, y: 300}, {x: 200, y: 100}, {x: 500, y: 100}, 
-        {x: 700, y: 300}, {x: 600, y: 500}, {x: 400, y: 400}, 
+    // Base track design (at 800x600 reference)
+    const BASE_WIDTH = 800;
+    const BASE_HEIGHT = 600;
+
+    // Track Logic (Waypoints for AI and Drawing) - Base coordinates
+    const BASE_TRACK_POINTS = [
+        {x: 100, y: 300}, {x: 200, y: 100}, {x: 500, y: 100},
+        {x: 700, y: 300}, {x: 600, y: 500}, {x: 400, y: 400},
         {x: 200, y: 500}, {x: 100, y: 300}
     ];
 
-    // Item Boxes (Question boxes)
-    const ITEM_BOXES = [
+    // Item Boxes (Question boxes) - Base coordinates
+    const BASE_ITEM_BOXES = [
         {x: 350, y: 100, active: true, type: 'question'},
         {x: 650, y: 300, active: true, type: 'question'},
         {x: 300, y: 450, active: true, type: 'question'}
     ];
 
-    // Power-up Boxes (appear from lap 2+)
-    const POWERUP_BOXES = [
+    // Power-up Boxes (appear from lap 2+) - Base coordinates
+    const BASE_POWERUP_BOXES = [
         {x: 200, y: 200, active: false, type: 'powerup'},
         {x: 550, y: 200, active: false, type: 'powerup'},
         {x: 450, y: 350, active: false, type: 'powerup'}
     ];
+
+    // Get scale factors based on current canvas size
+    function getScale() {
+        return {
+            x: canvas.width / BASE_WIDTH,
+            y: canvas.height / BASE_HEIGHT
+        };
+    }
+
+    // Scaled track points (updated on resize)
+    let TRACK_POINTS = [];
+    let ITEM_BOXES = [];
+    let POWERUP_BOXES = [];
+
+    function updateScaledPositions() {
+        const scale = getScale();
+
+        TRACK_POINTS = BASE_TRACK_POINTS.map(p => ({
+            x: p.x * scale.x,
+            y: p.y * scale.y
+        }));
+
+        ITEM_BOXES = BASE_ITEM_BOXES.map(b => ({
+            x: b.x * scale.x,
+            y: b.y * scale.y,
+            active: b.active,
+            type: b.type
+        }));
+
+        POWERUP_BOXES = BASE_POWERUP_BOXES.map(b => ({
+            x: b.x * scale.x,
+            y: b.y * scale.y,
+            active: b.active,
+            type: b.type
+        }));
+    }
 
     let lapsTotal = 3;
 
@@ -930,15 +970,11 @@
     let playerKart;
     let keys = { ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false };
 
-    // Resize handling
+    // Resize handling - full screen
     function resize() {
-        // Maintain 4:3 aspect ratio roughly, or fill screen
-        canvas.width = 800;
-        canvas.height = 600;
-        
-        // Scale for responsive view if needed in CSS, handled by max-width usually
-        let scale = Math.min(window.innerWidth / 800, window.innerHeight / 600);
-        // canvas.style.transform = `scale(${scale})`; // Optional: CSS scaling is often smoother
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        updateScaledPositions();
     }
     window.addEventListener('resize', resize);
     resize();
@@ -978,12 +1014,13 @@
             document.getElementById('mobile-controls').classList.remove('hidden');
         }
 
-        // Initialize Karts with character images
+        // Initialize Karts with character images - scale positions to current canvas size
+        const scale = getScale();
         karts = [
-            new Kart(100, 280, '#ef4444', true, 0, playerKartImg, () => playerKartImgLoaded), // Player - Mario
-            new Kart(100, 320, '#3b82f6', false, 100, warioImg, () => warioImgLoaded), // AI 1 - Wario
-            new Kart(80, 290, '#22c55e', false, 200, kongImg, () => kongImgLoaded), // AI 2 - Donkey Kong
-            new Kart(80, 330, '#eab308', false, 300, bowserImg, () => bowserImgLoaded)  // AI 3 - Bowser
+            new Kart(100 * scale.x, 280 * scale.y, '#ef4444', true, 0, playerKartImg, () => playerKartImgLoaded), // Player - Mario
+            new Kart(100 * scale.x, 320 * scale.y, '#3b82f6', false, 100, warioImg, () => warioImgLoaded), // AI 1 - Wario
+            new Kart(80 * scale.x, 290 * scale.y, '#22c55e', false, 200, kongImg, () => kongImgLoaded), // AI 2 - Donkey Kong
+            new Kart(80 * scale.x, 330 * scale.y, '#eab308', false, 300, bowserImg, () => bowserImgLoaded)  // AI 3 - Bowser
         ];
         playerKart = karts[0];
         playerKart.angle = -Math.PI / 4; // Face start direction
@@ -1019,62 +1056,59 @@
     }
 
     function drawTrack() {
+        const scale = getScale();
+        const avgScale = (scale.x + scale.y) / 2; // Average scale for circular elements
+
         // Draw Grass
         ctx.fillStyle = "#4ade80";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Decor: Trees (Simple circles)
+        // Decor: Trees (Simple circles) - scaled positions and sizes
         ctx.fillStyle = "#14532d"; // Dark green trees
-        const trees = [{x:400, y:300}, {x:150, y:150}, {x:650, y:450}, {x:50, y:50}, {x:750, y:550}];
-        trees.forEach(t => {
+        const baseTrees = [{x:400, y:300}, {x:150, y:150}, {x:650, y:450}, {x:50, y:50}, {x:750, y:550}];
+        baseTrees.forEach(t => {
             ctx.beginPath();
-            ctx.arc(t.x, t.y, 25, 0, Math.PI*2);
+            ctx.arc(t.x * scale.x, t.y * scale.y, 25 * avgScale, 0, Math.PI*2);
             ctx.fill();
             ctx.fillStyle = "#166534";
             ctx.beginPath();
-            ctx.arc(t.x, t.y, 15, 0, Math.PI*2);
+            ctx.arc(t.x * scale.x, t.y * scale.y, 15 * avgScale, 0, Math.PI*2);
             ctx.fill();
             ctx.fillStyle = "#14532d"; // Reset
         });
 
-
-        // Draw Asphalt
+        // Draw Asphalt - scaled width
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         ctx.strokeStyle = "#555";
-        ctx.lineWidth = 100;
+        ctx.lineWidth = 100 * avgScale;
 
         ctx.beginPath();
         ctx.moveTo(TRACK_POINTS[0].x, TRACK_POINTS[0].y);
         for(let i=1; i<TRACK_POINTS.length; i++) {
-            // Use quadratic curves for smoothness?
-            // Simple lines for now to ensure collision logic matches visual easily
-            // Actually, let's use curveto for visuals
-             // To make it look like a track, we use the points as control points roughly
-             // For this simple demo, connecting lines is safer for "isPointInPath" check logic if we implemented that.
-             // But let's just draw lines with round join.
              ctx.lineTo(TRACK_POINTS[i].x, TRACK_POINTS[i].y);
         }
         ctx.closePath();
         ctx.stroke();
 
-        // Start Line
+        // Start Line - scaled position and size
         ctx.save();
-        ctx.translate(100, 300);
+        ctx.translate(100 * scale.x, 300 * scale.y);
         ctx.rotate(-Math.PI/4);
         ctx.fillStyle = "#fff";
+        const checkSize = 10 * avgScale;
         for(let i=0; i<4; i++) {
             for(let j=0; j<10; j++) {
                 ctx.fillStyle = (i+j)%2===0 ? "white" : "black";
-                ctx.fillRect(i*10 - 20, j*10 - 50, 10, 10);
+                ctx.fillRect(i*checkSize - 20*avgScale, j*checkSize - 50*avgScale, checkSize, checkSize);
             }
         }
         ctx.restore();
 
-        // Center dashed line
+        // Center dashed line - scaled
         ctx.strokeStyle = "#fff";
-        ctx.lineWidth = 2;
-        ctx.setLineDash([15, 15]);
+        ctx.lineWidth = 2 * avgScale;
+        ctx.setLineDash([15 * avgScale, 15 * avgScale]);
         ctx.beginPath();
         ctx.moveTo(TRACK_POINTS[0].x, TRACK_POINTS[0].y);
         for(let i=1; i<TRACK_POINTS.length; i++) {
