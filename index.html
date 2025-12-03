@@ -432,6 +432,11 @@
     let playerKartImgLoaded = false;
     playerKartImg.onload = () => {
         playerKartImgLoaded = true;
+        console.log('Player kart image loaded successfully!', playerKartImg.width, 'x', playerKartImg.height);
+    };
+    playerKartImg.onerror = () => {
+        console.error('Failed to load player kart image:', playerKartImg.src);
+        playerKartImgLoaded = false;
     };
 
 
@@ -541,14 +546,19 @@
             // Draw Player Image if loaded, otherwise fallback to procedural drawing
             if (this.isPlayer && playerKartImgLoaded) {
                 // Calculate aspect ratio to prevent squashing
-                // Target width is 40px
+                // Target width is 45px
                 const targetWidth = 45;
                 const scaleFactor = targetWidth / playerKartImg.width;
                 const targetHeight = playerKartImg.height * scaleFactor;
 
                 // Draw centered
                 ctx.drawImage(playerKartImg, -targetWidth / 2, -targetHeight / 2, targetWidth, targetHeight);
-            } else {
+
+                console.log('Drawing player image at', this.x, this.y);
+            }
+
+            // Draw procedural kart for AI or if player image not loaded
+            if (!this.isPlayer || !playerKartImgLoaded) {
                 // Draw AI Karts (Procedural) OR Player Fallback
 
                 // Shadow
