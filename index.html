@@ -425,7 +425,7 @@
 
     let lapsTotal = 3;
 
-    // Load Player Image
+    // Load Player and AI Kart Images
     const playerKartImg = new Image();
     playerKartImg.src = 'mario.png';
     let playerKartImgLoaded = false;
@@ -438,11 +438,30 @@
         playerKartImgLoaded = false;
     };
 
+    // Load AI Kart Images
+    const warioImg = new Image();
+    warioImg.src = 'wario.png';
+    let warioImgLoaded = false;
+    warioImg.onload = () => { warioImgLoaded = true; console.log('Wario image loaded'); };
+    warioImg.onerror = () => { console.error('Failed to load wario.png'); warioImgLoaded = false; };
+
+    const kongImg = new Image();
+    kongImg.src = 'kong.png';
+    let kongImgLoaded = false;
+    kongImg.onload = () => { kongImgLoaded = true; console.log('Kong image loaded'); };
+    kongImg.onerror = () => { console.error('Failed to load kong.png'); kongImgLoaded = false; };
+
+    const bowserImg = new Image();
+    bowserImg.src = 'bowser.png';
+    let bowserImgLoaded = false;
+    bowserImg.onload = () => { bowserImgLoaded = true; console.log('Bowser image loaded'); };
+    bowserImg.onerror = () => { console.error('Failed to load bowser.png'); bowserImgLoaded = false; };
+
 
     // --- Classes ---
 
     class Kart {
-        constructor(x, y, color, isPlayer = false, startOffset = 0) {
+        constructor(x, y, color, isPlayer = false, startOffset = 0, characterImg = null, imgLoaded = false) {
             this.x = x;
             this.y = y;
             this.color = color;
@@ -453,6 +472,8 @@
             this.checkpointIndex = 0; // To track progress
             this.finished = false;
             this.spinUntil = 0; // Timestamp for spin effect
+            this.characterImg = characterImg; // Character image
+            this.imgLoaded = imgLoaded; // Function to check if image is loaded
 
             // AI specific
             this.waypointIndex = 1;
@@ -542,26 +563,28 @@
             // Scale up slightly for better visibility
             ctx.scale(1.2, 1.2);
 
-            // Draw Player Image if loaded, otherwise fallback to procedural drawing
-            if (this.isPlayer && playerKartImgLoaded) {
+            // Draw Character Image if loaded, otherwise fallback to procedural drawing
+            const hasImage = this.characterImg && this.imgLoaded();
+
+            if (hasImage) {
                 // Rotate image 90 degrees to face forward
                 ctx.rotate(Math.PI / 2);
 
                 // Calculate aspect ratio to prevent squashing
                 // Target width reduced by additional 30% (49 * 0.7 = 34px)
                 const targetWidth = 34;
-                const scaleFactor = targetWidth / playerKartImg.width;
-                const targetHeight = playerKartImg.height * scaleFactor;
+                const scaleFactor = targetWidth / this.characterImg.width;
+                const targetHeight = this.characterImg.height * scaleFactor;
 
                 // Draw centered (note: coordinates are rotated)
-                ctx.drawImage(playerKartImg, -targetWidth / 2, -targetHeight / 2, targetWidth, targetHeight);
+                ctx.drawImage(this.characterImg, -targetWidth / 2, -targetHeight / 2, targetWidth, targetHeight);
 
                 // Rotate back for any effects drawn after
                 ctx.rotate(-Math.PI / 2);
             }
 
-            // Draw procedural kart for AI or if player image not loaded
-            if (!this.isPlayer || !playerKartImgLoaded) {
+            // Draw procedural kart if image not loaded
+            if (!hasImage) {
                 // Draw AI Karts (Procedural) OR Player Fallback
 
                 // Shadow
@@ -866,16 +889,16 @@
             document.getElementById('mobile-controls').classList.remove('hidden');
         }
 
-        // Initialize Karts
+        // Initialize Karts with character images
         karts = [
-            new Kart(100, 280, '#ef4444', true), // Player Red
-            new Kart(100, 320, '#3b82f6', false, 100), // Blue
-            new Kart(80, 290, '#22c55e', false, 200), // Green
-            new Kart(80, 330, '#eab308', false, 300)  // Yellow
+            new Kart(100, 280, '#ef4444', true, 0, playerKartImg, () => playerKartImgLoaded), // Player - Mario
+            new Kart(100, 320, '#3b82f6', false, 100, warioImg, () => warioImgLoaded), // AI 1 - Wario
+            new Kart(80, 290, '#22c55e', false, 200, kongImg, () => kongImgLoaded), // AI 2 - Donkey Kong
+            new Kart(80, 330, '#eab308', false, 300, bowserImg, () => bowserImgLoaded)  // AI 3 - Bowser
         ];
         playerKart = karts[0];
         playerKart.angle = -Math.PI / 4; // Face start direction
-        
+
         // Set AI angles
         karts.slice(1).forEach(k => k.angle = -Math.PI/4);
 
