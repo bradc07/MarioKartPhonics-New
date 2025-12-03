@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Phonics Grand Prix</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap');
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background-color: #1a472a; /* Evergreen Dark Forest Green */
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #1a472a;
+        }
+
+        canvas {
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-radius: 12px;
+            background: #4ade80; /* Bright grass */
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            color: white;
+            text-align: center;
+        }
+
+        .modal-card {
+            background: white;
+            color: #1a472a;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            max-width: 90%;
+            width: 400px;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .answer-btn {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            margin-top: 0.75rem;
+            background-color: #f3f4f6;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .answer-btn:hover {
+            background-color: #dcfce7;
+            border-color: #1a472a;
+            transform: translateY(-2px);
+        }
+
+        .hud {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+            background: rgba(255,255,255,0.9);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: #1a472a;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .hud-lap {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10;
+            background: rgba(255,255,255,0.9);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: #1a472a;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Mobile Controls */
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 40px;
+            pointer-events: none; /* Let clicks pass through to game */
+            z-index: 15;
+        }
+        
+        .control-btn {
+            pointer-events: auto;
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.3);
+            border: 2px solid white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            color: white;
+            user-select: none;
+        }
+        .control-btn:active {
+            background: rgba(255,255,255,0.6);
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        
+        <!-- Canvas -->
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- HUD -->
+        <div id="hud-pos" class="hud hidden">Position: 1/4</div>
+        <div id="hud-lap" class="hud-lap hidden">Lap: 1/3</div>
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="overlay">
+            <div class="modal-card">
+                <h1 class="text-3xl font-bold mb-2 text-center text-green-900">Phonics Grand Prix</h1>
+                <p class="text-gray-600 mb-6 text-center">Year 2 Edition</p>
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-yellow-400 rounded flex items-center justify-center font-bold text-white shadow">?</div>
+                        <p class="text-sm">Hit boxes to answer phonics questions!</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-green-600 rounded flex items-center justify-center font-bold text-white shadow">✓</div>
+                        <p class="text-sm">Correct answers give a <span class="font-bold text-green-600">TURBO BOOST</span>.</p>
+                    </div>
+                </div>
+                <button onclick="startGame()" class="w-full mt-8 bg-green-800 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition shadow-lg">Start Engines!</button>
+            </div>
+        </div>
+
+        <!-- Quiz Modal -->
+        <div id="quiz-modal" class="overlay hidden">
+            <div class="modal-card">
+                <h2 id="question-text" class="text-xl font-bold mb-4 text-center">Question goes here</h2>
+                <div id="options-container">
+                    <!-- Buttons injected via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="game-over" class="overlay hidden">
+            <div class="modal-card text-center">
+                <h1 class="text-4xl font-bold mb-4">Race Over!</h1>
+                <p id="final-place" class="text-2xl font-bold text-green-800 mb-6">You finished 1st!</p>
+                <button onclick="location.reload()" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-500 shadow-lg">Race Again</button>
+            </div>
+        </div>
+
+        <!-- Mobile Controls (Visible on touch devices or small screens) -->
+        <div id="mobile-controls" class="controls hidden md:hidden">
+            <div class="control-btn" id="btn-left">←</div>
+            <div class="control-btn" id="btn-right">→</div>
+        </div>
+    </div>
+
+<script>
+    /** * Year 2 Phonics Data
+     * Includes: Split digraphs, homophones, suffixes, alternative spellings.
+     */
+    const PHONICS_DATA = [
+        { q: "Which word has a split digraph?", options: ["Rain", "Time", "Boat"], a: 1 },
+        { q: "Choose the correct spelling:", options: ["Nite", "Night", "Nighght"], a: 1 },
+        { q: "Finish the word: Hap__", options: ["py", "pie", "pee"], a: 0 },
+        { q: "Which word uses 'a-e'?", options: ["Wait", "Day", "Cake"], a: 2 },
+        { q: "Find the homophone for 'Sea'", options: ["See", "Cee", "Say"], a: 0 },
+        { q: "Which is a real word?", options: ["Thramp", "Cloud", "Sploy"], a: 1 },
+        { q: "Past tense of 'jump':", options: ["Jumped", "Jumpt", "Jumping"], a: 0 },
+        { q: "Which word has the /igh/ sound?", options: ["Bright", "Plate", "Tree"], a: 0 },
+        { q: "Plural of 'baby':", options: ["Babys", "Babies", "Baby's"], a: 1 },
+        { q: "Which word rhymes with 'Blue'?", options: ["Grew", "Go", "Bow"], a: 0 }
+    ];
+
+    // --- Engine Configuration ---
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Game State
+    let gameState = 'start'; // start, racing, quiz, finished
+    let frameId;
+    let questionsPool = [...PHONICS_DATA];
+    
+    // Physics Constants
+    const MAX_SPEED = 6;
+    const BOOST_SPEED = 12;
+    const OFFROAD_SPEED = 2;
+    const ACCELERATION = 0.1;
+    const TURN_SPEED = 0.06;
+    const FRICTION = 0.96;
+    
+    // Track Logic (Waypoints for AI and Drawing)
+    // A squiggly loop
+    const TRACK_POINTS = [
+        {x: 100, y: 300}, {x: 200, y: 100}, {x: 500, y: 100}, 
+        {x: 700, y: 300}, {x: 600, y: 500}, {x: 400, y: 400}, 
+        {x: 200, y: 500}, {x: 100, y: 300}
+    ];
+
+    // Item Boxes
+    const ITEM_BOXES = [
+        {x: 350, y: 100, active: true},
+        {x: 650, y: 300, active: true},
+        {x: 300, y: 450, active: true}
+    ];
+
+    let lapsTotal = 3;
+
+    // Load Player Image
+    const playerKartImg = new Image();
+    // Using the filename detected from your upload
+    playerKartImg.src = 'player-kart.png.jpg'; 
+    let playerKartImgLoaded = false;
+    playerKartImg.onload = () => {
+        playerKartImgLoaded = true;
+    };
+
+
+    // --- Classes ---
+
+    class Kart {
+        constructor(x, y, color, isPlayer = false, startOffset = 0) {
+            this.x = x;
+            this.y = y;
+            this.color = color;
+            this.angle = 0;
+            this.speed = 0;
+            this.isPlayer = isPlayer;
+            this.lap = 1;
+            this.checkpointIndex = 0; // To track progress
+            this.finished = false;
+            
+            // AI specific
+            this.waypointIndex = 1;
+            this.startOffset = startOffset; // Stagger AI start
+            this.aiSpeedMod = 0.8 + Math.random() * 0.3; // Slight variance in AI skill
+        }
+
+        update() {
+            if (this.finished) return;
+
+            if (this.isPlayer) {
+                // Player Physics handled in Game Loop based on Input
+            } else {
+                this.updateAI();
+            }
+
+            // Move
+            this.x += Math.cos(this.angle) * this.speed;
+            this.y += Math.sin(this.angle) * this.speed;
+
+            // Simple friction
+            this.speed *= FRICTION;
+        }
+
+        updateAI() {
+            // Target next waypoint
+            let target = TRACK_POINTS[this.waypointIndex];
+            
+            // Add a little randomness to AI path so they don't drive in a perfect line
+            let tx = target.x + Math.sin(Date.now()/1000 + this.startOffset)*40;
+            let ty = target.y + Math.cos(Date.now()/1000 + this.startOffset)*40;
+
+            let dx = tx - this.x;
+            let dy = ty - this.y;
+            let dist = Math.sqrt(dx*dx + dy*dy);
+            
+            // Steer towards target
+            let targetAngle = Math.atan2(dy, dx);
+            let angleDiff = targetAngle - this.angle;
+            
+            // Normalize angle
+            while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+            while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+
+            this.angle += angleDiff * 0.1; // Turn smoothing
+
+            // Accelerate
+            if (this.speed < MAX_SPEED * this.aiSpeedMod) {
+                this.speed += ACCELERATION;
+            }
+
+            // Check if reached waypoint
+            if (dist < 100) {
+                this.waypointIndex = (this.waypointIndex + 1) % TRACK_POINTS.length;
+                this.checkpointIndex++;
+                
+                // Lap counting logic for AI (simplified)
+                if (this.waypointIndex === 1) { // 1 is roughly start line index in our array logic
+                    this.lap++;
+                }
+            }
+        }
+
+        draw() {
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.angle);
+            
+            // Scale up slightly for better visibility
+            ctx.scale(1.2, 1.2);
+
+            // Draw Player Image if loaded, otherwise fallback to procedural drawing
+            if (this.isPlayer && playerKartImgLoaded) {
+                // Calculate aspect ratio to prevent squashing
+                // Target width is 40px
+                const targetWidth = 45;
+                const scaleFactor = targetWidth / playerKartImg.width;
+                const targetHeight = playerKartImg.height * scaleFactor;
+
+                // Draw centered
+                ctx.drawImage(playerKartImg, -targetWidth / 2, -targetHeight / 2, targetWidth, targetHeight);
+            } else {
+                // Draw AI Karts (Procedural) OR Player Fallback
+
+                // Shadow
+                ctx.fillStyle = "rgba(0,0,0,0.2)";
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 18, 12, 0, 0, Math.PI*2);
+                ctx.fill();
+
+                // Wheels (Black rubber)
+                ctx.fillStyle = "#1a1a1a";
+                // Rear wheels (wider)
+                ctx.fillRect(-12, -14, 10, 6); // Rear Left
+                ctx.fillRect(-12, 8, 10, 6);   // Rear Right
+                // Front wheels (smaller)
+                ctx.fillRect(8, -13, 8, 5);    // Front Left
+                ctx.fillRect(8, 8, 8, 5);      // Front Right
+
+                // Exhaust Pipes (Silver)
+                ctx.fillStyle = "#9ca3af";
+                ctx.fillRect(-16, -6, 6, 4);
+                ctx.fillRect(-16, 2, 6, 4);
+
+                // Main Body (Color)
+                ctx.fillStyle = this.color;
+                
+                // Side pods/Main block
+                ctx.beginPath();
+                // Rear block
+                ctx.roundRect(-10, -10, 20, 20, 4); 
+                // Front nose
+                ctx.roundRect(5, -6, 15, 12, 6);
+                ctx.fill();
+
+                // White stripe or number plate on nose
+                ctx.fillStyle = "white";
+                ctx.beginPath();
+                ctx.arc(12, 0, 4, 0, Math.PI*2);
+                ctx.fill();
+
+                // Driver Body (Shirt)
+                ctx.fillStyle = this.color; // Or slightly darker?
+                ctx.beginPath();
+                ctx.arc(-2, 0, 7, 0, Math.PI*2);
+                ctx.fill();
+
+                // Steering Wheel (Black ring)
+                ctx.strokeStyle = "#333";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(6, 0, 3, 0, Math.PI*2); // Holding it in front
+                ctx.stroke();
+
+                // Driver Head (Skin)
+                ctx.fillStyle = "#ffdbac";
+                ctx.beginPath();
+                ctx.arc(-2, 0, 5, 0, Math.PI*2);
+                ctx.fill();
+
+                // Helmet (Color with M-logo style accent maybe?)
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(-2, -1, 5.5, Math.PI, 0); // Top half helmet
+                ctx.fill();
+                
+                // Goggles/Visor (Black band)
+                ctx.strokeStyle = "#333";
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(-7, -1);
+                ctx.lineTo(3, -1);
+                ctx.stroke();
+            }
+
+            ctx.restore();
+        }
+    }
+
+    // --- Global Game Objects ---
+    let karts = [];
+    let playerKart;
+    let keys = { ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false };
+
+    // Resize handling
+    function resize() {
+        // Maintain 4:3 aspect ratio roughly, or fill screen
+        canvas.width = 800;
+        canvas.height = 600;
+        
+        // Scale for responsive view if needed in CSS, handled by max-width usually
+        let scale = Math.min(window.innerWidth / 800, window.innerHeight / 600);
+        // canvas.style.transform = `scale(${scale})`; // Optional: CSS scaling is often smoother
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Input Handling
+    window.addEventListener('keydown', e => keys[e.code] = true);
+    window.addEventListener('keyup', e => keys[e.code] = false);
+
+    // Touch controls
+    const btnLeft = document.getElementById('btn-left');
+    const btnRight = document.getElementById('btn-right');
+
+    const handleTouchStart = (key) => (e) => { e.preventDefault(); keys[key] = true; };
+    const handleTouchEnd = (key) => (e) => { e.preventDefault(); keys[key] = false; };
+
+    btnLeft.addEventListener('touchstart', handleTouchStart('ArrowLeft'));
+    btnLeft.addEventListener('touchend', handleTouchEnd('ArrowLeft'));
+    btnLeft.addEventListener('mousedown', handleTouchStart('ArrowLeft'));
+    btnLeft.addEventListener('mouseup', handleTouchEnd('ArrowLeft'));
+
+    btnRight.addEventListener('touchstart', handleTouchStart('ArrowRight'));
+    btnRight.addEventListener('touchend', handleTouchEnd('ArrowRight'));
+    btnRight.addEventListener('mousedown', handleTouchStart('ArrowRight'));
+    btnRight.addEventListener('mouseup', handleTouchEnd('ArrowRight'));
+
+
+    // --- Core Logic ---
+
+    function startGame() {
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('hud-pos').classList.remove('hidden');
+        document.getElementById('hud-lap').classList.remove('hidden');
+        
+        // Show mobile controls if on mobile
+        if(window.innerWidth < 768) {
+            document.getElementById('mobile-controls').classList.remove('hidden');
+        }
+
+        // Initialize Karts
+        karts = [
+            new Kart(100, 280, '#ef4444', true), // Player Red
+            new Kart(100, 320, '#3b82f6', false, 100), // Blue
+            new Kart(80, 290, '#22c55e', false, 200), // Green
+            new Kart(80, 330, '#eab308', false, 300)  // Yellow
+        ];
+        playerKart = karts[0];
+        playerKart.angle = -Math.PI / 4; // Face start direction
+        
+        // Set AI angles
+        karts.slice(1).forEach(k => k.angle = -Math.PI/4);
+
+        gameState = 'racing';
+        gameLoop();
+    }
+
+    function drawTrack() {
+        // Draw Grass
+        ctx.fillStyle = "#4ade80";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Decor: Trees (Simple circles)
+        ctx.fillStyle = "#14532d"; // Dark green trees
+        const trees = [{x:400, y:300}, {x:150, y:150}, {x:650, y:450}, {x:50, y:50}, {x:750, y:550}];
+        trees.forEach(t => {
+            ctx.beginPath();
+            ctx.arc(t.x, t.y, 25, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = "#166534";
+            ctx.beginPath();
+            ctx.arc(t.x, t.y, 15, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = "#14532d"; // Reset
+        });
+
+
+        // Draw Asphalt
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = "#555";
+        ctx.lineWidth = 100;
+
+        ctx.beginPath();
+        ctx.moveTo(TRACK_POINTS[0].x, TRACK_POINTS[0].y);
+        for(let i=1; i<TRACK_POINTS.length; i++) {
+            // Use quadratic curves for smoothness?
+            // Simple lines for now to ensure collision logic matches visual easily
+            // Actually, let's use curveto for visuals
+             // To make it look like a track, we use the points as control points roughly
+             // For this simple demo, connecting lines is safer for "isPointInPath" check logic if we implemented that.
+             // But let's just draw lines with round join.
+             ctx.lineTo(TRACK_POINTS[i].x, TRACK_POINTS[i].y);
+        }
+        ctx.closePath();
+        ctx.stroke();
+
+        // Start Line
+        ctx.save();
+        ctx.translate(100, 300);
+        ctx.rotate(-Math.PI/4);
+        ctx.fillStyle = "#fff";
+        for(let i=0; i<4; i++) {
+            for(let j=0; j<10; j++) {
+                ctx.fillStyle = (i+j)%2===0 ? "white" : "black";
+                ctx.fillRect(i*10 - 20, j*10 - 50, 10, 10);
+            }
+        }
+        ctx.restore();
+
+        // Center dashed line
+        ctx.strokeStyle = "#fff";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([15, 15]);
+        ctx.beginPath();
+        ctx.moveTo(TRACK_POINTS[0].x, TRACK_POINTS[0].y);
+        for(let i=1; i<TRACK_POINTS.length; i++) {
+             ctx.lineTo(TRACK_POINTS[i].x, TRACK_POINTS[i].y);
+        }
+        ctx.closePath();
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+
+    function checkOnTrack(x, y) {
+        // Simplified Logic: Distance to nearest Track Line Segment
+        // In a real robust game, we'd use a hidden canvas or strict math.
+        // Here, we iterate segments.
+        let onTrack = false;
+        
+        for(let i=0; i<TRACK_POINTS.length; i++) {
+            let p1 = TRACK_POINTS[i];
+            let p2 = TRACK_POINTS[(i+1)%TRACK_POINTS.length];
+            
+            // Distance from point to line segment
+            let A = x - p1.x;
+            let B = y - p1.y;
+            let C = p2.x - p1.x;
+            let D = p2.y - p1.y;
+
+            let dot = A * C + B * D;
+            let len_sq = C * C + D * D;
+            let param = -1;
+            if (len_sq != 0) // in case of 0 length line
+                param = dot / len_sq;
+
+            let xx, yy;
+
+            if (param < 0) {
+                xx = p1.x;
+                yy = p1.y;
+            }
+            else if (param > 1) {
+                xx = p2.x;
+                yy = p2.y;
+            }
+            else {
+                xx = p1.x + param * C;
+                yy = p1.y + param * D;
+            }
+
+            let dx = x - xx;
+            let dy = y - yy;
+            let distance = Math.sqrt(dx * dx + dy * dy);
+
+            if(distance < 50) { // 50 is half track width
+                onTrack = true;
+                break;
+            }
+        }
+        return onTrack;
+    }
+
+    function drawItemBoxes() {
+        ITEM_BOXES.forEach(box => {
+            if (!box.active) return;
+            
+            ctx.fillStyle = "#eab308"; // Gold
+            ctx.fillRect(box.x - 15, box.y - 15, 30, 30);
+            
+            // Question Mark
+            ctx.fillStyle = "#fff";
+            ctx.font = "bold 20px Fredoka";
+            ctx.fillText("?", box.x - 5, box.y + 7);
+
+            // Pulse effect
+            ctx.strokeStyle = `rgba(255,255,255,${(Math.sin(Date.now()/200)+1)/2})`;
+            ctx.lineWidth = 3;
+            ctx.strokeRect(box.x - 15, box.y - 15, 30, 30);
+        });
+    }
+
+    function checkLapLogic() {
+        // Determine player progress.
+        // Simplified: Check distance to start line (index 0)
+        let p = playerKart;
+        let startNode = TRACK_POINTS[0];
+        let dist = Math.sqrt((p.x - startNode.x)**2 + (p.y - startNode.y)**2);
+
+        // Very basic lap counter: must pass midpoint (index 4) then reach start
+        let midNode = TRACK_POINTS[4];
+        let midDist = Math.sqrt((p.x - midNode.x)**2 + (p.y - midNode.y)**2);
+
+        if(midDist < 100) {
+            p.passedMidpoint = true;
+        }
+
+        if(p.passedMidpoint && dist < 100) {
+            p.lap++;
+            p.passedMidpoint = false;
+            
+            // Respawn item boxes on new lap
+            ITEM_BOXES.forEach(b => b.active = true);
+
+            document.getElementById('hud-lap').innerText = `Lap: ${p.lap}/${lapsTotal}`;
+            
+            if(p.lap > lapsTotal) {
+                finishGame();
+            }
+        }
+    }
+
+    function updatePhysics() {
+        if(gameState !== 'racing') return;
+
+        // Player Controls
+        if (keys['ArrowLeft']) playerKart.angle -= TURN_SPEED;
+        if (keys['ArrowRight']) playerKart.angle += TURN_SPEED;
+        
+        // Auto accelerate (Mario Kart style) or manual? Let's do auto for accessibility
+        // But slow down if button not pressed? No, let's keep it simple:
+        // Always accel unless offroad.
+        let targetSpeed = MAX_SPEED;
+
+        // Check Terrain
+        if(!checkOnTrack(playerKart.x, playerKart.y)) {
+            targetSpeed = OFFROAD_SPEED;
+        }
+
+        // Apply Speed
+        if(playerKart.speed < targetSpeed) playerKart.speed += ACCELERATION;
+        if(playerKart.speed > targetSpeed) playerKart.speed -= ACCELERATION * 2; // Slow down fast offroad
+
+        // Item Box Collision
+        ITEM_BOXES.forEach(box => {
+            if(box.active) {
+                let dx = playerKart.x - box.x;
+                let dy = playerKart.y - box.y;
+                if(Math.sqrt(dx*dx + dy*dy) < 25) {
+                    box.active = false;
+                    triggerQuiz();
+                }
+            }
+        });
+
+        // Update all karts
+        karts.forEach(k => k.update());
+
+        checkLapLogic();
+
+        // Calculate Position
+        // Simply sort by Lap, then checkpointIndex, then distance to next waypoint
+        let sortedKarts = [...karts].sort((a,b) => {
+            if(a.lap !== b.lap) return b.lap - a.lap;
+            return b.checkpointIndex - a.checkpointIndex;
+        });
+        let pos = sortedKarts.indexOf(playerKart) + 1;
+        document.getElementById('hud-pos').innerText = `Pos: ${pos}/4`;
+    }
+
+    function gameLoop() {
+        if (gameState === 'finished') return;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Camera follow player? 
+        // For simple bird's eye, static camera is easier if track fits.
+        // Our track fits 800x600.
+        
+        drawTrack();
+        drawItemBoxes();
+        
+        // Draw karts (Player last so on top)
+        karts.filter(k => !k.isPlayer).forEach(k => k.draw());
+        playerKart.draw();
+
+        updatePhysics();
+
+        if (gameState === 'racing') {
+            frameId = requestAnimationFrame(gameLoop);
+        }
+    }
+
+    // --- Quiz Logic ---
+
+    function triggerQuiz() {
+        gameState = 'quiz';
+        const modal = document.getElementById('quiz-modal');
+        const container = document.getElementById('options-container');
+        const qText = document.getElementById('question-text');
+        
+        // Pick random question
+        const qObj = questionsPool[Math.floor(Math.random() * questionsPool.length)];
+        
+        qText.innerText = qObj.q;
+        container.innerHTML = '';
+
+        qObj.options.forEach((opt, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'answer-btn';
+            btn.innerText = opt;
+            btn.onclick = () => handleAnswer(idx === qObj.a);
+            container.appendChild(btn);
+        });
+
+        modal.classList.remove('hidden');
+    }
+
+    function handleAnswer(isCorrect) {
+        const modal = document.getElementById('quiz-modal');
+        modal.classList.add('hidden');
+        
+        gameState = 'racing';
+
+        if (isCorrect) {
+            // Turbo Boost!
+            playerKart.speed = BOOST_SPEED;
+            showFloatingText("TURBO!", playerKart.x, playerKart.y, "#eab308");
+        } else {
+            // Spin out!
+            playerKart.speed = 0;
+            playerKart.angle += Math.PI * 2; // Visual spin logic handled in update? 
+            // Simplified: just stop them
+            showFloatingText("Spin Out!", playerKart.x, playerKart.y, "#ef4444");
+        }
+
+        // Resume loop
+        gameLoop();
+    }
+
+    function showFloatingText(text, x, y, color) {
+        // Simple canvas text injection next frame
+        // For simplicity, we just assume the loop picks it up, 
+        // but creating a temp object is better.
+        // Let's just update a global 'effect' variable if we had one.
+        // Since we don't, we'll skip the visual effect for code brevity 
+        // and rely on the speed change which is immediately noticeable.
+    }
+
+    function finishGame() {
+        gameState = 'finished';
+        document.getElementById('game-over').classList.remove('hidden');
+        
+        let sortedKarts = [...karts].sort((a,b) => {
+            if(a.lap !== b.lap) return b.lap - a.lap;
+            return b.checkpointIndex - a.checkpointIndex;
+        });
+        let pos = sortedKarts.indexOf(playerKart) + 1;
+        
+        let suffix = pos === 1 ? 'st' : pos === 2 ? 'nd' : pos === 3 ? 'rd' : 'th';
+        document.getElementById('final-place').innerText = `You finished ${pos}${suffix}!`;
+    }
+
+</script>
+</body>
+</html>
