@@ -165,7 +165,7 @@
                     </div>
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 bg-green-600 rounded flex items-center justify-center font-bold text-white shadow">✓</div>
-                        <p class="text-sm">Correct answers give a <span class="font-bold text-green-600">TURBO BOOST</span>!</p>
+                        <p class="text-sm">Correct answers <span class="font-bold text-green-600">FREEZE OPPONENTS</span> for 2 seconds!</p>
                     </div>
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 bg-red-600 rounded flex items-center justify-center font-bold text-white shadow">✗</div>
@@ -358,6 +358,8 @@
     let currentDifficulty = 'easy'; // easy, medium, hard
     let questionsAsked = []; // Track asked questions to avoid repeats
     let comprehensionPassageUsed = []; // Track used passages
+    let opponentsFrozen = false; // Track if opponents are frozen
+    let freezeEndTime = 0; // Timestamp when freeze ends
     
     // Physics Constants
     const MAX_SPEED = 6;
@@ -420,15 +422,20 @@
             if (this.isPlayer) {
                 // Player Physics handled in Game Loop based on Input
             } else {
-                this.updateAI();
+                // Skip AI updates if opponents are frozen
+                if (!opponentsFrozen) {
+                    this.updateAI();
+                }
             }
 
-            // Move
-            this.x += Math.cos(this.angle) * this.speed;
-            this.y += Math.sin(this.angle) * this.speed;
+            // Move (AI karts don't move when frozen)
+            if (this.isPlayer || !opponentsFrozen) {
+                this.x += Math.cos(this.angle) * this.speed;
+                this.y += Math.sin(this.angle) * this.speed;
 
-            // Simple friction
-            this.speed *= FRICTION;
+                // Simple friction
+                this.speed *= FRICTION;
+            }
         }
 
         updateAI() {
@@ -560,6 +567,22 @@
                 ctx.moveTo(-7, -1);
                 ctx.lineTo(3, -1);
                 ctx.stroke();
+            }
+
+            // Draw freeze effect if opponents are frozen and this is not the player
+            if (!this.isPlayer && opponentsFrozen) {
+                // Blue tint overlay
+                ctx.fillStyle = "rgba(59, 130, 246, 0.4)";
+                ctx.beginPath();
+                ctx.arc(0, 0, 25, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Snowflake/freeze icon
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 20px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText("❄", 0, -20);
             }
 
             ctx.restore();
@@ -810,6 +833,11 @@
     function updatePhysics() {
         if(gameState !== 'racing') return;
 
+        // Check if freeze timer has expired
+        if (opponentsFrozen && Date.now() >= freezeEndTime) {
+            opponentsFrozen = false;
+        }
+
         // Player Controls
         if (keys['ArrowLeft']) playerKart.angle -= TURN_SPEED;
         if (keys['ArrowRight']) playerKart.angle += TURN_SPEED;
@@ -978,13 +1006,14 @@
         gameState = 'racing';
 
         if (isCorrect) {
-            // Turbo Boost!
-            playerKart.speed = BOOST_SPEED;
-            showFloatingText("TURBO!", playerKart.x, playerKart.y, "#eab308");
+            // Freeze opponents for 2 seconds!
+            opponentsFrozen = true;
+            freezeEndTime = Date.now() + 2000; // 2 seconds from now
+            showFloatingText("Opponents Frozen!", playerKart.x, playerKart.y, "#22c55e");
         } else {
             // Spin out!
             playerKart.speed = 0;
-            playerKart.angle += Math.PI * 2; // Visual spin logic handled in update? 
+            playerKart.angle += Math.PI * 2; // Visual spin logic handled in update?
             // Simplified: just stop them
             showFloatingText("Spin Out!", playerKart.x, playerKart.y, "#ef4444");
         }
