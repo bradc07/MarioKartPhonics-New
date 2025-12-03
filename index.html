@@ -104,6 +104,54 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
+        /* Speed Toggle */
+        .speed-toggle {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10;
+            background: rgba(255,255,255,0.95);
+            padding: 12px 16px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            font-weight: bold;
+            color: #1a472a;
+        }
+
+        .speed-toggle-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 6px;
+        }
+
+        .speed-options {
+            display: flex;
+            gap: 8px;
+        }
+
+        .speed-btn {
+            padding: 6px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .speed-btn:hover {
+            border-color: #1a472a;
+            transform: translateY(-1px);
+        }
+
+        .speed-btn.active {
+            background: #1a472a;
+            color: white;
+            border-color: #1a472a;
+        }
+
         /* Mobile Controls */
         .controls {
             position: absolute;
@@ -152,6 +200,16 @@
         <!-- HUD -->
         <div id="hud-pos" class="hud hidden">Position: 1/4</div>
         <div id="hud-lap" class="hud-lap hidden">Lap: 1/3</div>
+
+        <!-- Speed Toggle -->
+        <div id="speed-toggle" class="speed-toggle hidden">
+            <div class="speed-toggle-label">Race Speed</div>
+            <div class="speed-options">
+                <button class="speed-btn" onclick="setRaceSpeed('slow')">Slow</button>
+                <button class="speed-btn active" onclick="setRaceSpeed('medium')">Medium</button>
+                <button class="speed-btn" onclick="setRaceSpeed('fast')">Fast</button>
+            </div>
+        </div>
 
         <!-- Start Screen -->
         <div id="start-screen" class="overlay">
@@ -392,13 +450,43 @@
     let bananas = []; // Banana peels on track
     let slotMachineActive = false; // Is slot machine spinning?
     let slotMachineResult = null; // Result of slot machine
-    
-    // Physics Constants
-    const MAX_SPEED = 8.5; // Increased from 6 for faster racing
-    const BOOST_SPEED = 15; // Increased from 12
-    const OFFROAD_SPEED = 3; // Increased from 2
-    const ACCELERATION = 0.15; // Increased from 0.1 for quicker acceleration
-    const TURN_SPEED = 0.08; // Increased from 0.06 for better control at higher speeds
+    let currentRaceSpeed = 'medium'; // slow, medium, fast
+
+    // Speed Presets
+    const SPEED_PRESETS = {
+        slow: {
+            MAX_SPEED: 6,
+            BOOST_SPEED: 12,
+            OFFROAD_SPEED: 2,
+            ACCELERATION: 0.1,
+            TURN_SPEED: 0.06,
+            RED_SHELL_SPEED: 8
+        },
+        medium: {
+            MAX_SPEED: 8.5,
+            BOOST_SPEED: 15,
+            OFFROAD_SPEED: 3,
+            ACCELERATION: 0.15,
+            TURN_SPEED: 0.08,
+            RED_SHELL_SPEED: 11
+        },
+        fast: {
+            MAX_SPEED: 11,
+            BOOST_SPEED: 18,
+            OFFROAD_SPEED: 4,
+            ACCELERATION: 0.2,
+            TURN_SPEED: 0.1,
+            RED_SHELL_SPEED: 14
+        }
+    };
+
+    // Physics Constants (mutable based on speed setting)
+    let MAX_SPEED = SPEED_PRESETS.medium.MAX_SPEED;
+    let BOOST_SPEED = SPEED_PRESETS.medium.BOOST_SPEED;
+    let OFFROAD_SPEED = SPEED_PRESETS.medium.OFFROAD_SPEED;
+    let ACCELERATION = SPEED_PRESETS.medium.ACCELERATION;
+    let TURN_SPEED = SPEED_PRESETS.medium.TURN_SPEED;
+    let RED_SHELL_SPEED = SPEED_PRESETS.medium.RED_SHELL_SPEED;
     const FRICTION = 0.96;
     
     // Track Logic (Waypoints for AI and Drawing)
@@ -715,7 +803,7 @@
             this.x = startX;
             this.y = startY;
             this.target = targetKart;
-            this.speed = 11; // Increased from 8 to catch faster karts
+            this.speed = RED_SHELL_SPEED; // Uses current race speed setting
             this.active = true;
         }
 
@@ -883,7 +971,8 @@
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('hud-pos').classList.remove('hidden');
         document.getElementById('hud-lap').classList.remove('hidden');
-        
+        document.getElementById('speed-toggle').classList.remove('hidden');
+
         // Show mobile controls if on mobile
         if(window.innerWidth < 768) {
             document.getElementById('mobile-controls').classList.remove('hidden');
@@ -904,6 +993,29 @@
 
         gameState = 'racing';
         gameLoop();
+    }
+
+    function setRaceSpeed(speed) {
+        if (!SPEED_PRESETS[speed]) return;
+
+        currentRaceSpeed = speed;
+        const preset = SPEED_PRESETS[speed];
+
+        // Update physics constants
+        MAX_SPEED = preset.MAX_SPEED;
+        BOOST_SPEED = preset.BOOST_SPEED;
+        OFFROAD_SPEED = preset.OFFROAD_SPEED;
+        ACCELERATION = preset.ACCELERATION;
+        TURN_SPEED = preset.TURN_SPEED;
+        RED_SHELL_SPEED = preset.RED_SHELL_SPEED;
+
+        // Update active button state
+        document.querySelectorAll('.speed-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+
+        console.log(`Race speed set to: ${speed}`);
     }
 
     function drawTrack() {
