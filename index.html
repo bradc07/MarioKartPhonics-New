@@ -544,14 +544,20 @@
 
             // Draw Player Image if loaded, otherwise fallback to procedural drawing
             if (this.isPlayer && playerKartImgLoaded) {
+                // Rotate image 90 degrees to face forward
+                ctx.rotate(Math.PI / 2);
+
                 // Calculate aspect ratio to prevent squashing
-                // Target width is 70px (matches AI kart size better)
-                const targetWidth = 70;
+                // Target width reduced by 30% (70 * 0.7 = 49px)
+                const targetWidth = 49;
                 const scaleFactor = targetWidth / playerKartImg.width;
                 const targetHeight = playerKartImg.height * scaleFactor;
 
-                // Draw centered
+                // Draw centered (note: coordinates are rotated)
                 ctx.drawImage(playerKartImg, -targetWidth / 2, -targetHeight / 2, targetWidth, targetHeight);
+
+                // Rotate back for any effects drawn after
+                ctx.rotate(-Math.PI / 2);
             }
 
             // Draw procedural kart for AI or if player image not loaded
