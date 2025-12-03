@@ -165,7 +165,7 @@
                     </div>
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 bg-green-600 rounded flex items-center justify-center font-bold text-white shadow">✓</div>
-                        <p class="text-sm">Correct answers <span class="font-bold text-green-600">FREEZE OPPONENTS</span> for 2 seconds!</p>
+                        <p class="text-sm">Correct answers give <span class="font-bold text-green-600">POWER-UPS</span>!</p>
                     </div>
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 bg-red-600 rounded flex items-center justify-center font-bold text-white shadow">✗</div>
@@ -174,6 +174,10 @@
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 bg-purple-600 rounded flex items-center justify-center font-bold text-white shadow">📈</div>
                         <p class="text-sm">Questions get <span class="font-bold text-purple-600">HARDER</span> each lap!</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-yellow-500 rounded flex items-center justify-center font-bold text-white shadow">⚡</div>
+                        <p class="text-sm">Lap 2+: Get <span class="font-bold text-yellow-500">Lightning</span> or <span class="font-bold text-red-500">Red Shells</span>!</p>
                     </div>
                 </div>
                 <button onclick="startGame()" class="w-full mt-8 bg-green-800 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition shadow-lg">Start Engines!</button>
@@ -360,6 +364,9 @@
     let comprehensionPassageUsed = []; // Track used passages
     let opponentsFrozen = false; // Track if opponents are frozen
     let freezeEndTime = 0; // Timestamp when freeze ends
+    let opponentsSlowed = false; // Track if opponents are slowed (lightning)
+    let slowEndTime = 0; // Timestamp when slow effect ends
+    let redShells = []; // Active red shells in the game
     
     // Physics Constants
     const MAX_SPEED = 6;
@@ -409,7 +416,8 @@
             this.lap = 1;
             this.checkpointIndex = 0; // To track progress
             this.finished = false;
-            
+            this.spinUntil = 0; // Timestamp for spin effect
+
             // AI specific
             this.waypointIndex = 1;
             this.startOffset = startOffset; // Stagger AI start
@@ -418,6 +426,14 @@
 
         update() {
             if (this.finished) return;
+
+            // Check if spinning from red shell
+            if (!this.isPlayer && this.spinUntil > Date.now()) {
+                // Spin in place
+                this.angle += 0.3;
+                this.speed = 0;
+                return;
+            }
 
             if (this.isPlayer) {
                 // Player Physics handled in Game Loop based on Input
@@ -460,8 +476,13 @@
 
             this.angle += angleDiff * 0.1; // Turn smoothing
 
-            // Accelerate
-            if (this.speed < MAX_SPEED * this.aiSpeedMod) {
+            // Accelerate (slower if lightning effect is active)
+            let targetSpeed = MAX_SPEED * this.aiSpeedMod;
+            if (opponentsSlowed) {
+                targetSpeed *= 0.3; // 30% speed during lightning
+            }
+
+            if (this.speed < targetSpeed) {
                 this.speed += ACCELERATION;
             }
 
@@ -584,6 +605,96 @@
                 ctx.textBaseline = "middle";
                 ctx.fillText("❄", 0, -20);
             }
+
+            // Draw lightning effect if opponents are slowed
+            if (!this.isPlayer && opponentsSlowed) {
+                // Yellow tint overlay
+                ctx.fillStyle = "rgba(234, 179, 8, 0.3)";
+                ctx.beginPath();
+                ctx.arc(0, 0, 25, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Lightning bolt icon
+                ctx.fillStyle = "#fbbf24";
+                ctx.font = "bold 20px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText("⚡", 0, -20);
+            }
+
+            ctx.restore();
+        }
+    }
+
+    class RedShell {
+        constructor(startX, startY, targetKart) {
+            this.x = startX;
+            this.y = startY;
+            this.target = targetKart;
+            this.speed = 8;
+            this.active = true;
+        }
+
+        update() {
+            if (!this.active || !this.target) return;
+
+            // Calculate direction to target
+            let dx = this.target.x - this.x;
+            let dy = this.target.y - this.y;
+            let dist = Math.sqrt(dx * dx + dy * dy);
+
+            // If close to target, hit it
+            if (dist < 20) {
+                this.hitTarget();
+                return;
+            }
+
+            // Move towards target
+            this.x += (dx / dist) * this.speed;
+            this.y += (dy / dist) * this.speed;
+        }
+
+        hitTarget() {
+            // Spin out the target
+            this.target.speed = 0;
+            this.target.spinUntil = Date.now() + 1000; // Spin for 1 second
+            this.active = false;
+        }
+
+        draw() {
+            if (!this.active) return;
+
+            ctx.save();
+            ctx.translate(this.x, this.y);
+
+            // Red shell body
+            ctx.fillStyle = "#ef4444";
+            ctx.beginPath();
+            ctx.arc(0, 0, 8, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Shell pattern (white stripes)
+            ctx.strokeStyle = "#ffffff";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(0, 0, 5, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Wing-like shapes
+            ctx.fillStyle = "#dc2626";
+            ctx.beginPath();
+            ctx.moveTo(-10, 0);
+            ctx.lineTo(-6, -4);
+            ctx.lineTo(-6, 4);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(10, 0);
+            ctx.lineTo(6, -4);
+            ctx.lineTo(6, 4);
+            ctx.closePath();
+            ctx.fill();
 
             ctx.restore();
         }
@@ -838,6 +949,15 @@
             opponentsFrozen = false;
         }
 
+        // Check if slow timer has expired
+        if (opponentsSlowed && Date.now() >= slowEndTime) {
+            opponentsSlowed = false;
+        }
+
+        // Update red shells
+        redShells.forEach(shell => shell.update());
+        redShells = redShells.filter(shell => shell.active);
+
         // Player Controls
         if (keys['ArrowLeft']) playerKart.angle -= TURN_SPEED;
         if (keys['ArrowRight']) playerKart.angle += TURN_SPEED;
@@ -894,7 +1014,10 @@
         
         drawTrack();
         drawItemBoxes();
-        
+
+        // Draw red shells
+        redShells.forEach(shell => shell.draw());
+
         // Draw karts (Player last so on top)
         karts.filter(k => !k.isPlayer).forEach(k => k.draw());
         playerKart.draw();
@@ -1002,14 +1125,38 @@
     function handleAnswer(isCorrect) {
         const modal = document.getElementById('quiz-modal');
         modal.classList.add('hidden');
-        
+
         gameState = 'racing';
 
         if (isCorrect) {
-            // Freeze opponents for 2 seconds!
-            opponentsFrozen = true;
-            freezeEndTime = Date.now() + 2000; // 2 seconds from now
-            showFloatingText("Opponents Frozen!", playerKart.x, playerKart.y, "#22c55e");
+            // Power-up system based on lap
+            if (playerKart.lap === 1) {
+                // Lap 1: Simple freeze
+                opponentsFrozen = true;
+                freezeEndTime = Date.now() + 1000; // 1 second from now
+                showFloatingText("Freeze!", playerKart.x, playerKart.y, "#22c55e");
+            } else {
+                // Lap 2+: Random power-up
+                const powerUps = ['lightning', 'redshell'];
+                const randomPowerUp = powerUps[Math.floor(Math.random() * powerUps.length)];
+
+                if (randomPowerUp === 'lightning') {
+                    // Lightning Strike - slow all opponents for 2 seconds
+                    opponentsSlowed = true;
+                    slowEndTime = Date.now() + 2000; // 2 seconds
+                    showFloatingText("Lightning Strike! ⚡", playerKart.x, playerKart.y, "#fbbf24");
+                } else if (randomPowerUp === 'redshell') {
+                    // Red Shells - fire 3 shells at opponents
+                    const opponentKarts = karts.filter(k => !k.isPlayer);
+
+                    // Fire shell at up to 3 opponents
+                    for (let i = 0; i < Math.min(3, opponentKarts.length); i++) {
+                        const shell = new RedShell(playerKart.x, playerKart.y, opponentKarts[i]);
+                        redShells.push(shell);
+                    }
+                    showFloatingText("Red Shells! 🐢", playerKart.x, playerKart.y, "#ef4444");
+                }
+            }
         } else {
             // Spin out!
             playerKart.speed = 0;
