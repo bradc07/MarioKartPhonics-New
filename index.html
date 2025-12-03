@@ -158,26 +158,34 @@
             <div class="modal-card">
                 <h1 class="text-3xl font-bold mb-2 text-center text-green-900">Phonics Grand Prix</h1>
                 <p class="text-gray-600 mb-6 text-center">Year 2 Edition</p>
-                <div class="space-y-4">
+                <div class="space-y-3">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 bg-yellow-400 rounded flex items-center justify-center font-bold text-white shadow">?</div>
-                        <p class="text-sm">Hit boxes to answer phonics & comprehension questions!</p>
+                        <p class="text-sm">Yellow boxes = Answer questions!</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-gradient-to-r from-red-500 via-yellow-500 to-purple-500 rounded flex items-center justify-center font-bold text-white shadow">★</div>
+                        <p class="text-sm">Rainbow boxes (Lap 2+) = Slot Machine!</p>
                     </div>
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 bg-green-600 rounded flex items-center justify-center font-bold text-white shadow">✓</div>
-                        <p class="text-sm">Correct answers give <span class="font-bold text-green-600">POWER-UPS</span>!</p>
+                        <p class="text-sm">Correct = Slow/Freeze opponents!</p>
                     </div>
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 bg-red-600 rounded flex items-center justify-center font-bold text-white shadow">✗</div>
-                        <p class="text-sm">Wrong answers cause a <span class="font-bold text-red-600">SPIN OUT</span>!</p>
+                        <p class="text-sm">Wrong = <span class="font-bold text-red-600">SPIN OUT</span>!</p>
                     </div>
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 bg-purple-600 rounded flex items-center justify-center font-bold text-white shadow">📈</div>
                         <p class="text-sm">Questions get <span class="font-bold text-purple-600">HARDER</span> each lap!</p>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 bg-yellow-500 rounded flex items-center justify-center font-bold text-white shadow">⚡</div>
-                        <p class="text-sm">Lap 2+: Get <span class="font-bold text-yellow-500">Lightning</span> or <span class="font-bold text-red-500">Red Shells</span>!</p>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">⚡🐢🍌</span>
+                        <p class="text-sm"><span class="font-bold">Power-ups:</span> Lightning, Shells, Bananas</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">👻</span>
+                        <p class="text-sm text-purple-600"><span class="font-bold">Watch out:</span> Ghost curse stops YOU!</p>
                     </div>
                 </div>
                 <button onclick="startGame()" class="w-full mt-8 bg-green-800 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition shadow-lg">Start Engines!</button>
@@ -199,6 +207,20 @@
                 <div id="options-container">
                     <!-- Buttons injected via JS -->
                 </div>
+            </div>
+        </div>
+
+        <!-- Slot Machine -->
+        <div id="slot-machine" class="overlay hidden">
+            <div class="modal-card text-center">
+                <h1 class="text-3xl font-bold mb-4 text-yellow-600">POWER-UP!</h1>
+                <div class="bg-gradient-to-b from-yellow-400 to-yellow-600 p-8 rounded-xl shadow-2xl mb-4">
+                    <div id="slot-display" class="text-8xl mb-4 h-32 flex items-center justify-center">
+                        ⚡
+                    </div>
+                    <p class="text-xl font-bold text-white" id="slot-name">Lightning Strike</p>
+                </div>
+                <p class="text-sm text-gray-600">Get ready...</p>
             </div>
         </div>
 
@@ -367,6 +389,9 @@
     let opponentsSlowed = false; // Track if opponents are slowed (lightning)
     let slowEndTime = 0; // Timestamp when slow effect ends
     let redShells = []; // Active red shells in the game
+    let bananas = []; // Banana peels on track
+    let slotMachineActive = false; // Is slot machine spinning?
+    let slotMachineResult = null; // Result of slot machine
     
     // Physics Constants
     const MAX_SPEED = 6;
@@ -384,11 +409,18 @@
         {x: 200, y: 500}, {x: 100, y: 300}
     ];
 
-    // Item Boxes
+    // Item Boxes (Question boxes)
     const ITEM_BOXES = [
-        {x: 350, y: 100, active: true},
-        {x: 650, y: 300, active: true},
-        {x: 300, y: 450, active: true}
+        {x: 350, y: 100, active: true, type: 'question'},
+        {x: 650, y: 300, active: true, type: 'question'},
+        {x: 300, y: 450, active: true, type: 'question'}
+    ];
+
+    // Power-up Boxes (appear from lap 2+)
+    const POWERUP_BOXES = [
+        {x: 200, y: 200, active: false, type: 'powerup'},
+        {x: 550, y: 200, active: false, type: 'powerup'},
+        {x: 450, y: 350, active: false, type: 'powerup'}
     ];
 
     let lapsTotal = 3;
@@ -622,6 +654,22 @@
                 ctx.fillText("⚡", 0, -20);
             }
 
+            // Draw ghost curse effect if player is cursed
+            if (this.isPlayer && this.ghostCurse && Date.now() < this.ghostCurse) {
+                // Purple tint overlay
+                ctx.fillStyle = "rgba(167, 139, 250, 0.5)";
+                ctx.beginPath();
+                ctx.arc(0, 0, 25, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Ghost icon
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 20px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText("👻", 0, -20);
+            }
+
             ctx.restore();
         }
     }
@@ -697,6 +745,59 @@
             ctx.fill();
 
             ctx.restore();
+        }
+    }
+
+    class Banana {
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+            this.active = true;
+        }
+
+        draw() {
+            if (!this.active) return;
+
+            ctx.save();
+            ctx.translate(this.x, this.y);
+
+            // Banana peel
+            ctx.fillStyle = "#fde047";
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 12, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Brown spots
+            ctx.fillStyle = "#92400e";
+            ctx.beginPath();
+            ctx.arc(-4, -2, 2, 0, Math.PI * 2);
+            ctx.arc(4, 2, 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // White highlight
+            ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+            ctx.beginPath();
+            ctx.arc(-2, -1, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        checkCollision(kart) {
+            if (!this.active || kart.isPlayer) return false;
+
+            let dx = kart.x - this.x;
+            let dy = kart.y - this.y;
+            let dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < 20) {
+                // Hit banana - spin out
+                kart.speed = 0;
+                kart.spinUntil = Date.now() + 1500; // Spin for 1.5 seconds
+                this.active = false;
+                return true;
+            }
+            return false;
         }
     }
 
@@ -886,12 +987,13 @@
     }
 
     function drawItemBoxes() {
+        // Draw question boxes (yellow)
         ITEM_BOXES.forEach(box => {
             if (!box.active) return;
-            
+
             ctx.fillStyle = "#eab308"; // Gold
             ctx.fillRect(box.x - 15, box.y - 15, 30, 30);
-            
+
             // Question Mark
             ctx.fillStyle = "#fff";
             ctx.font = "bold 20px Fredoka";
@@ -902,6 +1004,30 @@
             ctx.lineWidth = 3;
             ctx.strokeRect(box.x - 15, box.y - 15, 30, 30);
         });
+
+        // Draw power-up boxes (rainbow/multicolor)
+        POWERUP_BOXES.forEach(box => {
+            if (!box.active) return;
+
+            // Rainbow gradient effect
+            const time = Date.now() / 1000;
+            const hue = (time * 50) % 360;
+            ctx.fillStyle = `hsl(${hue}, 80%, 50%)`;
+            ctx.fillRect(box.x - 15, box.y - 15, 30, 30);
+
+            // Star symbol
+            ctx.fillStyle = "#fff";
+            ctx.font = "bold 24px Arial";
+            ctx.fillText("★", box.x - 10, box.y + 8);
+
+            // Pulse effect
+            ctx.strokeStyle = `rgba(255,255,255,${(Math.sin(Date.now()/200)+1)/2})`;
+            ctx.lineWidth = 3;
+            ctx.strokeRect(box.x - 15, box.y - 15, 30, 30);
+        });
+
+        // Draw bananas
+        bananas.forEach(banana => banana.draw());
     }
 
     function checkLapLogic() {
@@ -925,6 +1051,11 @@
 
             // Respawn item boxes on new lap
             ITEM_BOXES.forEach(b => b.active = true);
+
+            // Enable power-up boxes from lap 2+
+            if(p.lap >= 2) {
+                POWERUP_BOXES.forEach(b => b.active = true);
+            }
 
             // Update difficulty based on lap
             if(p.lap === 2) {
@@ -958,9 +1089,17 @@
         redShells.forEach(shell => shell.update());
         redShells = redShells.filter(shell => shell.active);
 
-        // Player Controls
-        if (keys['ArrowLeft']) playerKart.angle -= TURN_SPEED;
-        if (keys['ArrowRight']) playerKart.angle += TURN_SPEED;
+        // Check if ghost curse is active
+        let isGhostCursed = playerKart.ghostCurse && Date.now() < playerKart.ghostCurse;
+
+        // Player Controls (disabled during ghost curse)
+        if (!isGhostCursed) {
+            if (keys['ArrowLeft']) playerKart.angle -= TURN_SPEED;
+            if (keys['ArrowRight']) playerKart.angle += TURN_SPEED;
+        } else {
+            // Ghost curse: can't move
+            playerKart.speed = 0;
+        }
         
         // Auto accelerate (Mario Kart style) or manual? Let's do auto for accessibility
         // But slow down if button not pressed? No, let's keep it simple:
@@ -976,7 +1115,7 @@
         if(playerKart.speed < targetSpeed) playerKart.speed += ACCELERATION;
         if(playerKart.speed > targetSpeed) playerKart.speed -= ACCELERATION * 2; // Slow down fast offroad
 
-        // Item Box Collision
+        // Question Box Collision
         ITEM_BOXES.forEach(box => {
             if(box.active) {
                 let dx = playerKart.x - box.x;
@@ -987,6 +1126,27 @@
                 }
             }
         });
+
+        // Power-up Box Collision
+        POWERUP_BOXES.forEach(box => {
+            if(box.active) {
+                let dx = playerKart.x - box.x;
+                let dy = playerKart.y - box.y;
+                if(Math.sqrt(dx*dx + dy*dy) < 25) {
+                    box.active = false;
+                    triggerSlotMachine();
+                }
+            }
+        });
+
+        // Banana collision detection for opponents
+        bananas.forEach(banana => {
+            karts.filter(k => !k.isPlayer).forEach(kart => {
+                banana.checkCollision(kart);
+            });
+        });
+        // Remove inactive bananas
+        bananas = bananas.filter(b => b.active);
 
         // Update all karts
         karts.forEach(k => k.update());
@@ -1129,33 +1289,17 @@
         gameState = 'racing';
 
         if (isCorrect) {
-            // Power-up system based on lap
+            // Reward system based on lap
             if (playerKart.lap === 1) {
-                // Lap 1: Simple freeze
-                opponentsFrozen = true;
-                freezeEndTime = Date.now() + 1000; // 1 second from now
-                showFloatingText("Freeze!", playerKart.x, playerKart.y, "#22c55e");
+                // Lap 1: Slow opponents briefly
+                opponentsSlowed = true;
+                slowEndTime = Date.now() + 1500; // 1.5 seconds
+                showFloatingText("Nice! Opponents Slowed!", playerKart.x, playerKart.y, "#22c55e");
             } else {
-                // Lap 2+: Random power-up
-                const powerUps = ['lightning', 'redshell'];
-                const randomPowerUp = powerUps[Math.floor(Math.random() * powerUps.length)];
-
-                if (randomPowerUp === 'lightning') {
-                    // Lightning Strike - slow all opponents for 2 seconds
-                    opponentsSlowed = true;
-                    slowEndTime = Date.now() + 2000; // 2 seconds
-                    showFloatingText("Lightning Strike! ⚡", playerKart.x, playerKart.y, "#fbbf24");
-                } else if (randomPowerUp === 'redshell') {
-                    // Red Shells - fire 3 shells at opponents
-                    const opponentKarts = karts.filter(k => !k.isPlayer);
-
-                    // Fire shell at up to 3 opponents
-                    for (let i = 0; i < Math.min(3, opponentKarts.length); i++) {
-                        const shell = new RedShell(playerKart.x, playerKart.y, opponentKarts[i]);
-                        redShells.push(shell);
-                    }
-                    showFloatingText("Red Shells! 🐢", playerKart.x, playerKart.y, "#ef4444");
-                }
+                // Lap 2+: Small freeze reward
+                opponentsFrozen = true;
+                freezeEndTime = Date.now() + 1000; // 1 second freeze
+                showFloatingText("Good Job! Freeze!", playerKart.x, playerKart.y, "#22c55e");
             }
         } else {
             // Spin out!
@@ -1171,11 +1315,103 @@
 
     function showFloatingText(text, x, y, color) {
         // Simple canvas text injection next frame
-        // For simplicity, we just assume the loop picks it up, 
+        // For simplicity, we just assume the loop picks it up,
         // but creating a temp object is better.
         // Let's just update a global 'effect' variable if we had one.
-        // Since we don't, we'll skip the visual effect for code brevity 
+        // Since we don't, we'll skip the visual effect for code brevity
         // and rely on the speed change which is immediately noticeable.
+    }
+
+    // --- Slot Machine Power-Up System ---
+
+    const POWERUPS = [
+        { icon: '⚡', name: 'Lightning Strike', color: '#fbbf24', type: 'lightning' },
+        { icon: '🐢', name: 'Red Shells', color: '#ef4444', type: 'redshell' },
+        { icon: '🍌', name: 'Banana Peel', color: '#fde047', type: 'banana' },
+        { icon: '👻', name: 'Ghost Curse!', color: '#a78bfa', type: 'ghost' }
+    ];
+
+    function triggerSlotMachine() {
+        gameState = 'slot';
+        slotMachineActive = true;
+
+        const modal = document.getElementById('slot-machine');
+        const display = document.getElementById('slot-display');
+        const nameDisplay = document.getElementById('slot-name');
+
+        modal.classList.remove('hidden');
+
+        // Spinning animation
+        let spinCount = 0;
+        const maxSpins = 20; // 20 spins over 2 seconds
+        const spinInterval = 100; // 100ms per spin
+
+        const spinTimer = setInterval(() => {
+            // Pick random power-up to display
+            const randomPowerup = POWERUPS[Math.floor(Math.random() * POWERUPS.length)];
+            display.textContent = randomPowerup.icon;
+            nameDisplay.textContent = randomPowerup.name;
+
+            spinCount++;
+
+            if (spinCount >= maxSpins) {
+                clearInterval(spinTimer);
+                // Choose final power-up
+                const finalPowerup = POWERUPS[Math.floor(Math.random() * POWERUPS.length)];
+                display.textContent = finalPowerup.icon;
+                nameDisplay.textContent = finalPowerup.name;
+                slotMachineResult = finalPowerup;
+
+                // Wait a moment then activate power-up
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    activatePowerUp(finalPowerup.type);
+                    slotMachineActive = false;
+                    gameState = 'racing';
+                    gameLoop();
+                }, 1000);
+            }
+        }, spinInterval);
+    }
+
+    function activatePowerUp(type) {
+        const opponentKarts = karts.filter(k => !k.isPlayer);
+
+        switch(type) {
+            case 'lightning':
+                // Slow all opponents for 2 seconds
+                opponentsSlowed = true;
+                slowEndTime = Date.now() + 2000;
+                showFloatingText("Lightning Strike! ⚡", playerKart.x, playerKart.y, "#fbbf24");
+                break;
+
+            case 'redshell':
+                // Fire 3 red shells
+                for (let i = 0; i < Math.min(3, opponentKarts.length); i++) {
+                    const shell = new RedShell(playerKart.x, playerKart.y, opponentKarts[i]);
+                    redShells.push(shell);
+                }
+                showFloatingText("Red Shells! 🐢", playerKart.x, playerKart.y, "#ef4444");
+                break;
+
+            case 'banana':
+                // Drop 3 bananas behind the player
+                for (let i = 1; i <= 3; i++) {
+                    const offsetX = Math.cos(playerKart.angle + Math.PI) * (20 * i);
+                    const offsetY = Math.sin(playerKart.angle + Math.PI) * (20 * i);
+                    const banana = new Banana(playerKart.x + offsetX, playerKart.y + offsetY);
+                    bananas.push(banana);
+                }
+                showFloatingText("Banana Peels! 🍌", playerKart.x, playerKart.y, "#fde047");
+                break;
+
+            case 'ghost':
+                // Curse! Player stops for 2 seconds
+                playerKart.speed = 0;
+                playerKart.ghostCurse = Date.now() + 2000;
+                showFloatingText("Ghost Curse! 👻", playerKart.x, playerKart.y, "#a78bfa");
+                break;
+        }
     }
 
     function finishGame() {
