@@ -334,7 +334,7 @@
         { q: "Which word has the /igh/ sound?", options: ["Bright", "Plate", "Tree"], a: 0 },
         { q: "Plural of 'baby':", options: ["Babys", "Babies", "Baby's"], a: 1 },
         { q: "Which word rhymes with 'Blue'?", options: ["Grew", "Go", "Bow"], a: 0 },
-        { q: "Pick the homophone for 'Two':", options: ["To", "Too", "Both"], a: 2 },
+        { q: "Pick the homophone for 'Two':", options: ["To", "Too", "Tow"], a: 0 },
         { q: "Which suffix means 'more'?", options: ["-ed", "-er", "-est"], a: 1 },
         { q: "Add suffix to 'play': play__", options: ["ing", "ed", "s"], a: 0 },
         { q: "Which has the 'ow' sound in 'cow'?", options: ["Snow", "Now", "Know"], a: 1 },
@@ -361,66 +361,66 @@
         { q: "Past tense of 'try':", options: ["Tryed", "Tried", "Tryd"], a: 1 },
         { q: "Which word has 'ough'?", options: ["Tough", "Touch", "Teach"], a: 0 },
         { q: "Add prefix: un + happy =", options: ["Unhappy", "Dishappy", "Nonhappy"], a: 0 },
-        { q: "Correct spelling:", options: ["Wich", "Which", "Witch"], a: 1 },
+        { q: "Which is the question word?", options: ["Wich", "Which", "Witch"], a: 1 },
         { q: "Homophone: 'I ____ a bike'", options: ["Road", "Rode", "Rowed"], a: 1 },
         { q: "Which is an adjective?", options: ["Quickly", "Quick", "Quickness"], a: 1 },
-        { q: "Opposite with prefix: re + do =", options: ["Redo", "Undo", "Dodo"], a: 0 }
+        { q: "Again with prefix: re + do =", options: ["Redo", "Undo", "Dodo"], a: 0 }
     ];
 
     // COMPREHENSION PASSAGES
     const COMPREHENSION_DATA = [
         {
-            passage: "Lily found a tiny kitten in the garden. It was wet and cold. She wrapped it in a warm towel and gave it some milk. The kitten purred happily.",
+            passage: "Maurits and his brother Hugo were playing in the garden. They found a tiny frog hiding under a leaf. Hugo wanted to keep it, but Maurits said they should let it go. They gently put it back and watched it hop away.",
             questions: [
-                { q: "Where did Lily find the kitten?", options: ["In the house", "In the garden", "At school"], a: 1 },
-                { q: "How did the kitten feel at first?", options: ["Happy", "Wet and cold", "Hungry"], a: 1 },
-                { q: "What did Lily give the kitten?", options: ["Food", "Milk", "Water"], a: 1 },
-                { q: "How did the kitten feel at the end?", options: ["Scared", "Happy", "Tired"], a: 1 }
+                { q: "Who was playing in the garden?", options: ["Just Maurits", "Maurits and Hugo", "Just Hugo"], a: 1 },
+                { q: "What did they find?", options: ["A frog", "A kitten", "A bird"], a: 0 },
+                { q: "Who wanted to keep it?", options: ["Maurits", "Hugo", "Both"], a: 1 },
+                { q: "What did they do with the frog?", options: ["Kept it", "Let it go", "Took it inside"], a: 1 }
             ]
         },
         {
-            passage: "Tom loved racing his toy cars. His favourite was the red one with yellow stripes. One day, he lost it in the park. He searched everywhere but couldn't find it.",
+            passage: "It was Saturday morning. Maurits, Jules, and Wilbur went to the park to play football. Wilbur scored three goals! They played for two hours and had a great time together.",
             questions: [
-                { q: "What did Tom love doing?", options: ["Racing toy cars", "Playing football", "Reading"], a: 0 },
-                { q: "What colour was his favourite car?", options: ["Blue", "Red with yellow stripes", "Green"], a: 1 },
-                { q: "Where did he lose it?", options: ["At home", "At school", "In the park"], a: 2 },
-                { q: "Did Tom find his car?", options: ["Yes", "No", "Maybe"], a: 1 }
+                { q: "When did they go to the park?", options: ["Sunday", "Saturday morning", "Friday"], a: 1 },
+                { q: "Who went to the park?", options: ["Maurits and Jules", "Maurits, Jules and Wilbur", "Just Maurits"], a: 1 },
+                { q: "How many goals did Wilbur score?", options: ["Two", "Three", "Four"], a: 1 },
+                { q: "How long did they play?", options: ["One hour", "Two hours", "Three hours"], a: 1 }
             ]
         },
         {
-            passage: "The sun was shining brightly. Sam and Maya decided to go to the beach. They built a giant sandcastle with towers and a moat. They were very proud of it!",
+            passage: "Sophie was baking chocolate brownies. The kitchen smelled delicious! Maurits and Hugo helped her mix the batter. When the brownies were ready, Dad Floris came home from work just in time to try one.",
             questions: [
-                { q: "What was the weather like?", options: ["Rainy", "Sunny", "Cloudy"], a: 1 },
-                { q: "Who went to the beach?", options: ["Sam", "Maya", "Both"], a: 2 },
-                { q: "What did they build?", options: ["A sandcastle", "A boat", "A house"], a: 0 },
-                { q: "How did they feel about their sandcastle?", options: ["Sad", "Proud", "Bored"], a: 1 }
+                { q: "Who was baking?", options: ["Floris", "Sophie", "Maurits"], a: 1 },
+                { q: "What was Sophie baking?", options: ["Cookies", "Cake", "Brownies"], a: 2 },
+                { q: "Who helped mix the batter?", options: ["Just Hugo", "Maurits and Hugo", "Just Maurits"], a: 1 },
+                { q: "When did Floris come home?", options: ["Before baking", "Just in time", "The next day"], a: 1 }
             ]
         },
         {
-            passage: "The little bird couldn't fly yet. Every day, its mother brought worms to the nest. One morning, the little bird hopped to the edge and flapped its wings. Whoosh! It was flying!",
+            passage: "At school, Mr Clay was teaching about animals. Maurits raised his hand and told the class about the frog he found. His friends Zane and Harvey thought it sounded really cool. Mr Clay said frogs are amphibians.",
             questions: [
-                { q: "What couldn't the bird do at first?", options: ["Sing", "Fly", "Eat"], a: 1 },
-                { q: "What did the mother bring?", options: ["Worms", "Seeds", "Water"], a: 0 },
-                { q: "What did the little bird do one morning?", options: ["Slept", "Flew", "Sang"], a: 1 },
-                { q: "How does the bird probably feel at the end?", options: ["Scared", "Excited", "Hungry"], a: 1 }
+                { q: "Who was teaching?", options: ["Ms O'Shea", "Mr Clay", "Mrs Cole"], a: 1 },
+                { q: "What was the lesson about?", options: ["Animals", "Numbers", "Reading"], a: 0 },
+                { q: "What did Maurits tell the class about?", options: ["A bird", "A frog", "A fish"], a: 1 },
+                { q: "Which friends thought it was cool?", options: ["Jules and Wilbur", "Zane and Harvey", "Hugo"], a: 1 }
             ]
         },
         {
-            passage: "Max had a loose tooth. It wobbled when he ate. At breakfast, he bit into an apple. Crunch! His tooth came out. He put it under his pillow for the tooth fairy.",
+            passage: "Mrs Cole took the class to the library. Maurits chose a book about space. His friend Jules picked a book about dinosaurs. They sat together and read quietly. Mrs Cole said they were excellent readers.",
             questions: [
-                { q: "What was wrong with Max's tooth?", options: ["It hurt", "It was loose", "It was dirty"], a: 1 },
-                { q: "When did his tooth come out?", options: ["At night", "At breakfast", "At lunch"], a: 1 },
-                { q: "What was he eating?", options: ["A banana", "An apple", "Bread"], a: 1 },
-                { q: "Where did Max put his tooth?", options: ["In a box", "Under his pillow", "In the bin"], a: 1 }
+                { q: "Where did Mrs Cole take the class?", options: ["The park", "The library", "The playground"], a: 1 },
+                { q: "What was Maurits's book about?", options: ["Space", "Dinosaurs", "Animals"], a: 0 },
+                { q: "What was Jules's book about?", options: ["Space", "Dinosaurs", "Cars"], a: 1 },
+                { q: "What did Mrs Cole say?", options: ["They were too loud", "They were excellent readers", "Time to go"], a: 1 }
             ]
         },
         {
-            passage: "Ruby loved painting. She painted flowers, trees, and animals. Her teacher said her pictures were wonderful. Ruby decided she wanted to be an artist when she grew up.",
+            passage: "It was sports day at school. Ms O'Shea was organizing the races. Maurits ran in the relay race with Zane, Harvey, and Wilbur. They ran as fast as they could and came second! Everyone cheered and clapped.",
             questions: [
-                { q: "What did Ruby love?", options: ["Painting", "Dancing", "Singing"], a: 0 },
-                { q: "What did she paint?", options: ["Only flowers", "Flowers, trees and animals", "Houses"], a: 1 },
-                { q: "What did her teacher think?", options: ["They were wonderful", "They were bad", "They were okay"], a: 0 },
-                { q: "What does Ruby want to be?", options: ["A teacher", "An artist", "A doctor"], a: 1 }
+                { q: "Who organized the races?", options: ["Mr Clay", "Susan", "Ms O'Shea"], a: 2 },
+                { q: "What race did Maurits run in?", options: ["Sprint", "Relay race", "Long jump"], a: 1 },
+                { q: "Who was in Maurits's team?", options: ["Jules and Hugo", "Zane, Harvey and Wilbur", "Just Wilbur"], a: 1 },
+                { q: "Where did they finish?", options: ["First", "Second", "Third"], a: 1 }
             ]
         }
     ];
@@ -1077,9 +1077,21 @@
             ctx.fillStyle = "#14532d"; // Reset
         });
 
-        // Draw Asphalt - scaled width
+        // Draw Track Barriers (outer walls) - scaled width
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
+        ctx.strokeStyle = "#2d2d2d"; // Dark gray barriers
+        ctx.lineWidth = 110 * avgScale; // Slightly wider than track
+
+        ctx.beginPath();
+        ctx.moveTo(TRACK_POINTS[0].x, TRACK_POINTS[0].y);
+        for(let i=1; i<TRACK_POINTS.length; i++) {
+             ctx.lineTo(TRACK_POINTS[i].x, TRACK_POINTS[i].y);
+        }
+        ctx.closePath();
+        ctx.stroke();
+
+        // Draw Asphalt - scaled width
         ctx.strokeStyle = "#555";
         ctx.lineWidth = 100 * avgScale;
 
@@ -1123,12 +1135,16 @@
         // Simplified Logic: Distance to nearest Track Line Segment
         // In a real robust game, we'd use a hidden canvas or strict math.
         // Here, we iterate segments.
+        const scale = getScale();
+        const avgScale = (scale.x + scale.y) / 2;
+        const trackHalfWidth = 50 * avgScale; // Scale track width
+
         let onTrack = false;
-        
+
         for(let i=0; i<TRACK_POINTS.length; i++) {
             let p1 = TRACK_POINTS[i];
             let p2 = TRACK_POINTS[(i+1)%TRACK_POINTS.length];
-            
+
             // Distance from point to line segment
             let A = x - p1.x;
             let B = y - p1.y;
@@ -1160,12 +1176,80 @@
             let dy = y - yy;
             let distance = Math.sqrt(dx * dx + dy * dy);
 
-            if(distance < 50) { // 50 is half track width
+            if(distance < trackHalfWidth) {
                 onTrack = true;
                 break;
             }
         }
         return onTrack;
+    }
+
+    function enforceTrackBoundaries(kart) {
+        // If kart is off track, push it back to the nearest track edge
+        const scale = getScale();
+        const avgScale = (scale.x + scale.y) / 2;
+        const trackHalfWidth = 50 * avgScale;
+
+        if (!checkOnTrack(kart.x, kart.y)) {
+            // Find nearest point on track
+            let minDist = Infinity;
+            let nearestX = kart.x;
+            let nearestY = kart.y;
+
+            for(let i=0; i<TRACK_POINTS.length; i++) {
+                let p1 = TRACK_POINTS[i];
+                let p2 = TRACK_POINTS[(i+1)%TRACK_POINTS.length];
+
+                let A = kart.x - p1.x;
+                let B = kart.y - p1.y;
+                let C = p2.x - p1.x;
+                let D = p2.y - p1.y;
+
+                let dot = A * C + B * D;
+                let len_sq = C * C + D * D;
+                let param = -1;
+                if (len_sq != 0)
+                    param = dot / len_sq;
+
+                let xx, yy;
+                if (param < 0) {
+                    xx = p1.x;
+                    yy = p1.y;
+                }
+                else if (param > 1) {
+                    xx = p2.x;
+                    yy = p2.y;
+                }
+                else {
+                    xx = p1.x + param * C;
+                    yy = p1.y + param * D;
+                }
+
+                let dx = kart.x - xx;
+                let dy = kart.y - yy;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+
+                if(distance < minDist) {
+                    minDist = distance;
+                    nearestX = xx;
+                    nearestY = yy;
+                }
+            }
+
+            // Push kart back to track edge
+            let dx = kart.x - nearestX;
+            let dy = kart.y - nearestY;
+            let dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist > 0) {
+                // Position at track edge (slight buffer inside)
+                kart.x = nearestX + (dx / dist) * (trackHalfWidth - 5);
+                kart.y = nearestY + (dy / dist) * (trackHalfWidth - 5);
+
+                // Reduce speed when hitting barrier
+                kart.speed *= 0.5;
+            }
+        }
     }
 
     function drawItemBoxes() {
@@ -1283,19 +1367,11 @@
             playerKart.speed = 0;
         }
         
-        // Auto accelerate (Mario Kart style) or manual? Let's do auto for accessibility
-        // But slow down if button not pressed? No, let's keep it simple:
-        // Always accel unless offroad.
+        // Auto accelerate (Mario Kart style)
         let targetSpeed = MAX_SPEED;
-
-        // Check Terrain
-        if(!checkOnTrack(playerKart.x, playerKart.y)) {
-            targetSpeed = OFFROAD_SPEED;
-        }
 
         // Apply Speed
         if(playerKart.speed < targetSpeed) playerKart.speed += ACCELERATION;
-        if(playerKart.speed > targetSpeed) playerKart.speed -= ACCELERATION * 2; // Slow down fast offroad
 
         // Question Box Collision
         ITEM_BOXES.forEach(box => {
@@ -1332,6 +1408,9 @@
 
         // Update all karts
         karts.forEach(k => k.update());
+
+        // Enforce track boundaries for all karts
+        karts.forEach(k => enforceTrackBoundaries(k));
 
         checkLapLogic();
 
