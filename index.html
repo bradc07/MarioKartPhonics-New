@@ -201,6 +201,7 @@
         <!-- HUD -->
         <div id="hud-pos" class="hud hidden">Position: 1/4</div>
         <div id="hud-lap" class="hud-lap hidden">Lap: 1/3</div>
+        <div id="hud-score" class="hud hidden" style="top: 50px;">Score: 0/0</div>
 
         <!-- Speed Toggle -->
         <div id="speed-toggle" class="speed-toggle hidden">
@@ -247,7 +248,19 @@
                         <p class="text-sm text-purple-600"><span class="font-bold">Watch out:</span> Ghost curse stops YOU!</p>
                     </div>
                 </div>
-                <button onclick="startGame()" class="w-full mt-8 bg-green-800 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition shadow-lg">Start Engines!</button>
+                <button onclick="showTrackSelection()" class="w-full mt-8 bg-green-800 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition shadow-lg">Choose Your Track!</button>
+            </div>
+        </div>
+
+        <!-- Track Selection Screen -->
+        <div id="track-selection" class="overlay hidden">
+            <div class="modal-card" style="max-width: 500px; max-height: 90vh; overflow-y: auto;">
+                <h1 class="text-2xl font-bold mb-4 text-center text-green-900">Choose Your Track</h1>
+                <p class="text-gray-600 mb-4 text-center text-sm">Each track focuses on different phonics skills!</p>
+                <div class="space-y-3" id="track-buttons">
+                    <!-- Track buttons injected by JS -->
+                </div>
+                <button onclick="hideTrackSelection()" class="w-full mt-4 bg-gray-400 text-white font-bold py-2 rounded-lg hover:bg-gray-500 transition">Back</button>
             </div>
         </div>
 
@@ -285,10 +298,23 @@
 
         <!-- Game Over Screen -->
         <div id="game-over" class="overlay hidden">
-            <div class="modal-card text-center">
+            <div class="modal-card text-center" style="max-width: 600px; max-height: 90vh; overflow-y: auto;">
                 <h1 class="text-4xl font-bold mb-4">Race Over!</h1>
-                <p id="final-place" class="text-2xl font-bold text-green-800 mb-6">You finished 1st!</p>
-                <button onclick="location.reload()" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-500 shadow-lg">Race Again</button>
+                <p id="final-place" class="text-2xl font-bold text-green-800 mb-2">You finished 1st!</p>
+                <div id="score-summary" class="mb-4 p-4 bg-gray-100 rounded-lg">
+                    <p class="text-lg font-bold">Your Score: <span id="final-score" class="text-green-600">0/0</span></p>
+                    <p id="score-percentage" class="text-sm text-gray-600">0% correct</p>
+                </div>
+                <div id="review-section" class="hidden text-left mb-4">
+                    <h2 class="text-xl font-bold mb-3 text-red-600 text-center">Let's Learn From Our Mistakes!</h2>
+                    <div id="wrong-answers-list" class="space-y-4">
+                        <!-- Wrong answers injected here -->
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="location.reload()" class="flex-1 bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-500 shadow-lg">Race Again</button>
+                    <button id="review-btn" onclick="toggleReview()" class="flex-1 bg-purple-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-purple-500 shadow-lg hidden">Review Mistakes</button>
+                </div>
             </div>
         </div>
 
@@ -301,142 +327,239 @@
 
 <script>
     /**
-     * Year 2 Educational Content
-     * Includes: Phonics, spelling, comprehension with difficulty progression
+     * Year 2 Educational Content - Organized by Skill Tracks
+     * Each track focuses on specific phonics skills
      */
 
-    // EASY QUESTIONS (Lap 1)
-    const EASY_QUESTIONS = [
-        { q: "Which word has the /ai/ sound?", options: ["Rain", "Time", "Boat"], a: 0 },
-        { q: "Choose the correct spelling:", options: ["Nite", "Night", "Nighght"], a: 1 },
-        { q: "Which word rhymes with 'cat'?", options: ["Bat", "Car", "Cup"], a: 0 },
-        { q: "Pick the word with 'oo':", options: ["Book", "Cake", "Tree"], a: 0 },
-        { q: "Which is spelled correctly?", options: ["Sed", "Said", "Sayd"], a: 1 },
-        { q: "What letter makes the /sh/ sound in 'ship'?", options: ["s", "sh", "ch"], a: 1 },
-        { q: "Which word has the /ee/ sound?", options: ["Tree", "Train", "Truck"], a: 0 },
-        { q: "Choose the real word:", options: ["Frog", "Frug", "Frag"], a: 0 },
-        { q: "Which word starts with 'ch'?", options: ["Shop", "Chip", "Fish"], a: 1 },
-        { q: "Pick the correct spelling:", options: ["Wen", "When", "Whn"], a: 1 },
-        { q: "Which word ends with 'ck'?", options: ["Duck", "Cake", "Dog"], a: 0 },
-        { q: "What sound does 'oa' make?", options: ["Oat", "Cat", "Dot"], a: 0 },
-        { q: "Which is a real word?", options: ["Splam", "Star", "Trup"], a: 1 },
-        { q: "Pick the word with 'ar':", options: ["Car", "Cup", "Cat"], a: 0 },
-        { q: "Which word has 'ing'?", options: ["Running", "Run", "Ran"], a: 0 }
+    // TRACK DEFINITIONS - Each track has a theme, color, and skill-specific questions
+    const TRACKS = [
+        {
+            id: 'vowel-sounds',
+            name: 'Vowel Valley',
+            icon: '🌈',
+            color: '#ef4444',
+            description: 'Long & short vowel sounds (ai, ee, oa, oo)',
+            questions: {
+                easy: [
+                    { q: "Which word has the /ai/ sound?", options: ["Rain", "Run", "Red"], a: 0, explanation: "'Rain' has the /ai/ sound. The 'ai' makes a long 'a' sound like in 'train' and 'pain'." },
+                    { q: "Which word has the /ee/ sound?", options: ["Tree", "Trick", "Truck"], a: 0, explanation: "'Tree' has the /ee/ sound. The 'ee' makes a long 'e' sound like in 'bee' and 'see'." },
+                    { q: "Pick the word with 'oo':", options: ["Book", "Bake", "Bike"], a: 0, explanation: "'Book' has 'oo'. This 'oo' makes a short sound. In 'moon' it makes a long sound." },
+                    { q: "What sound does 'oa' make in 'boat'?", options: ["Long o", "Short o", "Ow"], a: 0, explanation: "'oa' makes a long 'o' sound, like saying the letter O. Boat, coat, and goat all have this sound." },
+                    { q: "Which has the /oo/ sound like 'moon'?", options: ["Soon", "Book", "Foot"], a: 0, explanation: "'Soon' has the long /oo/ sound like 'moon'. 'Book' and 'foot' have the short /oo/ sound." }
+                ],
+                medium: [
+                    { q: "Which word has the long 'a' sound?", options: ["Cat", "Cake", "Car"], a: 1, explanation: "'Cake' has the long 'a' sound because of the magic 'e' at the end. The 'e' makes the 'a' say its name." },
+                    { q: "Find the word with /igh/ sound:", options: ["Bright", "Bit", "Boat"], a: 0, explanation: "'Bright' has the /igh/ sound. The 'igh' makes a long 'i' sound like in 'night' and 'light'." },
+                    { q: "Which uses 'ea' for /ee/?", options: ["Bread", "Beach", "Break"], a: 1, explanation: "'Beach' uses 'ea' to make the /ee/ sound. But be careful - 'bread' and 'break' use 'ea' differently!" },
+                    { q: "Pick the word with long 'o':", options: ["Hope", "Hop", "Hot"], a: 0, explanation: "'Hope' has the long 'o' because of the magic 'e'. Without it, 'hop' has a short 'o' sound." },
+                    { q: "Which word has /ow/ like 'snow'?", options: ["Grow", "Now", "How"], a: 0, explanation: "'Grow' has the /ow/ sound like 'snow'. 'Now' and 'how' have a different 'ow' sound like 'cow'." }
+                ],
+                hard: [
+                    { q: "Which has 'ough' making /oo/?", options: ["Through", "Tough", "Though"], a: 0, explanation: "'Through' has 'ough' making /oo/. English is tricky - 'tough' sounds like 'uff' and 'though' sounds like 'oh'!" },
+                    { q: "Find the silent 'e' word:", options: ["Have", "Make", "Give"], a: 1, explanation: "'Make' has a silent 'e' that makes the 'a' long. 'Have' and 'give' are tricky words where 'e' doesn't follow the rule." },
+                    { q: "Which 'ei' makes /ee/?", options: ["Receive", "Eight", "Vein"], a: 0, explanation: "'Receive' uses 'ei' to make /ee/. Remember: 'i before e except after c' - receive has 'c' before it!" },
+                    { q: "Pick the word where 'y' sounds like /ee/:", options: ["My", "Happy", "Yes"], a: 1, explanation: "'Happy' ends with 'y' that sounds like /ee/. At the end of words, 'y' often makes the /ee/ sound." },
+                    { q: "Which has /or/ sound?", options: ["Word", "Worn", "Worm"], a: 1, explanation: "'Worn' has the clear /or/ sound. 'Word' and 'worm' have 'or' but sound like /er/ - tricky!" }
+                ]
+            }
+        },
+        {
+            id: 'consonant-blends',
+            name: 'Blend Boulevard',
+            icon: '🔤',
+            color: '#3b82f6',
+            description: 'Consonant digraphs & blends (ch, sh, th, bl, str)',
+            questions: {
+                easy: [
+                    { q: "Which word starts with 'ch'?", options: ["Chip", "Ship", "Trip"], a: 0, explanation: "'Chip' starts with 'ch'. The 'ch' sound is different from 'sh' - try saying them both!" },
+                    { q: "What makes the /sh/ sound?", options: ["s", "sh", "ch"], a: 1, explanation: "'sh' makes the /sh/ sound like in 'ship', 'shop', and 'shell'. Put your finger to your lips - shhh!" },
+                    { q: "Which starts with 'th'?", options: ["That", "Cat", "Fat"], a: 0, explanation: "'That' starts with 'th'. Put your tongue between your teeth to make the /th/ sound!" },
+                    { q: "Pick the 'bl' blend word:", options: ["Black", "Back", "Brick"], a: 0, explanation: "'Black' starts with 'bl' blend. You hear both the 'b' and 'l' sounds together quickly." },
+                    { q: "Which ends with 'ck'?", options: ["Duck", "Dug", "Duke"], a: 0, explanation: "'Duck' ends with 'ck'. After a short vowel, we usually use 'ck' not just 'k'." }
+                ],
+                medium: [
+                    { q: "Find the 'str' blend:", options: ["Strong", "Song", "Sting"], a: 0, explanation: "'Strong' has the 'str' blend - three consonants together! Say it slowly: s-t-r-ong." },
+                    { q: "Which has 'wh' sound?", options: ["What", "Wet", "Want"], a: 0, explanation: "'What' starts with 'wh'. Some people say /w/ and some say /hw/ - both are correct!" },
+                    { q: "Pick the word with 'ng':", options: ["Ring", "Rig", "Rim"], a: 0, explanation: "'Ring' has 'ng' at the end. This makes a special sound at the back of your throat - try it!" },
+                    { q: "Which starts with 'spr'?", options: ["Spring", "Sing", "String"], a: 0, explanation: "'Spring' has the 'spr' blend - three sounds s-p-r together at the start." },
+                    { q: "Find the 'nch' ending:", options: ["Lunch", "Lung", "Lush"], a: 0, explanation: "'Lunch' ends with 'nch'. You can hear 'n' then 'ch' - like 'bunch' and 'punch'." }
+                ],
+                hard: [
+                    { q: "Which has 'tch' making /ch/?", options: ["Catch", "Chat", "Much"], a: 0, explanation: "'Catch' uses 'tch' for the /ch/ sound. After a short vowel, we often use 'tch' instead of 'ch'." },
+                    { q: "Find the 'dge' sound:", options: ["Bridge", "Big", "Bring"], a: 0, explanation: "'Bridge' has 'dge' making a /j/ sound. After a short vowel, we use 'dge' not just 'ge'." },
+                    { q: "Which 'ph' makes /f/?", options: ["Phone", "Hop", "Pen"], a: 0, explanation: "'Phone' uses 'ph' to make the /f/ sound. This comes from Greek words - like 'photo' and 'elephant'." },
+                    { q: "Pick the silent 'w' word:", options: ["Write", "Wait", "Want"], a: 0, explanation: "'Write' has a silent 'w'. We don't say the 'w' in 'write', 'wrong', or 'wrist'." },
+                    { q: "Which has silent 'k'?", options: ["Knee", "Keep", "Key"], a: 0, explanation: "'Knee' has a silent 'k'. When 'kn' starts a word, the 'k' is silent - like 'know' and 'knife'." }
+                ]
+            }
+        },
+        {
+            id: 'spelling-patterns',
+            name: 'Spelling Speedway',
+            icon: '✏️',
+            color: '#22c55e',
+            description: 'Common spelling patterns & tricky words',
+            questions: {
+                easy: [
+                    { q: "Choose the correct spelling:", options: ["Nite", "Night", "Nigt"], a: 1, explanation: "'Night' is correct. The 'igh' is a special spelling for the long 'i' sound." },
+                    { q: "Which is spelled right?", options: ["Sed", "Said", "Sayd"], a: 1, explanation: "'Said' is correct. This is a tricky word - it doesn't sound like it's spelled!" },
+                    { q: "Pick the correct spelling:", options: ["Wen", "When", "Whn"], a: 1, explanation: "'When' is correct. It starts with 'wh' and has an 'e' in the middle." },
+                    { q: "Which is a real word?", options: ["Frog", "Frug", "Frag"], a: 0, explanation: "'Frog' is the real word - it's a green animal that hops and says ribbit!" },
+                    { q: "Correct spelling?", options: ["Thay", "They", "Thei"], a: 1, explanation: "'They' is correct. This is a tricky word you need to remember - t-h-e-y." }
+                ],
+                medium: [
+                    { q: "Finish the word: Hap__", options: ["py", "pie", "pee"], a: 0, explanation: "'Happy' ends with 'py'. When adding 'y' to make a word happy-sounding, we use 'py'." },
+                    { q: "Past tense of 'jump':", options: ["Jumped", "Jumpt", "Jumpd"], a: 0, explanation: "'Jumped' is correct. We add 'ed' to make past tense, and here it sounds like /t/." },
+                    { q: "Plural of 'baby':", options: ["Babys", "Babies", "Babyes"], a: 1, explanation: "'Babies' is correct. When a word ends in 'y', change the 'y' to 'i' and add 'es'." },
+                    { q: "Past tense of 'stop':", options: ["Stoped", "Stopped", "Stopt"], a: 1, explanation: "'Stopped' is correct. We double the 'p' before adding 'ed' because 'stop' has a short vowel." },
+                    { q: "Plural of 'fox':", options: ["Foxs", "Foxes", "Foxies"], a: 1, explanation: "'Foxes' is correct. Words ending in 'x' need 'es' to make them plural." }
+                ],
+                hard: [
+                    { q: "Correct spelling:", options: ["Beutiful", "Beautiful", "Beatiful"], a: 1, explanation: "'Beautiful' is correct. Remember: b-e-a-u-t-i-f-u-l. 'Beau' means beautiful in French!" },
+                    { q: "Add suffix: happy + est =", options: ["Happyest", "Happiest", "Hapiest"], a: 1, explanation: "'Happiest' is correct. Change 'y' to 'i' before adding 'est'." },
+                    { q: "Past tense of 'try':", options: ["Tryed", "Tried", "Tryd"], a: 1, explanation: "'Tried' is correct. Change 'y' to 'i' before adding 'ed'." },
+                    { q: "Choose the tricky word:", options: ["Should", "Shoud", "Shood"], a: 0, explanation: "'Should' is correct. The 'oul' is silent - we just say /shud/. Same pattern in 'could' and 'would'." },
+                    { q: "Correct spelling:", options: ["Diffrent", "Different", "Diferent"], a: 1, explanation: "'Different' is correct. It has two 'f's and an 'e' - dif-fer-ent." }
+                ]
+            }
+        },
+        {
+            id: 'homophones',
+            name: 'Homophone Highway',
+            icon: '👯',
+            color: '#eab308',
+            description: 'Words that sound the same but spell differently',
+            questions: {
+                easy: [
+                    { q: "I can ___ with my eyes.", options: ["See", "Sea", "Cee"], a: 0, explanation: "'See' means to look with your eyes. 'Sea' is the ocean water. They sound the same but mean different things!" },
+                    { q: "I ___ to the shop.", options: ["Went", "Want", "Won't"], a: 0, explanation: "'Went' is past tense of 'go'. 'Want' means to wish for something." },
+                    { q: "The sky is ___.", options: ["Blew", "Blue", "Blu"], a: 1, explanation: "'Blue' is the color. 'Blew' is past tense of 'blow' - like the wind blew." },
+                    { q: "I have ___ books.", options: ["Too", "Two", "To"], a: 1, explanation: "'Two' is the number 2. 'Too' means also or very much. 'To' shows direction." },
+                    { q: "I can ___ the bell.", options: ["Here", "Hear", "Heer"], a: 1, explanation: "'Hear' means to listen with your ears. 'Here' means in this place." }
+                ],
+                medium: [
+                    { q: "The dog wagged its ___.", options: ["Tail", "Tale", "Tael"], a: 0, explanation: "'Tail' is the body part animals have. 'Tale' is a story - like a fairy tale!" },
+                    { q: "I ___ a letter.", options: ["Wrote", "Rote", "Right"], a: 0, explanation: "'Wrote' is past tense of write. 'Right' means correct or a direction." },
+                    { q: "Pick the homophone for 'Flour':", options: ["Floor", "Flower", "Flow"], a: 1, explanation: "'Flower' sounds like 'flour' (what we bake with). They're homophones - same sound, different meaning!" },
+                    { q: "We ___ the whole cake!", options: ["Ate", "Eight", "Ait"], a: 0, explanation: "'Ate' is past tense of eat. 'Eight' is the number 8. They sound exactly the same!" },
+                    { q: "The ___ is shining.", options: ["Sun", "Son", "Sunn"], a: 0, explanation: "'Sun' is the star in the sky. 'Son' is a male child. Same sound, different spelling!" }
+                ],
+                hard: [
+                    { q: "Which is the homophone for 'There'?", options: ["Their", "They're", "Both"], a: 2, explanation: "Both 'their' (belonging to them) and 'they're' (they are) sound like 'there' (a place). Three homophones!" },
+                    { q: "I ___ a bike yesterday.", options: ["Road", "Rode", "Rowed"], a: 1, explanation: "'Rode' is past tense of ride. 'Road' is a street. 'Rowed' means used oars in a boat." },
+                    { q: "Homophone for 'Piece':", options: ["Peace", "Peas", "Peice"], a: 0, explanation: "'Peace' (calm, no fighting) sounds like 'piece' (a part of something). Different meanings!" },
+                    { q: "The ___ is heavy.", options: ["Wait", "Weight", "Wate"], a: 1, explanation: "'Weight' is how heavy something is. 'Wait' means to stay and not go yet." },
+                    { q: "___ going to the park.", options: ["There", "Their", "They're"], a: 2, explanation: "'They're' means 'they are' going to the park. It's short for two words joined together." }
+                ]
+            }
+        },
+        {
+            id: 'suffixes-prefixes',
+            name: 'Prefix Peak',
+            icon: '🏔️',
+            color: '#8b5cf6',
+            description: 'Word beginnings & endings (un-, re-, -ed, -ing, -ful)',
+            questions: {
+                easy: [
+                    { q: "Which word has 'ing'?", options: ["Running", "Run", "Ran"], a: 0, explanation: "'Running' has 'ing' added to 'run'. We add 'ing' to show something is happening right now." },
+                    { q: "Add 'ed' to 'jump':", options: ["Jumped", "Jumping", "Jumper"], a: 0, explanation: "'Jumped' has 'ed' added. We use 'ed' to show something already happened in the past." },
+                    { q: "Which has 's' added?", options: ["Cats", "Cat", "Catch"], a: 0, explanation: "'Cats' has 's' added to show more than one cat. This is called making it plural." },
+                    { q: "'Un' means:", options: ["Not", "Again", "Before"], a: 0, explanation: "'Un' means not. Unhappy = not happy. Unkind = not kind." },
+                    { q: "Which word ends in 'er'?", options: ["Bigger", "Big", "Bigg"], a: 0, explanation: "'Bigger' ends in 'er' which means more. Big → bigger → biggest." }
+                ],
+                medium: [
+                    { q: "Which suffix means 'more'?", options: ["-ed", "-er", "-est"], a: 1, explanation: "'-er' means more. Tall → taller (more tall). Fast → faster (more fast)." },
+                    { q: "'Re' in 'redo' means:", options: ["Not", "Again", "Before"], a: 1, explanation: "'Re' means again. Redo = do again. Replay = play again. Reread = read again." },
+                    { q: "Add prefix: un + happy =", options: ["Unhappy", "Rehappy", "Dishappy"], a: 0, explanation: "'Unhappy' means not happy. 'Un-' goes at the start to make the opposite meaning." },
+                    { q: "Which has suffix '-ful'?", options: ["Careful", "Careless", "Caring"], a: 0, explanation: "'Careful' has '-ful' meaning full of care. 'Careless' has '-less' meaning without care." },
+                    { q: "Add suffix: play + ing =", options: ["Playing", "Played", "Player"], a: 0, explanation: "'Playing' adds 'ing' to show the action is happening now. Just add 'ing' to 'play'." }
+                ],
+                hard: [
+                    { q: "happy + ness =", options: ["Happyness", "Happiness", "Happness"], a: 1, explanation: "'Happiness' is correct. Change 'y' to 'i' before adding 'ness'." },
+                    { q: "Which uses '-less'?", options: ["Hopeless", "Hopeful", "Hoping"], a: 0, explanation: "'Hopeless' uses '-less' meaning without hope. '-less' means without something." },
+                    { q: "'Dis' in 'disagree' means:", options: ["Again", "Not", "Before"], a: 1, explanation: "'Dis' means not or opposite. Disagree = not agree. Disappear = not appear." },
+                    { q: "run + er =", options: ["Runer", "Runner", "Runing"], a: 1, explanation: "'Runner' doubles the 'n'. When adding 'er' to short words with short vowels, double the last letter." },
+                    { q: "Which suffix makes a noun?", options: ["-ment", "-ly", "-ed"], a: 0, explanation: "'-ment' makes nouns: enjoy → enjoyment, move → movement. '-ly' makes adverbs, '-ed' makes past tense." }
+                ]
+            }
+        },
+        {
+            id: 'comprehension',
+            name: 'Story Street',
+            icon: '📖',
+            color: '#ec4899',
+            description: 'Reading comprehension with Maurits & friends',
+            questions: {
+                easy: [],
+                medium: [],
+                hard: []
+            },
+            isComprehension: true
+        }
     ];
 
-    // MEDIUM QUESTIONS (Lap 2)
-    const MEDIUM_QUESTIONS = [
-        { q: "Which word has a split digraph?", options: ["Rain", "Time", "Boat"], a: 1 },
-        { q: "Finish the word: Hap__", options: ["py", "pie", "pee"], a: 0 },
-        { q: "Which word uses 'a-e'?", options: ["Wait", "Day", "Cake"], a: 2 },
-        { q: "Find the homophone for 'Sea'", options: ["See", "Cee", "Say"], a: 0 },
-        { q: "Past tense of 'jump':", options: ["Jumped", "Jumpt", "Jumping"], a: 0 },
-        { q: "Which word has the /igh/ sound?", options: ["Bright", "Plate", "Tree"], a: 0 },
-        { q: "Plural of 'baby':", options: ["Babys", "Babies", "Baby's"], a: 1 },
-        { q: "Which word rhymes with 'Blue'?", options: ["Grew", "Go", "Bow"], a: 0 },
-        { q: "Pick the homophone for 'Two':", options: ["To", "Too", "Both"], a: 2 },
-        { q: "Which suffix means 'more'?", options: ["-ed", "-er", "-est"], a: 1 },
-        { q: "Add suffix to 'play': play__", options: ["ing", "ed", "s"], a: 0 },
-        { q: "Which has the 'ow' sound in 'cow'?", options: ["Snow", "Now", "Know"], a: 1 },
-        { q: "Correct spelling of the number:", options: ["Ate", "Eight", "Eigh"], a: 1 },
-        { q: "Which word has 'tion'?", options: ["Station", "Stone", "String"], a: 0 },
-        { q: "Pick the contraction:", options: ["Cannot", "Can't", "Will not"], a: 1 },
-        { q: "Homophone for 'Flower':", options: ["Floor", "Flour", "Flow"], a: 1 },
-        { q: "Which uses 'ie' for /ee/?", options: ["Field", "Friend", "Find"], a: 0 },
-        { q: "Past tense of 'stop':", options: ["Stoped", "Stopped", "Stopping"], a: 1 },
-        { q: "Which word has 'kn' making /n/?", options: ["King", "Knee", "Keep"], a: 1 },
-        { q: "Plural of 'fox':", options: ["Foxs", "Foxes", "Fox's"], a: 1 }
-    ];
-
-    // HARD QUESTIONS (Lap 3)
-    const HARD_QUESTIONS = [
-        { q: "Which has the silent 'b'?", options: ["Crab", "Lamb", "Cab"], a: 1 },
-        { q: "Choose the tricky word:", options: ["Should", "Shoud", "Shood"], a: 0 },
-        { q: "Which is the homophone for 'There'?", options: ["Their", "They're", "Both"], a: 2 },
-        { q: "Add suffix: happy + est =", options: ["Happyest", "Happiest", "Hapiest"], a: 1 },
-        { q: "Which word has 'ph' for /f/?", options: ["Photo", "Fish", "Phrase"], a: 0 },
-        { q: "Correct spelling:", options: ["Beutiful", "Beautiful", "Beatiful"], a: 1 },
-        { q: "Homophone for 'Piece':", options: ["Peace", "Peas", "Please"], a: 0 },
-        { q: "Which has suffix '-ful'?", options: ["Careful", "Careless", "Caring"], a: 0 },
-        { q: "Past tense of 'try':", options: ["Tryed", "Tried", "Tryd"], a: 1 },
-        { q: "Which word has 'ough'?", options: ["Tough", "Touch", "Teach"], a: 0 },
-        { q: "Add prefix: un + happy =", options: ["Unhappy", "Dishappy", "Nonhappy"], a: 0 },
-        { q: "Correct spelling:", options: ["Wich", "Which", "Witch"], a: 1 },
-        { q: "Homophone: 'I ____ a bike'", options: ["Road", "Rode", "Rowed"], a: 1 },
-        { q: "Which is an adjective?", options: ["Quickly", "Quick", "Quickness"], a: 1 },
-        { q: "Opposite with prefix: re + do =", options: ["Redo", "Undo", "Dodo"], a: 0 }
-    ];
-
-    // COMPREHENSION PASSAGES
+    // COMPREHENSION PASSAGES (used by Story Street track)
     const COMPREHENSION_DATA = [
         {
             passage: "Maurits and his mum Sophie found a tiny kitten in the garden. It was wet and cold. Sophie wrapped it in a warm towel while Maurits gave it some milk. The kitten purred happily.",
             questions: [
-                { q: "Where did Maurits and Sophie find the kitten?", options: ["In the house", "In the garden", "At school"], a: 1 },
-                { q: "How did the kitten feel at first?", options: ["Happy", "Wet and cold", "Hungry"], a: 1 },
-                { q: "What did Maurits give the kitten?", options: ["Food", "Milk", "Water"], a: 1 },
-                { q: "How did the kitten feel at the end?", options: ["Scared", "Happy", "Tired"], a: 1 }
+                { q: "Where did Maurits and Sophie find the kitten?", options: ["In the house", "In the garden", "At school"], a: 1, explanation: "The story says they found the kitten 'in the garden'. Always look for the exact words in the story!" },
+                { q: "How did the kitten feel at first?", options: ["Happy", "Wet and cold", "Hungry"], a: 1, explanation: "The story tells us 'It was wet and cold.' The kitten felt happy at the END after getting help." },
+                { q: "What did Maurits give the kitten?", options: ["Food", "Milk", "Water"], a: 1, explanation: "The story says 'Maurits gave it some milk.' Sophie wrapped it in the towel, Maurits gave the milk." },
+                { q: "How did the kitten feel at the end?", options: ["Scared", "Happy", "Tired"], a: 1, explanation: "At the end 'The kitten purred happily.' When cats purr, it means they are happy and content!" }
             ]
         },
         {
             passage: "Maurits loved racing his toy cars with his brother Hugo. His favourite was the red one with yellow stripes. One day, he lost it in the park. Hugo helped him search everywhere but they couldn't find it.",
             questions: [
-                { q: "What did Maurits love doing?", options: ["Racing toy cars", "Playing football", "Reading"], a: 0 },
-                { q: "What colour was his favourite car?", options: ["Blue", "Red with yellow stripes", "Green"], a: 1 },
-                { q: "Where did he lose it?", options: ["At home", "At school", "In the park"], a: 2 },
-                { q: "Who helped Maurits search?", options: ["His mum", "His brother Hugo", "His teacher"], a: 1 }
+                { q: "What did Maurits love doing?", options: ["Racing toy cars", "Playing football", "Reading"], a: 0, explanation: "The very first sentence tells us 'Maurits loved racing his toy cars.' The first sentence often tells us important information!" },
+                { q: "What colour was his favourite car?", options: ["Blue", "Red with yellow stripes", "Green"], a: 1, explanation: "The story says 'His favourite was the red one with yellow stripes.' Look for describing words (adjectives) in the story." },
+                { q: "Where did he lose it?", options: ["At home", "At school", "In the park"], a: 2, explanation: "The story says 'he lost it in the park.' When you see 'in the park', that tells you the place (location)." },
+                { q: "Who helped Maurits search?", options: ["His mum", "His brother Hugo", "His teacher"], a: 1, explanation: "The story says 'Hugo helped him search everywhere.' Hugo is his brother - look for who helped in the story." }
             ]
         },
         {
             passage: "The sun was shining brightly. Maurits and his friends Jules and Wilbur decided to go to the beach. They built a giant sandcastle with towers and a moat. They were very proud of it!",
             questions: [
-                { q: "What was the weather like?", options: ["Rainy", "Sunny", "Cloudy"], a: 1 },
-                { q: "Who went to the beach with Maurits?", options: ["Hugo", "Jules and Wilbur", "Sophie"], a: 1 },
-                { q: "What did they build?", options: ["A sandcastle", "A boat", "A house"], a: 0 },
-                { q: "How did they feel about their sandcastle?", options: ["Sad", "Proud", "Bored"], a: 1 }
+                { q: "What was the weather like?", options: ["Rainy", "Sunny", "Cloudy"], a: 1, explanation: "'The sun was shining brightly' tells us it was sunny. When the sun shines, it's a sunny day!" },
+                { q: "Who went to the beach with Maurits?", options: ["Hugo", "Jules and Wilbur", "Sophie"], a: 1, explanation: "The story says 'Maurits and his friends Jules and Wilbur' went to the beach. Read carefully for all the names!" },
+                { q: "What did they build?", options: ["A sandcastle", "A boat", "A house"], a: 0, explanation: "They 'built a giant sandcastle with towers and a moat.' A moat is the water that goes around a castle!" },
+                { q: "How did they feel about their sandcastle?", options: ["Sad", "Proud", "Bored"], a: 1, explanation: "'They were very proud of it!' tells us how they felt. When you're proud, you feel good about what you did." }
             ]
         },
         {
             passage: "Mr Clay was teaching the class about birds. He told Maurits, Zane and Harvey about how baby birds learn to fly. First they flap their wings in the nest. Then one day, they hop to the edge and whoosh! They fly!",
             questions: [
-                { q: "Who was teaching the class?", options: ["Mrs Cole", "Mr Clay", "Susan"], a: 1 },
-                { q: "What was the lesson about?", options: ["Fish", "Birds", "Cars"], a: 1 },
-                { q: "What do baby birds do first?", options: ["Jump out", "Flap their wings", "Sing"], a: 1 },
-                { q: "Who was learning with Maurits?", options: ["Jules", "Hugo", "Zane and Harvey"], a: 2 }
+                { q: "Who was teaching the class?", options: ["Mrs Cole", "Mr Clay", "Susan"], a: 1, explanation: "The first sentence says 'Mr Clay was teaching the class.' The beginning often tells us who and what!" },
+                { q: "What was the lesson about?", options: ["Fish", "Birds", "Cars"], a: 1, explanation: "Mr Clay was teaching 'about birds' - specifically about how baby birds learn to fly." },
+                { q: "What do baby birds do first?", options: ["Jump out", "Flap their wings", "Sing"], a: 1, explanation: "The story says 'First they flap their wings in the nest.' Look for words like 'first', 'then', 'next' to find the order!" },
+                { q: "Who was learning with Maurits?", options: ["Jules", "Hugo", "Zane and Harvey"], a: 2, explanation: "The story says 'He told Maurits, Zane and Harvey'. All three friends were learning together." }
             ]
         },
         {
             passage: "Maurits had a loose tooth. It wobbled when he ate. At breakfast, his dad Floris made him toast with apple slices. Crunch! His tooth came out. He put it under his pillow for the tooth fairy.",
             questions: [
-                { q: "What was wrong with Maurits's tooth?", options: ["It hurt", "It was loose", "It was dirty"], a: 1 },
-                { q: "Who made breakfast?", options: ["Sophie", "Floris", "Hugo"], a: 1 },
-                { q: "What was Maurits eating?", options: ["A banana", "Toast with apple", "Cereal"], a: 1 },
-                { q: "Where did Maurits put his tooth?", options: ["In a box", "Under his pillow", "In the bin"], a: 1 }
+                { q: "What was wrong with Maurits's tooth?", options: ["It hurt", "It was loose", "It was dirty"], a: 1, explanation: "The story says 'Maurits had a loose tooth. It wobbled.' A loose tooth wobbles and moves around." },
+                { q: "Who made breakfast?", options: ["Sophie", "Floris", "Hugo"], a: 1, explanation: "'His dad Floris made him toast' - the story tells us Floris is Maurits's dad and he made breakfast." },
+                { q: "What was Maurits eating?", options: ["A banana", "Toast with apple", "Cereal"], a: 1, explanation: "Floris made him 'toast with apple slices.' When you see 'Crunch!' that was him biting the apple!" },
+                { q: "Where did Maurits put his tooth?", options: ["In a box", "Under his pillow", "In the bin"], a: 1, explanation: "'He put it under his pillow for the tooth fairy.' Many children leave teeth under pillows for the tooth fairy!" }
             ]
         },
         {
             passage: "At school, Mrs Cole asked the class to paint pictures. Maurits painted a racing car while Jules painted flowers. Ms O'Shea came to look and said their pictures were wonderful. Susan helped them clean up afterwards.",
             questions: [
-                { q: "Who asked the class to paint?", options: ["Mr Clay", "Mrs Cole", "Susan"], a: 1 },
-                { q: "What did Maurits paint?", options: ["Flowers", "A racing car", "A house"], a: 1 },
-                { q: "Who said the pictures were wonderful?", options: ["Mrs Cole", "Ms O'Shea", "Susan"], a: 1 },
-                { q: "Who helped clean up?", options: ["Susan", "Mr Clay", "Floris"], a: 0 }
+                { q: "Who asked the class to paint?", options: ["Mr Clay", "Mrs Cole", "Susan"], a: 1, explanation: "'Mrs Cole asked the class to paint pictures.' She gave the instruction to start painting." },
+                { q: "What did Maurits paint?", options: ["Flowers", "A racing car", "A house"], a: 1, explanation: "'Maurits painted a racing car' - Jules painted the flowers, not Maurits. Read carefully who did what!" },
+                { q: "Who said the pictures were wonderful?", options: ["Mrs Cole", "Ms O'Shea", "Susan"], a: 1, explanation: "'Ms O'Shea came to look and said their pictures were wonderful.' She was the one who said they were wonderful." },
+                { q: "Who helped clean up?", options: ["Susan", "Mr Clay", "Floris"], a: 0, explanation: "'Susan helped them clean up afterwards.' Look for who did the action - Susan helped with cleaning." }
             ]
         }
     ];
 
-    // Combine all questions with metadata
-    const ALL_QUESTIONS = {
-        easy: EASY_QUESTIONS,
-        medium: MEDIUM_QUESTIONS,
-        hard: HARD_QUESTIONS,
-        comprehension: COMPREHENSION_DATA
-    };
-
     // --- Engine Configuration ---
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-    
+
     // Game State
     let gameState = 'start'; // start, racing, quiz, finished
     let frameId;
@@ -452,6 +575,15 @@
     let slotMachineActive = false; // Is slot machine spinning?
     let slotMachineResult = null; // Result of slot machine
     let currentRaceSpeed = 'medium'; // slow, medium, fast
+
+    // Track Selection
+    let selectedTrack = null; // Currently selected track object
+    let currentTrackColor = '#555'; // Track asphalt color (changes per track)
+
+    // Scoring System
+    let score = { correct: 0, total: 0 };
+    let wrongAnswers = []; // Store wrong answers for review
+    let currentQuestion = null; // Currently displayed question (for tracking wrong answers)
 
     // Speed Presets
     const SPEED_PRESETS = {
@@ -1003,11 +1135,59 @@
 
     // --- Core Logic ---
 
+    function showTrackSelection() {
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('track-selection').classList.remove('hidden');
+
+        // Generate track buttons
+        const container = document.getElementById('track-buttons');
+        container.innerHTML = '';
+
+        TRACKS.forEach(track => {
+            const btn = document.createElement('button');
+            btn.className = 'w-full p-4 rounded-lg border-2 text-left transition hover:scale-102 hover:shadow-lg';
+            btn.style.borderColor = track.color;
+            btn.style.background = `linear-gradient(135deg, white 0%, ${track.color}15 100%)`;
+            btn.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl">${track.icon}</span>
+                    <div>
+                        <h3 class="font-bold text-lg" style="color: ${track.color}">${track.name}</h3>
+                        <p class="text-sm text-gray-600">${track.description}</p>
+                    </div>
+                </div>
+            `;
+            btn.onclick = () => selectTrack(track);
+            container.appendChild(btn);
+        });
+    }
+
+    function hideTrackSelection() {
+        document.getElementById('track-selection').classList.add('hidden');
+        document.getElementById('start-screen').classList.remove('hidden');
+    }
+
+    function selectTrack(track) {
+        selectedTrack = track;
+        currentTrackColor = track.color;
+        document.getElementById('track-selection').classList.add('hidden');
+        startGame();
+    }
+
     function startGame() {
         document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('track-selection').classList.add('hidden');
         document.getElementById('hud-pos').classList.remove('hidden');
         document.getElementById('hud-lap').classList.remove('hidden');
+        document.getElementById('hud-score').classList.remove('hidden');
         document.getElementById('speed-toggle').classList.remove('hidden');
+
+        // Reset scoring
+        score = { correct: 0, total: 0 };
+        wrongAnswers = [];
+        questionsAsked = [];
+        comprehensionPassageUsed = [];
+        updateScoreDisplay();
 
         // Show mobile controls if on mobile
         if(window.innerWidth < 768) {
@@ -1030,6 +1210,10 @@
 
         gameState = 'racing';
         gameLoop();
+    }
+
+    function updateScoreDisplay() {
+        document.getElementById('hud-score').innerText = `Score: ${score.correct}/${score.total}`;
     }
 
     function setRaceSpeed(speed) {
@@ -1539,18 +1723,18 @@
         const passageText = document.getElementById('passage-text');
         const difficultyBadge = document.getElementById('difficulty-badge');
 
-        // Decide: 25% chance for comprehension, 75% for regular phonics
-        const isComprehension = Math.random() < 0.25 && comprehensionPassageUsed.length < COMPREHENSION_DATA.length;
-
         let qObj;
         let questionKey;
+        let currentPassage = null;
 
-        if (isComprehension) {
-            // Pick a comprehension passage we haven't used yet
+        // Check if this is a comprehension track or regular track
+        const isComprehensionTrack = selectedTrack && selectedTrack.isComprehension;
+
+        if (isComprehensionTrack) {
+            // Comprehension track - always show passages
             let availablePassages = COMPREHENSION_DATA.filter((p, idx) => !comprehensionPassageUsed.includes(idx));
 
             if(availablePassages.length === 0) {
-                // Reset if all used
                 comprehensionPassageUsed = [];
                 availablePassages = COMPREHENSION_DATA;
             }
@@ -1559,33 +1743,30 @@
             const passageIdx = COMPREHENSION_DATA.indexOf(passageObj);
             comprehensionPassageUsed.push(passageIdx);
 
-            // Pick one question from this passage
             qObj = passageObj.questions[Math.floor(Math.random() * passageObj.questions.length)];
+            currentPassage = passageObj.passage;
 
-            // Show passage
             passageContainer.classList.remove('hidden');
             passageText.innerText = passageObj.passage;
 
-            // Update badge
             difficultyBadge.innerText = 'Comprehension';
             difficultyBadge.className = 'inline-block px-3 py-1 rounded-full text-xs font-bold mb-3 bg-purple-200 text-purple-800';
 
-        } else {
-            // Hide passage container
+        } else if (selectedTrack) {
+            // Track-specific questions
             passageContainer.classList.add('hidden');
 
-            // Get questions for current difficulty
-            let pool = ALL_QUESTIONS[currentDifficulty];
+            let pool = selectedTrack.questions[currentDifficulty] || [];
 
             // Filter out already asked questions
             let availableQuestions = pool.filter((q, idx) => {
-                questionKey = `${currentDifficulty}-${idx}`;
+                questionKey = `${selectedTrack.id}-${currentDifficulty}-${idx}`;
                 return !questionsAsked.includes(questionKey);
             });
 
             // Reset if all questions asked
             if(availableQuestions.length === 0) {
-                questionsAsked = questionsAsked.filter(q => !q.startsWith(currentDifficulty));
+                questionsAsked = questionsAsked.filter(q => !q.startsWith(`${selectedTrack.id}-${currentDifficulty}`));
                 availableQuestions = pool;
             }
 
@@ -1595,16 +1776,26 @@
 
             // Track this question
             const actualIdx = pool.indexOf(qObj);
-            questionKey = `${currentDifficulty}-${actualIdx}`;
+            questionKey = `${selectedTrack.id}-${currentDifficulty}-${actualIdx}`;
             questionsAsked.push(questionKey);
 
-            // Update difficulty badge
+            // Update difficulty badge with track color
             let badgeColor = currentDifficulty === 'easy' ? 'bg-green-200 text-green-800' :
                            currentDifficulty === 'medium' ? 'bg-yellow-200 text-yellow-800' :
                            'bg-red-200 text-red-800';
-            difficultyBadge.innerText = currentDifficulty.charAt(0).toUpperCase() + currentDifficulty.slice(1);
+            difficultyBadge.innerText = `${selectedTrack.icon} ${currentDifficulty.charAt(0).toUpperCase() + currentDifficulty.slice(1)}`;
             difficultyBadge.className = `inline-block px-3 py-1 rounded-full text-xs font-bold mb-3 ${badgeColor}`;
         }
+
+        // Store current question for wrong answer tracking
+        currentQuestion = {
+            question: qObj.q,
+            options: qObj.options,
+            correctAnswer: qObj.options[qObj.a],
+            correctIndex: qObj.a,
+            explanation: qObj.explanation || "Keep practicing! You'll get it next time.",
+            passage: currentPassage
+        };
 
         // Display question
         qText.innerText = qObj.q;
@@ -1614,37 +1805,49 @@
             const btn = document.createElement('button');
             btn.className = 'answer-btn';
             btn.innerText = opt;
-            btn.onclick = () => handleAnswer(idx === qObj.a);
+            btn.onclick = () => handleAnswer(idx === qObj.a, opt);
             container.appendChild(btn);
         });
 
         modal.classList.remove('hidden');
     }
 
-    function handleAnswer(isCorrect) {
+    function handleAnswer(isCorrect, selectedAnswer) {
         const modal = document.getElementById('quiz-modal');
         modal.classList.add('hidden');
+
+        // Update score
+        score.total++;
+        if (isCorrect) {
+            score.correct++;
+        } else {
+            // Store wrong answer for review
+            wrongAnswers.push({
+                question: currentQuestion.question,
+                yourAnswer: selectedAnswer,
+                correctAnswer: currentQuestion.correctAnswer,
+                explanation: currentQuestion.explanation,
+                passage: currentQuestion.passage
+            });
+        }
+        updateScoreDisplay();
 
         gameState = 'racing';
 
         if (isCorrect) {
             // Reward system based on lap
             if (playerKart.lap === 1) {
-                // Lap 1: Slow opponents briefly
                 opponentsSlowed = true;
-                slowEndTime = Date.now() + 1500; // 1.5 seconds
+                slowEndTime = Date.now() + 1500;
                 showFloatingText("Nice! Opponents Slowed!", playerKart.x, playerKart.y, "#22c55e");
             } else {
-                // Lap 2+: Small freeze reward
                 opponentsFrozen = true;
-                freezeEndTime = Date.now() + 1000; // 1 second freeze
+                freezeEndTime = Date.now() + 1000;
                 showFloatingText("Good Job! Freeze!", playerKart.x, playerKart.y, "#22c55e");
             }
         } else {
-            // Spin out!
             playerKart.speed = 0;
-            playerKart.angle += Math.PI * 2; // Visual spin logic handled in update?
-            // Simplified: just stop them
+            playerKart.angle += Math.PI * 2;
             showFloatingText("Spin Out!", playerKart.x, playerKart.y, "#ef4444");
         }
 
@@ -1756,15 +1959,93 @@
     function finishGame() {
         gameState = 'finished';
         document.getElementById('game-over').classList.remove('hidden');
-        
+
         let sortedKarts = [...karts].sort((a,b) => {
             if(a.lap !== b.lap) return b.lap - a.lap;
             return b.checkpointIndex - a.checkpointIndex;
         });
         let pos = sortedKarts.indexOf(playerKart) + 1;
-        
+
         let suffix = pos === 1 ? 'st' : pos === 2 ? 'nd' : pos === 3 ? 'rd' : 'th';
         document.getElementById('final-place').innerText = `You finished ${pos}${suffix}!`;
+
+        // Show final score
+        document.getElementById('final-score').innerText = `${score.correct}/${score.total}`;
+        const percentage = score.total > 0 ? Math.round((score.correct / score.total) * 100) : 0;
+        document.getElementById('score-percentage').innerText = `${percentage}% correct`;
+
+        // Color the score based on performance
+        const scoreEl = document.getElementById('final-score');
+        if (percentage >= 80) {
+            scoreEl.className = 'text-green-600';
+        } else if (percentage >= 50) {
+            scoreEl.className = 'text-yellow-600';
+        } else {
+            scoreEl.className = 'text-red-600';
+        }
+
+        // Show review button if there were wrong answers
+        if (wrongAnswers.length > 0) {
+            document.getElementById('review-btn').classList.remove('hidden');
+            buildReviewSection();
+        } else {
+            document.getElementById('review-btn').classList.add('hidden');
+        }
+    }
+
+    function buildReviewSection() {
+        const container = document.getElementById('wrong-answers-list');
+        container.innerHTML = '';
+
+        wrongAnswers.forEach((item, index) => {
+            const card = document.createElement('div');
+            card.className = 'p-4 bg-red-50 border-2 border-red-200 rounded-lg';
+
+            let passageHtml = '';
+            if (item.passage) {
+                passageHtml = `
+                    <div class="mb-2 p-2 bg-blue-50 rounded text-sm">
+                        <strong>📖 Story:</strong> ${item.passage}
+                    </div>
+                `;
+            }
+
+            card.innerHTML = `
+                <div class="flex items-start gap-2 mb-2">
+                    <span class="text-lg">❌</span>
+                    <strong class="text-red-800">Question ${index + 1}:</strong>
+                </div>
+                ${passageHtml}
+                <p class="font-semibold mb-2">${item.question}</p>
+                <div class="space-y-1 text-sm">
+                    <p><span class="text-red-600 font-bold">Your answer:</span> ${item.yourAnswer}</p>
+                    <p><span class="text-green-600 font-bold">Correct answer:</span> ${item.correctAnswer}</p>
+                </div>
+                <div class="mt-3 p-3 bg-yellow-50 border border-yellow-300 rounded">
+                    <div class="flex items-start gap-2">
+                        <span class="text-xl">💡</span>
+                        <div>
+                            <strong class="text-yellow-800">Let's learn:</strong>
+                            <p class="text-sm text-gray-700 mt-1">${item.explanation}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function toggleReview() {
+        const reviewSection = document.getElementById('review-section');
+        const reviewBtn = document.getElementById('review-btn');
+
+        if (reviewSection.classList.contains('hidden')) {
+            reviewSection.classList.remove('hidden');
+            reviewBtn.innerText = 'Hide Review';
+        } else {
+            reviewSection.classList.add('hidden');
+            reviewBtn.innerText = 'Review Mistakes';
+        }
     }
 
 </script>
