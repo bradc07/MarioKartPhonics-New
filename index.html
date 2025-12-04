@@ -49,14 +49,15 @@
         }
 
         .modal-card {
-            background: white;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
             color: #1a472a;
             padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border-radius: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.1) inset;
             max-width: 90%;
             width: 400px;
             animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 3px solid #22c55e;
         }
 
         .answer-btn {
@@ -64,19 +65,21 @@
             width: 100%;
             padding: 1rem;
             margin-top: 0.75rem;
-            background-color: #f3f4f6;
-            border: 2px solid #e5e7eb;
-            border-radius: 0.5rem;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border: 3px solid #cbd5e1;
+            border-radius: 0.75rem;
             font-size: 1.25rem;
             font-weight: 600;
             transition: all 0.2s;
             cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
         .answer-btn:hover {
-            background-color: #dcfce7;
-            border-color: #1a472a;
-            transform: translateY(-2px);
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            border-color: #22c55e;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(34, 197, 94, 0.3);
         }
 
         .hud {
@@ -84,12 +87,14 @@
             top: 10px;
             left: 10px;
             z-index: 10;
-            background: rgba(255,255,255,0.9);
-            padding: 8px 16px;
-            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%);
+            padding: 10px 20px;
+            border-radius: 25px;
             font-weight: bold;
             color: #1a472a;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2), 0 0 0 2px rgba(34, 197, 94, 0.3);
+            border: 2px solid rgba(34, 197, 94, 0.5);
+            backdrop-filter: blur(10px);
         }
 
         .hud-lap {
@@ -97,12 +102,14 @@
             top: 10px;
             right: 10px;
             z-index: 10;
-            background: rgba(255,255,255,0.9);
-            padding: 8px 16px;
-            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%);
+            padding: 10px 20px;
+            border-radius: 25px;
             font-weight: bold;
             color: #1a472a;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2), 0 0 0 2px rgba(34, 197, 94, 0.3);
+            border: 2px solid rgba(34, 197, 94, 0.5);
+            backdrop-filter: blur(10px);
         }
 
         /* Speed Toggle */
@@ -111,19 +118,22 @@
             bottom: 20px;
             right: 20px;
             z-index: 10;
-            background: rgba(255,255,255,0.95);
-            padding: 12px 16px;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%);
+            padding: 14px 18px;
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.25);
             font-weight: bold;
             color: #1a472a;
+            border: 2px solid rgba(34, 197, 94, 0.4);
+            backdrop-filter: blur(10px);
         }
 
         .speed-toggle-label {
-            font-size: 10px;
+            font-size: 11px;
             text-transform: uppercase;
-            color: #666;
-            margin-bottom: 6px;
+            color: #555;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
         }
 
         .speed-options {
@@ -132,25 +142,28 @@
         }
 
         .speed-btn {
-            padding: 6px 12px;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            background: white;
+            padding: 8px 14px;
+            border: 2px solid #d1d5db;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%);
             cursor: pointer;
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 700;
             transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .speed-btn:hover {
-            border-color: #1a472a;
-            transform: translateY(-1px);
+            border-color: #22c55e;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(34, 197, 94, 0.3);
         }
 
         .speed-btn.active {
-            background: #1a472a;
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
             color: white;
-            border-color: #1a472a;
+            border-color: #16a34a;
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
         }
 
         /* Mobile Controls */
@@ -161,17 +174,18 @@
             display: flex;
             justify-content: space-between;
             padding: 0 40px;
-            pointer-events: none; /* Let clicks pass through to game */
+            pointer-events: none;
             z-index: 15;
         }
-        
+
         .control-btn {
             pointer-events: auto;
-            width: 80px;
-            height: 80px;
-            background: rgba(255,255,255,0.3);
-            border: 2px solid white;
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.2) 100%);
+            border: 3px solid rgba(255,255,255,0.8);
             border-radius: 50%;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3), inset 0 2px 10px rgba(255,255,255,0.3);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -741,8 +755,8 @@
             // AI specific
             this.waypointIndex = 1;
             this.startOffset = startOffset; // Stagger AI start
-            // AI speed - slower in easy mode to let player win more easily
-            this.aiSpeedMod = easyMode ? (0.5 + Math.random() * 0.2) : (0.8 + Math.random() * 0.3);
+            // AI speed - much slower in easy mode so younger players can win
+            this.aiSpeedMod = easyMode ? (0.35 + Math.random() * 0.15) : (0.8 + Math.random() * 0.3);
         }
 
         update() {
@@ -1245,107 +1259,165 @@
 
     function drawTrack() {
         const scale = getScale();
-        const avgScale = (scale.x + scale.y) / 2; // Average scale for circular elements
-        const trackHalfWidth = 50 * avgScale; // Half the track width
-        const barrierWidth = 8 * avgScale; // Width of the barrier
+        const avgScale = (scale.x + scale.y) / 2;
+        const trackHalfWidth = 50 * avgScale;
+        const barrierWidth = 10 * avgScale;
 
-        // Draw Grass
-        ctx.fillStyle = "#4ade80";
+        // Premium grass with gradient
+        const grassGradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        grassGradient.addColorStop(0, '#22c55e');
+        grassGradient.addColorStop(0.5, '#16a34a');
+        grassGradient.addColorStop(1, '#15803d');
+        ctx.fillStyle = grassGradient;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Decor: Trees (Simple circles) - scaled positions and sizes
-        ctx.fillStyle = "#14532d"; // Dark green trees
-        const baseTrees = [{x:400, y:300}, {x:150, y:150}, {x:650, y:450}, {x:50, y:50}, {x:750, y:550}];
+        // Add grass texture pattern
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.03)';
+        for (let x = 0; x < canvas.width; x += 20) {
+            for (let y = 0; y < canvas.height; y += 20) {
+                if ((x + y) % 40 === 0) {
+                    ctx.fillRect(x, y, 10, 10);
+                }
+            }
+        }
+
+        // Premium trees with shadows and 3D effect
+        const baseTrees = [
+            {x:400, y:300, size: 1.2}, {x:150, y:150, size: 1}, {x:650, y:450, size: 1.1},
+            {x:50, y:50, size: 0.8}, {x:750, y:550, size: 1.3}, {x:720, y:120, size: 0.9},
+            {x:80, y:450, size: 1}, {x:420, y:520, size: 0.85}
+        ];
         baseTrees.forEach(t => {
+            const treeSize = 28 * avgScale * t.size;
+            const tx = t.x * scale.x;
+            const ty = t.y * scale.y;
+
+            // Tree shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
             ctx.beginPath();
-            ctx.arc(t.x * scale.x, t.y * scale.y, 25 * avgScale, 0, Math.PI*2);
+            ctx.ellipse(tx + 5, ty + 8, treeSize * 0.8, treeSize * 0.4, 0, 0, Math.PI * 2);
             ctx.fill();
-            ctx.fillStyle = "#166534";
+
+            // Tree trunk
+            ctx.fillStyle = '#5c4033';
+            ctx.fillRect(tx - 4 * avgScale, ty - 5 * avgScale, 8 * avgScale, 15 * avgScale);
+
+            // Outer foliage (dark)
+            const treeGradient = ctx.createRadialGradient(tx, ty - 10, 0, tx, ty - 10, treeSize);
+            treeGradient.addColorStop(0, '#166534');
+            treeGradient.addColorStop(0.7, '#14532d');
+            treeGradient.addColorStop(1, '#0f3d1f');
+            ctx.fillStyle = treeGradient;
             ctx.beginPath();
-            ctx.arc(t.x * scale.x, t.y * scale.y, 15 * avgScale, 0, Math.PI*2);
+            ctx.arc(tx, ty - 10 * avgScale, treeSize, 0, Math.PI * 2);
             ctx.fill();
-            ctx.fillStyle = "#14532d"; // Reset
+
+            // Inner foliage highlight
+            ctx.fillStyle = '#22c55e';
+            ctx.beginPath();
+            ctx.arc(tx - 5 * avgScale, ty - 15 * avgScale, treeSize * 0.4, 0, Math.PI * 2);
+            ctx.fill();
         });
 
-        // Draw outer barrier (red/white stripes) - draw first so track goes on top
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
-        ctx.strokeStyle = "#dc2626"; // Red base
-        ctx.lineWidth = (100 + barrierWidth * 2) * avgScale;
+
+        // Track shadow (underneath)
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.lineWidth = 115 * avgScale;
         ctx.beginPath();
-        ctx.moveTo(TRACK_POINTS[0].x, TRACK_POINTS[0].y);
+        ctx.moveTo(TRACK_POINTS[0].x + 4, TRACK_POINTS[0].y + 4);
         for(let i=1; i<TRACK_POINTS.length; i++) {
-             ctx.lineTo(TRACK_POINTS[i].x, TRACK_POINTS[i].y);
+            ctx.lineTo(TRACK_POINTS[i].x + 4, TRACK_POINTS[i].y + 4);
         }
         ctx.closePath();
         ctx.stroke();
 
-        // Draw white stripes on outer barrier
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = (100 + barrierWidth * 2) * avgScale;
-        ctx.setLineDash([20 * avgScale, 20 * avgScale]);
+        // Outer curb - Red and white racing stripes
+        ctx.strokeStyle = "#dc2626";
+        ctx.lineWidth = (105 + barrierWidth) * avgScale;
         ctx.beginPath();
         ctx.moveTo(TRACK_POINTS[0].x, TRACK_POINTS[0].y);
         for(let i=1; i<TRACK_POINTS.length; i++) {
-             ctx.lineTo(TRACK_POINTS[i].x, TRACK_POINTS[i].y);
+            ctx.lineTo(TRACK_POINTS[i].x, TRACK_POINTS[i].y);
+        }
+        ctx.closePath();
+        ctx.stroke();
+
+        // White stripes on curb
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = (105 + barrierWidth) * avgScale;
+        ctx.setLineDash([18 * avgScale, 18 * avgScale]);
+        ctx.beginPath();
+        ctx.moveTo(TRACK_POINTS[0].x, TRACK_POINTS[0].y);
+        for(let i=1; i<TRACK_POINTS.length; i++) {
+            ctx.lineTo(TRACK_POINTS[i].x, TRACK_POINTS[i].y);
         }
         ctx.closePath();
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Draw Asphalt - scaled width
-        ctx.strokeStyle = "#555";
+        // Main asphalt track with gradient for premium look
+        const trackGradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        trackGradient.addColorStop(0, '#374151');
+        trackGradient.addColorStop(0.3, '#4b5563');
+        trackGradient.addColorStop(0.7, '#374151');
+        trackGradient.addColorStop(1, '#1f2937');
+        ctx.strokeStyle = trackGradient;
         ctx.lineWidth = 100 * avgScale;
         ctx.beginPath();
         ctx.moveTo(TRACK_POINTS[0].x, TRACK_POINTS[0].y);
         for(let i=1; i<TRACK_POINTS.length; i++) {
-             ctx.lineTo(TRACK_POINTS[i].x, TRACK_POINTS[i].y);
+            ctx.lineTo(TRACK_POINTS[i].x, TRACK_POINTS[i].y);
         }
         ctx.closePath();
         ctx.stroke();
 
-        // Draw inner barrier edge (darker line to show inner boundary)
-        ctx.strokeStyle = "#dc2626";
-        ctx.lineWidth = barrierWidth;
+        // Track edge lines (white racing lines)
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.lineWidth = 3 * avgScale;
+        // Outer edge
         ctx.beginPath();
-        // Calculate inner offset points
+        ctx.moveTo(TRACK_POINTS[0].x, TRACK_POINTS[0].y);
+        for(let i=1; i<TRACK_POINTS.length; i++) {
+            ctx.lineTo(TRACK_POINTS[i].x, TRACK_POINTS[i].y);
+        }
+        ctx.closePath();
+        ctx.stroke();
+
+        // Inner curb markings
+        ctx.strokeStyle = "#dc2626";
+        ctx.lineWidth = barrierWidth * 0.8;
+        ctx.beginPath();
         for(let i=0; i<TRACK_POINTS.length; i++) {
             let prev = TRACK_POINTS[(i - 1 + TRACK_POINTS.length) % TRACK_POINTS.length];
             let curr = TRACK_POINTS[i];
             let next = TRACK_POINTS[(i + 1) % TRACK_POINTS.length];
 
-            // Calculate perpendicular direction (inward)
             let dx1 = curr.x - prev.x;
             let dy1 = curr.y - prev.y;
             let dx2 = next.x - curr.x;
             let dy2 = next.y - curr.y;
 
-            // Average direction and get perpendicular
             let avgDx = (dx1 + dx2) / 2;
             let avgDy = (dy1 + dy2) / 2;
             let len = Math.sqrt(avgDx * avgDx + avgDy * avgDy);
             if (len > 0) {
-                // Perpendicular (rotate 90 degrees)
                 let perpX = -avgDy / len;
                 let perpY = avgDx / len;
+                let innerX = curr.x + perpX * (trackHalfWidth - barrierWidth * 0.5);
+                let innerY = curr.y + perpY * (trackHalfWidth - barrierWidth * 0.5);
 
-                // Offset inward by track half width minus a small margin
-                let innerX = curr.x + perpX * (trackHalfWidth - barrierWidth);
-                let innerY = curr.y + perpY * (trackHalfWidth - barrierWidth);
-
-                if (i === 0) {
-                    ctx.moveTo(innerX, innerY);
-                } else {
-                    ctx.lineTo(innerX, innerY);
-                }
+                if (i === 0) ctx.moveTo(innerX, innerY);
+                else ctx.lineTo(innerX, innerY);
             }
         }
         ctx.closePath();
         ctx.stroke();
 
-        // Add white dashes to inner barrier
+        // White dashes on inner curb
         ctx.strokeStyle = "#ffffff";
-        ctx.setLineDash([15 * avgScale, 15 * avgScale]);
+        ctx.setLineDash([12 * avgScale, 12 * avgScale]);
         ctx.stroke();
         ctx.setLineDash([]);
 
@@ -1511,43 +1583,116 @@
     }
 
     function drawItemBoxes() {
-        // Draw question boxes (yellow)
+        const scale = getScale();
+        const avgScale = (scale.x + scale.y) / 2;
+        const boxSize = 18 * avgScale;
+        const time = Date.now();
+
+        // Draw question boxes (premium gold with 3D effect)
         ITEM_BOXES.forEach(box => {
             if (!box.active) return;
 
-            ctx.fillStyle = "#eab308"; // Gold
-            ctx.fillRect(box.x - 15, box.y - 15, 30, 30);
+            // Floating animation
+            const floatY = Math.sin(time / 300 + box.x) * 3;
 
-            // Question Mark
+            // Shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.beginPath();
+            ctx.ellipse(box.x, box.y + boxSize + 5, boxSize * 0.7, boxSize * 0.3, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 3D box effect - sides
+            ctx.fillStyle = '#b8860b'; // Dark gold
+            ctx.fillRect(box.x - boxSize + 3, box.y - boxSize + floatY + 3, boxSize * 2, boxSize * 2);
+
+            // Main box face with gradient
+            const goldGradient = ctx.createLinearGradient(box.x - boxSize, box.y - boxSize, box.x + boxSize, box.y + boxSize);
+            goldGradient.addColorStop(0, '#ffd700');
+            goldGradient.addColorStop(0.3, '#ffec8b');
+            goldGradient.addColorStop(0.5, '#ffd700');
+            goldGradient.addColorStop(1, '#daa520');
+            ctx.fillStyle = goldGradient;
+            ctx.fillRect(box.x - boxSize, box.y - boxSize + floatY, boxSize * 2, boxSize * 2);
+
+            // Shine effect
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.beginPath();
+            ctx.moveTo(box.x - boxSize, box.y - boxSize + floatY);
+            ctx.lineTo(box.x + boxSize, box.y - boxSize + floatY);
+            ctx.lineTo(box.x - boxSize, box.y + floatY);
+            ctx.closePath();
+            ctx.fill();
+
+            // Question Mark with shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.font = `bold ${boxSize * 1.5}px Fredoka`;
+            ctx.textAlign = 'center';
+            ctx.fillText("?", box.x + 2, box.y + boxSize * 0.5 + floatY + 2);
+
             ctx.fillStyle = "#fff";
-            ctx.font = "bold 20px Fredoka";
-            ctx.fillText("?", box.x - 5, box.y + 7);
+            ctx.fillText("?", box.x, box.y + boxSize * 0.5 + floatY);
 
-            // Pulse effect
-            ctx.strokeStyle = `rgba(255,255,255,${(Math.sin(Date.now()/200)+1)/2})`;
+            // Glow effect
+            const glowIntensity = (Math.sin(time / 200) + 1) / 2;
+            ctx.shadowColor = '#ffd700';
+            ctx.shadowBlur = 15 * glowIntensity;
+            ctx.strokeStyle = `rgba(255, 215, 0, ${0.5 + glowIntensity * 0.5})`;
             ctx.lineWidth = 3;
-            ctx.strokeRect(box.x - 15, box.y - 15, 30, 30);
+            ctx.strokeRect(box.x - boxSize, box.y - boxSize + floatY, boxSize * 2, boxSize * 2);
+            ctx.shadowBlur = 0;
         });
 
-        // Draw power-up boxes (rainbow/multicolor)
+        // Draw power-up boxes (premium rainbow with 3D effect)
         POWERUP_BOXES.forEach(box => {
             if (!box.active) return;
 
-            // Rainbow gradient effect
-            const time = Date.now() / 1000;
-            const hue = (time * 50) % 360;
-            ctx.fillStyle = `hsl(${hue}, 80%, 50%)`;
-            ctx.fillRect(box.x - 15, box.y - 15, 30, 30);
+            const floatY = Math.sin(time / 250 + box.x) * 4;
+            const hue = (time / 10 + box.x) % 360;
 
-            // Star symbol
+            // Shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.beginPath();
+            ctx.ellipse(box.x, box.y + boxSize + 5, boxSize * 0.7, boxSize * 0.3, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 3D box sides
+            ctx.fillStyle = `hsl(${hue + 30}, 70%, 35%)`;
+            ctx.fillRect(box.x - boxSize + 3, box.y - boxSize + floatY + 3, boxSize * 2, boxSize * 2);
+
+            // Rainbow gradient box
+            const rainbowGradient = ctx.createLinearGradient(box.x - boxSize, box.y - boxSize, box.x + boxSize, box.y + boxSize);
+            rainbowGradient.addColorStop(0, `hsl(${hue}, 80%, 60%)`);
+            rainbowGradient.addColorStop(0.25, `hsl(${(hue + 60) % 360}, 80%, 60%)`);
+            rainbowGradient.addColorStop(0.5, `hsl(${(hue + 120) % 360}, 80%, 60%)`);
+            rainbowGradient.addColorStop(0.75, `hsl(${(hue + 180) % 360}, 80%, 60%)`);
+            rainbowGradient.addColorStop(1, `hsl(${(hue + 240) % 360}, 80%, 60%)`);
+            ctx.fillStyle = rainbowGradient;
+            ctx.fillRect(box.x - boxSize, box.y - boxSize + floatY, boxSize * 2, boxSize * 2);
+
+            // Shine
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.beginPath();
+            ctx.moveTo(box.x - boxSize, box.y - boxSize + floatY);
+            ctx.lineTo(box.x + boxSize, box.y - boxSize + floatY);
+            ctx.lineTo(box.x - boxSize, box.y + floatY);
+            ctx.closePath();
+            ctx.fill();
+
+            // Star with shadow
+            ctx.font = `bold ${boxSize * 1.6}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.fillText("★", box.x + 2, box.y + boxSize * 0.5 + floatY + 2);
             ctx.fillStyle = "#fff";
-            ctx.font = "bold 24px Arial";
-            ctx.fillText("★", box.x - 10, box.y + 8);
+            ctx.fillText("★", box.x, box.y + boxSize * 0.5 + floatY);
 
-            // Pulse effect
-            ctx.strokeStyle = `rgba(255,255,255,${(Math.sin(Date.now()/200)+1)/2})`;
-            ctx.lineWidth = 3;
-            ctx.strokeRect(box.x - 15, box.y - 15, 30, 30);
+            // Rainbow glow
+            ctx.shadowColor = `hsl(${hue}, 100%, 50%)`;
+            ctx.shadowBlur = 20;
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(box.x - boxSize, box.y - boxSize + floatY, boxSize * 2, boxSize * 2);
+            ctx.shadowBlur = 0;
         });
 
         // Draw bananas
