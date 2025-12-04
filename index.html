@@ -26,8 +26,9 @@
         }
 
         canvas {
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border-radius: 12px;
+            display: block;
+            width: 100vw;
+            height: 100vh;
             background: #4ade80; /* Bright grass */
         }
 
@@ -104,6 +105,54 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
+        /* Speed Toggle */
+        .speed-toggle {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10;
+            background: rgba(255,255,255,0.95);
+            padding: 12px 16px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            font-weight: bold;
+            color: #1a472a;
+        }
+
+        .speed-toggle-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 6px;
+        }
+
+        .speed-options {
+            display: flex;
+            gap: 8px;
+        }
+
+        .speed-btn {
+            padding: 6px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .speed-btn:hover {
+            border-color: #1a472a;
+            transform: translateY(-1px);
+        }
+
+        .speed-btn.active {
+            background: #1a472a;
+            color: white;
+            border-color: #1a472a;
+        }
+
         /* Mobile Controls */
         .controls {
             position: absolute;
@@ -153,19 +202,49 @@
         <div id="hud-pos" class="hud hidden">Position: 1/4</div>
         <div id="hud-lap" class="hud-lap hidden">Lap: 1/3</div>
 
+        <!-- Speed Toggle -->
+        <div id="speed-toggle" class="speed-toggle hidden">
+            <div class="speed-toggle-label">Race Speed</div>
+            <div class="speed-options">
+                <button class="speed-btn" onclick="setRaceSpeed('slow')">Slow</button>
+                <button class="speed-btn active" onclick="setRaceSpeed('medium')">Medium</button>
+                <button class="speed-btn" onclick="setRaceSpeed('fast')">Fast</button>
+            </div>
+        </div>
+
         <!-- Start Screen -->
         <div id="start-screen" class="overlay">
             <div class="modal-card">
                 <h1 class="text-3xl font-bold mb-2 text-center text-green-900">Phonics Grand Prix</h1>
                 <p class="text-gray-600 mb-6 text-center">Year 2 Edition</p>
-                <div class="space-y-4">
+                <div class="space-y-3">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 bg-yellow-400 rounded flex items-center justify-center font-bold text-white shadow">?</div>
-                        <p class="text-sm">Hit boxes to answer phonics questions!</p>
+                        <p class="text-sm">Yellow boxes = Answer questions!</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-gradient-to-r from-red-500 via-yellow-500 to-purple-500 rounded flex items-center justify-center font-bold text-white shadow">★</div>
+                        <p class="text-sm">Rainbow boxes (Lap 2+) = Slot Machine!</p>
                     </div>
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 bg-green-600 rounded flex items-center justify-center font-bold text-white shadow">✓</div>
-                        <p class="text-sm">Correct answers give a <span class="font-bold text-green-600">TURBO BOOST</span>.</p>
+                        <p class="text-sm">Correct = Slow/Freeze opponents!</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-red-600 rounded flex items-center justify-center font-bold text-white shadow">✗</div>
+                        <p class="text-sm">Wrong = <span class="font-bold text-red-600">SPIN OUT</span>!</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-purple-600 rounded flex items-center justify-center font-bold text-white shadow">📈</div>
+                        <p class="text-sm">Questions get <span class="font-bold text-purple-600">HARDER</span> each lap!</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">⚡🐢🍌</span>
+                        <p class="text-sm"><span class="font-bold">Power-ups:</span> Lightning, Shells, Bananas</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">👻</span>
+                        <p class="text-sm text-purple-600"><span class="font-bold">Watch out:</span> Ghost curse stops YOU!</p>
                     </div>
                 </div>
                 <button onclick="startGame()" class="w-full mt-8 bg-green-800 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition shadow-lg">Start Engines!</button>
@@ -174,11 +253,33 @@
 
         <!-- Quiz Modal -->
         <div id="quiz-modal" class="overlay hidden">
-            <div class="modal-card">
+            <div class="modal-card" style="max-width: 600px;">
+                <div id="difficulty-badge" class="inline-block px-3 py-1 rounded-full text-xs font-bold mb-3 bg-green-200 text-green-800">Easy</div>
+                <div id="passage-container" class="hidden mb-4 p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
+                    <div class="flex items-start gap-2 mb-2">
+                        <span class="text-2xl">📖</span>
+                        <h3 class="font-bold text-blue-900">Read this story:</h3>
+                    </div>
+                    <p id="passage-text" class="text-base leading-relaxed text-gray-800"></p>
+                </div>
                 <h2 id="question-text" class="text-xl font-bold mb-4 text-center">Question goes here</h2>
                 <div id="options-container">
                     <!-- Buttons injected via JS -->
                 </div>
+            </div>
+        </div>
+
+        <!-- Slot Machine -->
+        <div id="slot-machine" class="overlay hidden">
+            <div class="modal-card text-center">
+                <h1 class="text-3xl font-bold mb-4 text-yellow-600">POWER-UP!</h1>
+                <div class="bg-gradient-to-b from-yellow-400 to-yellow-600 p-8 rounded-xl shadow-2xl mb-4">
+                    <div id="slot-display" class="text-8xl mb-4 h-32 flex items-center justify-center">
+                        ⚡
+                    </div>
+                    <p class="text-xl font-bold text-white" id="slot-name">Lightning Strike</p>
+                </div>
+                <p class="text-sm text-gray-600">Get ready...</p>
             </div>
         </div>
 
@@ -199,21 +300,138 @@
     </div>
 
 <script>
-    /** * Year 2 Phonics Data
-     * Includes: Split digraphs, homophones, suffixes, alternative spellings.
+    /**
+     * Year 2 Educational Content
+     * Includes: Phonics, spelling, comprehension with difficulty progression
      */
-    const PHONICS_DATA = [
-        { q: "Which word has a split digraph?", options: ["Rain", "Time", "Boat"], a: 1 },
+
+    // EASY QUESTIONS (Lap 1)
+    const EASY_QUESTIONS = [
+        { q: "Which word has the /ai/ sound?", options: ["Rain", "Time", "Boat"], a: 0 },
         { q: "Choose the correct spelling:", options: ["Nite", "Night", "Nighght"], a: 1 },
+        { q: "Which word rhymes with 'cat'?", options: ["Bat", "Car", "Cup"], a: 0 },
+        { q: "Pick the word with 'oo':", options: ["Book", "Cake", "Tree"], a: 0 },
+        { q: "Which is spelled correctly?", options: ["Sed", "Said", "Sayd"], a: 1 },
+        { q: "What letter makes the /sh/ sound in 'ship'?", options: ["s", "sh", "ch"], a: 1 },
+        { q: "Which word has the /ee/ sound?", options: ["Tree", "Train", "Truck"], a: 0 },
+        { q: "Choose the real word:", options: ["Frog", "Frug", "Frag"], a: 0 },
+        { q: "Which word starts with 'ch'?", options: ["Shop", "Chip", "Fish"], a: 1 },
+        { q: "Pick the correct spelling:", options: ["Wen", "When", "Whn"], a: 1 },
+        { q: "Which word ends with 'ck'?", options: ["Duck", "Cake", "Dog"], a: 0 },
+        { q: "What sound does 'oa' make?", options: ["Oat", "Cat", "Dot"], a: 0 },
+        { q: "Which is a real word?", options: ["Splam", "Star", "Trup"], a: 1 },
+        { q: "Pick the word with 'ar':", options: ["Car", "Cup", "Cat"], a: 0 },
+        { q: "Which word has 'ing'?", options: ["Running", "Run", "Ran"], a: 0 }
+    ];
+
+    // MEDIUM QUESTIONS (Lap 2)
+    const MEDIUM_QUESTIONS = [
+        { q: "Which word has a split digraph?", options: ["Rain", "Time", "Boat"], a: 1 },
         { q: "Finish the word: Hap__", options: ["py", "pie", "pee"], a: 0 },
         { q: "Which word uses 'a-e'?", options: ["Wait", "Day", "Cake"], a: 2 },
         { q: "Find the homophone for 'Sea'", options: ["See", "Cee", "Say"], a: 0 },
-        { q: "Which is a real word?", options: ["Thramp", "Cloud", "Sploy"], a: 1 },
         { q: "Past tense of 'jump':", options: ["Jumped", "Jumpt", "Jumping"], a: 0 },
         { q: "Which word has the /igh/ sound?", options: ["Bright", "Plate", "Tree"], a: 0 },
         { q: "Plural of 'baby':", options: ["Babys", "Babies", "Baby's"], a: 1 },
-        { q: "Which word rhymes with 'Blue'?", options: ["Grew", "Go", "Bow"], a: 0 }
+        { q: "Which word rhymes with 'Blue'?", options: ["Grew", "Go", "Bow"], a: 0 },
+        { q: "Pick the homophone for 'Two':", options: ["To", "Too", "Both"], a: 2 },
+        { q: "Which suffix means 'more'?", options: ["-ed", "-er", "-est"], a: 1 },
+        { q: "Add suffix to 'play': play__", options: ["ing", "ed", "s"], a: 0 },
+        { q: "Which has the 'ow' sound in 'cow'?", options: ["Snow", "Now", "Know"], a: 1 },
+        { q: "Correct spelling of the number:", options: ["Ate", "Eight", "Eigh"], a: 1 },
+        { q: "Which word has 'tion'?", options: ["Station", "Stone", "String"], a: 0 },
+        { q: "Pick the contraction:", options: ["Cannot", "Can't", "Will not"], a: 1 },
+        { q: "Homophone for 'Flower':", options: ["Floor", "Flour", "Flow"], a: 1 },
+        { q: "Which uses 'ie' for /ee/?", options: ["Field", "Friend", "Find"], a: 0 },
+        { q: "Past tense of 'stop':", options: ["Stoped", "Stopped", "Stopping"], a: 1 },
+        { q: "Which word has 'kn' making /n/?", options: ["King", "Knee", "Keep"], a: 1 },
+        { q: "Plural of 'fox':", options: ["Foxs", "Foxes", "Fox's"], a: 1 }
     ];
+
+    // HARD QUESTIONS (Lap 3)
+    const HARD_QUESTIONS = [
+        { q: "Which has the silent 'b'?", options: ["Crab", "Lamb", "Cab"], a: 1 },
+        { q: "Choose the tricky word:", options: ["Should", "Shoud", "Shood"], a: 0 },
+        { q: "Which is the homophone for 'There'?", options: ["Their", "They're", "Both"], a: 2 },
+        { q: "Add suffix: happy + est =", options: ["Happyest", "Happiest", "Hapiest"], a: 1 },
+        { q: "Which word has 'ph' for /f/?", options: ["Photo", "Fish", "Phrase"], a: 0 },
+        { q: "Correct spelling:", options: ["Beutiful", "Beautiful", "Beatiful"], a: 1 },
+        { q: "Homophone for 'Piece':", options: ["Peace", "Peas", "Please"], a: 0 },
+        { q: "Which has suffix '-ful'?", options: ["Careful", "Careless", "Caring"], a: 0 },
+        { q: "Past tense of 'try':", options: ["Tryed", "Tried", "Tryd"], a: 1 },
+        { q: "Which word has 'ough'?", options: ["Tough", "Touch", "Teach"], a: 0 },
+        { q: "Add prefix: un + happy =", options: ["Unhappy", "Dishappy", "Nonhappy"], a: 0 },
+        { q: "Correct spelling:", options: ["Wich", "Which", "Witch"], a: 1 },
+        { q: "Homophone: 'I ____ a bike'", options: ["Road", "Rode", "Rowed"], a: 1 },
+        { q: "Which is an adjective?", options: ["Quickly", "Quick", "Quickness"], a: 1 },
+        { q: "Opposite with prefix: re + do =", options: ["Redo", "Undo", "Dodo"], a: 0 }
+    ];
+
+    // COMPREHENSION PASSAGES
+    const COMPREHENSION_DATA = [
+        {
+            passage: "Lily found a tiny kitten in the garden. It was wet and cold. She wrapped it in a warm towel and gave it some milk. The kitten purred happily.",
+            questions: [
+                { q: "Where did Lily find the kitten?", options: ["In the house", "In the garden", "At school"], a: 1 },
+                { q: "How did the kitten feel at first?", options: ["Happy", "Wet and cold", "Hungry"], a: 1 },
+                { q: "What did Lily give the kitten?", options: ["Food", "Milk", "Water"], a: 1 },
+                { q: "How did the kitten feel at the end?", options: ["Scared", "Happy", "Tired"], a: 1 }
+            ]
+        },
+        {
+            passage: "Tom loved racing his toy cars. His favourite was the red one with yellow stripes. One day, he lost it in the park. He searched everywhere but couldn't find it.",
+            questions: [
+                { q: "What did Tom love doing?", options: ["Racing toy cars", "Playing football", "Reading"], a: 0 },
+                { q: "What colour was his favourite car?", options: ["Blue", "Red with yellow stripes", "Green"], a: 1 },
+                { q: "Where did he lose it?", options: ["At home", "At school", "In the park"], a: 2 },
+                { q: "Did Tom find his car?", options: ["Yes", "No", "Maybe"], a: 1 }
+            ]
+        },
+        {
+            passage: "The sun was shining brightly. Sam and Maya decided to go to the beach. They built a giant sandcastle with towers and a moat. They were very proud of it!",
+            questions: [
+                { q: "What was the weather like?", options: ["Rainy", "Sunny", "Cloudy"], a: 1 },
+                { q: "Who went to the beach?", options: ["Sam", "Maya", "Both"], a: 2 },
+                { q: "What did they build?", options: ["A sandcastle", "A boat", "A house"], a: 0 },
+                { q: "How did they feel about their sandcastle?", options: ["Sad", "Proud", "Bored"], a: 1 }
+            ]
+        },
+        {
+            passage: "The little bird couldn't fly yet. Every day, its mother brought worms to the nest. One morning, the little bird hopped to the edge and flapped its wings. Whoosh! It was flying!",
+            questions: [
+                { q: "What couldn't the bird do at first?", options: ["Sing", "Fly", "Eat"], a: 1 },
+                { q: "What did the mother bring?", options: ["Worms", "Seeds", "Water"], a: 0 },
+                { q: "What did the little bird do one morning?", options: ["Slept", "Flew", "Sang"], a: 1 },
+                { q: "How does the bird probably feel at the end?", options: ["Scared", "Excited", "Hungry"], a: 1 }
+            ]
+        },
+        {
+            passage: "Max had a loose tooth. It wobbled when he ate. At breakfast, he bit into an apple. Crunch! His tooth came out. He put it under his pillow for the tooth fairy.",
+            questions: [
+                { q: "What was wrong with Max's tooth?", options: ["It hurt", "It was loose", "It was dirty"], a: 1 },
+                { q: "When did his tooth come out?", options: ["At night", "At breakfast", "At lunch"], a: 1 },
+                { q: "What was he eating?", options: ["A banana", "An apple", "Bread"], a: 1 },
+                { q: "Where did Max put his tooth?", options: ["In a box", "Under his pillow", "In the bin"], a: 1 }
+            ]
+        },
+        {
+            passage: "Ruby loved painting. She painted flowers, trees, and animals. Her teacher said her pictures were wonderful. Ruby decided she wanted to be an artist when she grew up.",
+            questions: [
+                { q: "What did Ruby love?", options: ["Painting", "Dancing", "Singing"], a: 0 },
+                { q: "What did she paint?", options: ["Only flowers", "Flowers, trees and animals", "Houses"], a: 1 },
+                { q: "What did her teacher think?", options: ["They were wonderful", "They were bad", "They were okay"], a: 0 },
+                { q: "What does Ruby want to be?", options: ["A teacher", "An artist", "A doctor"], a: 1 }
+            ]
+        }
+    ];
+
+    // Combine all questions with metadata
+    const ALL_QUESTIONS = {
+        easy: EASY_QUESTIONS,
+        medium: MEDIUM_QUESTIONS,
+        hard: HARD_QUESTIONS,
+        comprehension: COMPREHENSION_DATA
+    };
 
     // --- Engine Configuration ---
     const canvas = document.getElementById('gameCanvas');
@@ -222,47 +440,156 @@
     // Game State
     let gameState = 'start'; // start, racing, quiz, finished
     let frameId;
-    let questionsPool = [...PHONICS_DATA];
-    
-    // Physics Constants
-    const MAX_SPEED = 6;
-    const BOOST_SPEED = 12;
-    const OFFROAD_SPEED = 2;
-    const ACCELERATION = 0.1;
-    const TURN_SPEED = 0.06;
+    let currentDifficulty = 'easy'; // easy, medium, hard
+    let questionsAsked = []; // Track asked questions to avoid repeats
+    let comprehensionPassageUsed = []; // Track used passages
+    let opponentsFrozen = false; // Track if opponents are frozen
+    let freezeEndTime = 0; // Timestamp when freeze ends
+    let opponentsSlowed = false; // Track if opponents are slowed (lightning)
+    let slowEndTime = 0; // Timestamp when slow effect ends
+    let redShells = []; // Active red shells in the game
+    let bananas = []; // Banana peels on track
+    let slotMachineActive = false; // Is slot machine spinning?
+    let slotMachineResult = null; // Result of slot machine
+    let currentRaceSpeed = 'medium'; // slow, medium, fast
+
+    // Speed Presets
+    const SPEED_PRESETS = {
+        slow: {
+            MAX_SPEED: 4,
+            BOOST_SPEED: 8,
+            OFFROAD_SPEED: 1.5,
+            ACCELERATION: 0.08,
+            TURN_SPEED: 0.05,
+            RED_SHELL_SPEED: 6
+        },
+        medium: {
+            MAX_SPEED: 6,
+            BOOST_SPEED: 12,
+            OFFROAD_SPEED: 2,
+            ACCELERATION: 0.1,
+            TURN_SPEED: 0.06,
+            RED_SHELL_SPEED: 8
+        },
+        fast: {
+            MAX_SPEED: 8.5,
+            BOOST_SPEED: 15,
+            OFFROAD_SPEED: 3,
+            ACCELERATION: 0.15,
+            TURN_SPEED: 0.08,
+            RED_SHELL_SPEED: 11
+        }
+    };
+
+    // Physics Constants (mutable based on speed setting)
+    let MAX_SPEED = SPEED_PRESETS.medium.MAX_SPEED;
+    let BOOST_SPEED = SPEED_PRESETS.medium.BOOST_SPEED;
+    let OFFROAD_SPEED = SPEED_PRESETS.medium.OFFROAD_SPEED;
+    let ACCELERATION = SPEED_PRESETS.medium.ACCELERATION;
+    let TURN_SPEED = SPEED_PRESETS.medium.TURN_SPEED;
+    let RED_SHELL_SPEED = SPEED_PRESETS.medium.RED_SHELL_SPEED;
     const FRICTION = 0.96;
     
-    // Track Logic (Waypoints for AI and Drawing)
-    // A squiggly loop
-    const TRACK_POINTS = [
-        {x: 100, y: 300}, {x: 200, y: 100}, {x: 500, y: 100}, 
-        {x: 700, y: 300}, {x: 600, y: 500}, {x: 400, y: 400}, 
+    // Base track design (at 800x600 reference)
+    const BASE_WIDTH = 800;
+    const BASE_HEIGHT = 600;
+
+    // Track Logic (Waypoints for AI and Drawing) - Base coordinates
+    const BASE_TRACK_POINTS = [
+        {x: 100, y: 300}, {x: 200, y: 100}, {x: 500, y: 100},
+        {x: 700, y: 300}, {x: 600, y: 500}, {x: 400, y: 400},
         {x: 200, y: 500}, {x: 100, y: 300}
     ];
 
-    // Item Boxes
-    const ITEM_BOXES = [
-        {x: 350, y: 100, active: true},
-        {x: 650, y: 300, active: true},
-        {x: 300, y: 450, active: true}
+    // Item Boxes (Question boxes) - Base coordinates
+    const BASE_ITEM_BOXES = [
+        {x: 350, y: 100, active: true, type: 'question'},
+        {x: 650, y: 300, active: true, type: 'question'},
+        {x: 300, y: 450, active: true, type: 'question'}
     ];
+
+    // Power-up Boxes (appear from lap 2+) - Base coordinates
+    const BASE_POWERUP_BOXES = [
+        {x: 200, y: 200, active: false, type: 'powerup'},
+        {x: 550, y: 200, active: false, type: 'powerup'},
+        {x: 450, y: 350, active: false, type: 'powerup'}
+    ];
+
+    // Get scale factors based on current canvas size
+    function getScale() {
+        return {
+            x: canvas.width / BASE_WIDTH,
+            y: canvas.height / BASE_HEIGHT
+        };
+    }
+
+    // Scaled track points (updated on resize)
+    let TRACK_POINTS = [];
+    let ITEM_BOXES = [];
+    let POWERUP_BOXES = [];
+
+    function updateScaledPositions() {
+        const scale = getScale();
+
+        TRACK_POINTS = BASE_TRACK_POINTS.map(p => ({
+            x: p.x * scale.x,
+            y: p.y * scale.y
+        }));
+
+        ITEM_BOXES = BASE_ITEM_BOXES.map(b => ({
+            x: b.x * scale.x,
+            y: b.y * scale.y,
+            active: b.active,
+            type: b.type
+        }));
+
+        POWERUP_BOXES = BASE_POWERUP_BOXES.map(b => ({
+            x: b.x * scale.x,
+            y: b.y * scale.y,
+            active: b.active,
+            type: b.type
+        }));
+    }
 
     let lapsTotal = 3;
 
-    // Load Player Image
+    // Load Player and AI Kart Images
     const playerKartImg = new Image();
-    // Using the filename detected from your upload
-    playerKartImg.src = 'player-kart.png.jpg'; 
+    playerKartImg.src = 'mario.png';
     let playerKartImgLoaded = false;
     playerKartImg.onload = () => {
         playerKartImgLoaded = true;
+        console.log('Player kart image loaded successfully!', playerKartImg.width, 'x', playerKartImg.height);
     };
+    playerKartImg.onerror = () => {
+        console.error('Failed to load player kart image:', playerKartImg.src);
+        playerKartImgLoaded = false;
+    };
+
+    // Load AI Kart Images
+    const warioImg = new Image();
+    warioImg.src = 'wario.png';
+    let warioImgLoaded = false;
+    warioImg.onload = () => { warioImgLoaded = true; console.log('Wario image loaded'); };
+    warioImg.onerror = () => { console.error('Failed to load wario.png'); warioImgLoaded = false; };
+
+    const kongImg = new Image();
+    kongImg.src = 'kong.png';
+    let kongImgLoaded = false;
+    kongImg.onload = () => { kongImgLoaded = true; console.log('Kong image loaded'); };
+    kongImg.onerror = () => { console.error('Failed to load kong.png'); kongImgLoaded = false; };
+
+    const bowserImg = new Image();
+    bowserImg.src = 'bowser.png';
+    let bowserImgLoaded = false;
+    bowserImg.onload = () => { bowserImgLoaded = true; console.log('Bowser image loaded'); };
+    bowserImg.onerror = () => { console.error('Failed to load bowser.png'); bowserImgLoaded = false; };
 
 
     // --- Classes ---
 
     class Kart {
-        constructor(x, y, color, isPlayer = false, startOffset = 0) {
+        constructor(x, y, color, isPlayer = false, startOffset = 0, characterImg = null, imgLoaded = false) {
             this.x = x;
             this.y = y;
             this.color = color;
@@ -272,7 +599,10 @@
             this.lap = 1;
             this.checkpointIndex = 0; // To track progress
             this.finished = false;
-            
+            this.spinUntil = 0; // Timestamp for spin effect
+            this.characterImg = characterImg; // Character image
+            this.imgLoaded = imgLoaded; // Function to check if image is loaded
+
             // AI specific
             this.waypointIndex = 1;
             this.startOffset = startOffset; // Stagger AI start
@@ -282,18 +612,31 @@
         update() {
             if (this.finished) return;
 
+            // Check if spinning from red shell
+            if (!this.isPlayer && this.spinUntil > Date.now()) {
+                // Spin in place
+                this.angle += 0.3;
+                this.speed = 0;
+                return;
+            }
+
             if (this.isPlayer) {
                 // Player Physics handled in Game Loop based on Input
             } else {
-                this.updateAI();
+                // Skip AI updates if opponents are frozen
+                if (!opponentsFrozen) {
+                    this.updateAI();
+                }
             }
 
-            // Move
-            this.x += Math.cos(this.angle) * this.speed;
-            this.y += Math.sin(this.angle) * this.speed;
+            // Move (AI karts don't move when frozen)
+            if (this.isPlayer || !opponentsFrozen) {
+                this.x += Math.cos(this.angle) * this.speed;
+                this.y += Math.sin(this.angle) * this.speed;
 
-            // Simple friction
-            this.speed *= FRICTION;
+                // Simple friction
+                this.speed *= FRICTION;
+            }
         }
 
         updateAI() {
@@ -318,8 +661,13 @@
 
             this.angle += angleDiff * 0.1; // Turn smoothing
 
-            // Accelerate
-            if (this.speed < MAX_SPEED * this.aiSpeedMod) {
+            // Accelerate (slower if lightning effect is active)
+            let targetSpeed = MAX_SPEED * this.aiSpeedMod;
+            if (opponentsSlowed) {
+                targetSpeed *= 0.3; // 30% speed during lightning
+            }
+
+            if (this.speed < targetSpeed) {
                 this.speed += ACCELERATION;
             }
 
@@ -343,17 +691,28 @@
             // Scale up slightly for better visibility
             ctx.scale(1.2, 1.2);
 
-            // Draw Player Image if loaded, otherwise fallback to procedural drawing
-            if (this.isPlayer && playerKartImgLoaded) {
-                // Calculate aspect ratio to prevent squashing
-                // Target width is 40px
-                const targetWidth = 45;
-                const scaleFactor = targetWidth / playerKartImg.width;
-                const targetHeight = playerKartImg.height * scaleFactor;
+            // Draw Character Image if loaded, otherwise fallback to procedural drawing
+            const hasImage = this.characterImg && this.imgLoaded();
 
-                // Draw centered
-                ctx.drawImage(playerKartImg, -targetWidth / 2, -targetHeight / 2, targetWidth, targetHeight);
-            } else {
+            if (hasImage) {
+                // Rotate image 90 degrees to face forward
+                ctx.rotate(Math.PI / 2);
+
+                // Calculate aspect ratio to prevent squashing
+                // Target width reduced by additional 30% (49 * 0.7 = 34px)
+                const targetWidth = 34;
+                const scaleFactor = targetWidth / this.characterImg.width;
+                const targetHeight = this.characterImg.height * scaleFactor;
+
+                // Draw centered (note: coordinates are rotated)
+                ctx.drawImage(this.characterImg, -targetWidth / 2, -targetHeight / 2, targetWidth, targetHeight);
+
+                // Rotate back for any effects drawn after
+                ctx.rotate(-Math.PI / 2);
+            }
+
+            // Draw procedural kart if image not loaded
+            if (!hasImage) {
                 // Draw AI Karts (Procedural) OR Player Fallback
 
                 // Shadow
@@ -427,7 +786,182 @@
                 ctx.stroke();
             }
 
+            // Draw freeze effect if opponents are frozen and this is not the player
+            if (!this.isPlayer && opponentsFrozen) {
+                // Blue tint overlay
+                ctx.fillStyle = "rgba(59, 130, 246, 0.4)";
+                ctx.beginPath();
+                ctx.arc(0, 0, 25, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Snowflake/freeze icon
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 20px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText("❄", 0, -20);
+            }
+
+            // Draw lightning effect if opponents are slowed
+            if (!this.isPlayer && opponentsSlowed) {
+                // Yellow tint overlay
+                ctx.fillStyle = "rgba(234, 179, 8, 0.3)";
+                ctx.beginPath();
+                ctx.arc(0, 0, 25, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Lightning bolt icon
+                ctx.fillStyle = "#fbbf24";
+                ctx.font = "bold 20px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText("⚡", 0, -20);
+            }
+
+            // Draw ghost curse effect if player is cursed
+            if (this.isPlayer && this.ghostCurse && Date.now() < this.ghostCurse) {
+                // Purple tint overlay
+                ctx.fillStyle = "rgba(167, 139, 250, 0.5)";
+                ctx.beginPath();
+                ctx.arc(0, 0, 25, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Ghost icon
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 20px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText("👻", 0, -20);
+            }
+
             ctx.restore();
+        }
+    }
+
+    class RedShell {
+        constructor(startX, startY, targetKart) {
+            this.x = startX;
+            this.y = startY;
+            this.target = targetKart;
+            this.speed = RED_SHELL_SPEED; // Uses current race speed setting
+            this.active = true;
+        }
+
+        update() {
+            if (!this.active || !this.target) return;
+
+            // Calculate direction to target
+            let dx = this.target.x - this.x;
+            let dy = this.target.y - this.y;
+            let dist = Math.sqrt(dx * dx + dy * dy);
+
+            // If close to target, hit it
+            if (dist < 20) {
+                this.hitTarget();
+                return;
+            }
+
+            // Move towards target
+            this.x += (dx / dist) * this.speed;
+            this.y += (dy / dist) * this.speed;
+        }
+
+        hitTarget() {
+            // Spin out the target
+            this.target.speed = 0;
+            this.target.spinUntil = Date.now() + 1000; // Spin for 1 second
+            this.active = false;
+        }
+
+        draw() {
+            if (!this.active) return;
+
+            ctx.save();
+            ctx.translate(this.x, this.y);
+
+            // Red shell body
+            ctx.fillStyle = "#ef4444";
+            ctx.beginPath();
+            ctx.arc(0, 0, 8, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Shell pattern (white stripes)
+            ctx.strokeStyle = "#ffffff";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(0, 0, 5, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Wing-like shapes
+            ctx.fillStyle = "#dc2626";
+            ctx.beginPath();
+            ctx.moveTo(-10, 0);
+            ctx.lineTo(-6, -4);
+            ctx.lineTo(-6, 4);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(10, 0);
+            ctx.lineTo(6, -4);
+            ctx.lineTo(6, 4);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.restore();
+        }
+    }
+
+    class Banana {
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+            this.active = true;
+        }
+
+        draw() {
+            if (!this.active) return;
+
+            ctx.save();
+            ctx.translate(this.x, this.y);
+
+            // Banana peel
+            ctx.fillStyle = "#fde047";
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 12, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Brown spots
+            ctx.fillStyle = "#92400e";
+            ctx.beginPath();
+            ctx.arc(-4, -2, 2, 0, Math.PI * 2);
+            ctx.arc(4, 2, 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // White highlight
+            ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+            ctx.beginPath();
+            ctx.arc(-2, -1, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        checkCollision(kart) {
+            if (!this.active || kart.isPlayer) return false;
+
+            let dx = kart.x - this.x;
+            let dy = kart.y - this.y;
+            let dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < 20) {
+                // Hit banana - spin out
+                kart.speed = 0;
+                kart.spinUntil = Date.now() + 1500; // Spin for 1.5 seconds
+                this.active = false;
+                return true;
+            }
+            return false;
         }
     }
 
@@ -436,15 +970,11 @@
     let playerKart;
     let keys = { ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false };
 
-    // Resize handling
+    // Resize handling - full screen
     function resize() {
-        // Maintain 4:3 aspect ratio roughly, or fill screen
-        canvas.width = 800;
-        canvas.height = 600;
-        
-        // Scale for responsive view if needed in CSS, handled by max-width usually
-        let scale = Math.min(window.innerWidth / 800, window.innerHeight / 600);
-        // canvas.style.transform = `scale(${scale})`; // Optional: CSS scaling is often smoother
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        updateScaledPositions();
     }
     window.addEventListener('resize', resize);
     resize();
@@ -477,22 +1007,24 @@
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('hud-pos').classList.remove('hidden');
         document.getElementById('hud-lap').classList.remove('hidden');
-        
+        document.getElementById('speed-toggle').classList.remove('hidden');
+
         // Show mobile controls if on mobile
         if(window.innerWidth < 768) {
             document.getElementById('mobile-controls').classList.remove('hidden');
         }
 
-        // Initialize Karts
+        // Initialize Karts with character images - scale positions to current canvas size
+        const scale = getScale();
         karts = [
-            new Kart(100, 280, '#ef4444', true), // Player Red
-            new Kart(100, 320, '#3b82f6', false, 100), // Blue
-            new Kart(80, 290, '#22c55e', false, 200), // Green
-            new Kart(80, 330, '#eab308', false, 300)  // Yellow
+            new Kart(100 * scale.x, 280 * scale.y, '#ef4444', true, 0, playerKartImg, () => playerKartImgLoaded), // Player - Mario
+            new Kart(100 * scale.x, 320 * scale.y, '#3b82f6', false, 100, warioImg, () => warioImgLoaded), // AI 1 - Wario
+            new Kart(80 * scale.x, 290 * scale.y, '#22c55e', false, 200, kongImg, () => kongImgLoaded), // AI 2 - Donkey Kong
+            new Kart(80 * scale.x, 330 * scale.y, '#eab308', false, 300, bowserImg, () => bowserImgLoaded)  // AI 3 - Bowser
         ];
         playerKart = karts[0];
         playerKart.angle = -Math.PI / 4; // Face start direction
-        
+
         // Set AI angles
         karts.slice(1).forEach(k => k.angle = -Math.PI/4);
 
@@ -500,63 +1032,83 @@
         gameLoop();
     }
 
+    function setRaceSpeed(speed) {
+        if (!SPEED_PRESETS[speed]) return;
+
+        currentRaceSpeed = speed;
+        const preset = SPEED_PRESETS[speed];
+
+        // Update physics constants
+        MAX_SPEED = preset.MAX_SPEED;
+        BOOST_SPEED = preset.BOOST_SPEED;
+        OFFROAD_SPEED = preset.OFFROAD_SPEED;
+        ACCELERATION = preset.ACCELERATION;
+        TURN_SPEED = preset.TURN_SPEED;
+        RED_SHELL_SPEED = preset.RED_SHELL_SPEED;
+
+        // Update active button state
+        document.querySelectorAll('.speed-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+
+        console.log(`Race speed set to: ${speed}`);
+    }
+
     function drawTrack() {
+        const scale = getScale();
+        const avgScale = (scale.x + scale.y) / 2; // Average scale for circular elements
+
         // Draw Grass
         ctx.fillStyle = "#4ade80";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Decor: Trees (Simple circles)
+        // Decor: Trees (Simple circles) - scaled positions and sizes
         ctx.fillStyle = "#14532d"; // Dark green trees
-        const trees = [{x:400, y:300}, {x:150, y:150}, {x:650, y:450}, {x:50, y:50}, {x:750, y:550}];
-        trees.forEach(t => {
+        const baseTrees = [{x:400, y:300}, {x:150, y:150}, {x:650, y:450}, {x:50, y:50}, {x:750, y:550}];
+        baseTrees.forEach(t => {
             ctx.beginPath();
-            ctx.arc(t.x, t.y, 25, 0, Math.PI*2);
+            ctx.arc(t.x * scale.x, t.y * scale.y, 25 * avgScale, 0, Math.PI*2);
             ctx.fill();
             ctx.fillStyle = "#166534";
             ctx.beginPath();
-            ctx.arc(t.x, t.y, 15, 0, Math.PI*2);
+            ctx.arc(t.x * scale.x, t.y * scale.y, 15 * avgScale, 0, Math.PI*2);
             ctx.fill();
             ctx.fillStyle = "#14532d"; // Reset
         });
 
-
-        // Draw Asphalt
+        // Draw Asphalt - scaled width
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         ctx.strokeStyle = "#555";
-        ctx.lineWidth = 100;
+        ctx.lineWidth = 100 * avgScale;
 
         ctx.beginPath();
         ctx.moveTo(TRACK_POINTS[0].x, TRACK_POINTS[0].y);
         for(let i=1; i<TRACK_POINTS.length; i++) {
-            // Use quadratic curves for smoothness?
-            // Simple lines for now to ensure collision logic matches visual easily
-            // Actually, let's use curveto for visuals
-             // To make it look like a track, we use the points as control points roughly
-             // For this simple demo, connecting lines is safer for "isPointInPath" check logic if we implemented that.
-             // But let's just draw lines with round join.
              ctx.lineTo(TRACK_POINTS[i].x, TRACK_POINTS[i].y);
         }
         ctx.closePath();
         ctx.stroke();
 
-        // Start Line
+        // Start Line - scaled position and size
         ctx.save();
-        ctx.translate(100, 300);
+        ctx.translate(100 * scale.x, 300 * scale.y);
         ctx.rotate(-Math.PI/4);
         ctx.fillStyle = "#fff";
+        const checkSize = 10 * avgScale;
         for(let i=0; i<4; i++) {
             for(let j=0; j<10; j++) {
                 ctx.fillStyle = (i+j)%2===0 ? "white" : "black";
-                ctx.fillRect(i*10 - 20, j*10 - 50, 10, 10);
+                ctx.fillRect(i*checkSize - 20*avgScale, j*checkSize - 50*avgScale, checkSize, checkSize);
             }
         }
         ctx.restore();
 
-        // Center dashed line
+        // Center dashed line - scaled
         ctx.strokeStyle = "#fff";
-        ctx.lineWidth = 2;
-        ctx.setLineDash([15, 15]);
+        ctx.lineWidth = 2 * avgScale;
+        ctx.setLineDash([15 * avgScale, 15 * avgScale]);
         ctx.beginPath();
         ctx.moveTo(TRACK_POINTS[0].x, TRACK_POINTS[0].y);
         for(let i=1; i<TRACK_POINTS.length; i++) {
@@ -617,12 +1169,13 @@
     }
 
     function drawItemBoxes() {
+        // Draw question boxes (yellow)
         ITEM_BOXES.forEach(box => {
             if (!box.active) return;
-            
+
             ctx.fillStyle = "#eab308"; // Gold
             ctx.fillRect(box.x - 15, box.y - 15, 30, 30);
-            
+
             // Question Mark
             ctx.fillStyle = "#fff";
             ctx.font = "bold 20px Fredoka";
@@ -633,6 +1186,30 @@
             ctx.lineWidth = 3;
             ctx.strokeRect(box.x - 15, box.y - 15, 30, 30);
         });
+
+        // Draw power-up boxes (rainbow/multicolor)
+        POWERUP_BOXES.forEach(box => {
+            if (!box.active) return;
+
+            // Rainbow gradient effect
+            const time = Date.now() / 1000;
+            const hue = (time * 50) % 360;
+            ctx.fillStyle = `hsl(${hue}, 80%, 50%)`;
+            ctx.fillRect(box.x - 15, box.y - 15, 30, 30);
+
+            // Star symbol
+            ctx.fillStyle = "#fff";
+            ctx.font = "bold 24px Arial";
+            ctx.fillText("★", box.x - 10, box.y + 8);
+
+            // Pulse effect
+            ctx.strokeStyle = `rgba(255,255,255,${(Math.sin(Date.now()/200)+1)/2})`;
+            ctx.lineWidth = 3;
+            ctx.strokeRect(box.x - 15, box.y - 15, 30, 30);
+        });
+
+        // Draw bananas
+        bananas.forEach(banana => banana.draw());
     }
 
     function checkLapLogic() {
@@ -653,12 +1230,24 @@
         if(p.passedMidpoint && dist < 100) {
             p.lap++;
             p.passedMidpoint = false;
-            
+
             // Respawn item boxes on new lap
             ITEM_BOXES.forEach(b => b.active = true);
 
+            // Enable power-up boxes from lap 2+
+            if(p.lap >= 2) {
+                POWERUP_BOXES.forEach(b => b.active = true);
+            }
+
+            // Update difficulty based on lap
+            if(p.lap === 2) {
+                currentDifficulty = 'medium';
+            } else if(p.lap === 3) {
+                currentDifficulty = 'hard';
+            }
+
             document.getElementById('hud-lap').innerText = `Lap: ${p.lap}/${lapsTotal}`;
-            
+
             if(p.lap > lapsTotal) {
                 finishGame();
             }
@@ -668,9 +1257,31 @@
     function updatePhysics() {
         if(gameState !== 'racing') return;
 
-        // Player Controls
-        if (keys['ArrowLeft']) playerKart.angle -= TURN_SPEED;
-        if (keys['ArrowRight']) playerKart.angle += TURN_SPEED;
+        // Check if freeze timer has expired
+        if (opponentsFrozen && Date.now() >= freezeEndTime) {
+            opponentsFrozen = false;
+        }
+
+        // Check if slow timer has expired
+        if (opponentsSlowed && Date.now() >= slowEndTime) {
+            opponentsSlowed = false;
+        }
+
+        // Update red shells
+        redShells.forEach(shell => shell.update());
+        redShells = redShells.filter(shell => shell.active);
+
+        // Check if ghost curse is active
+        let isGhostCursed = playerKart.ghostCurse && Date.now() < playerKart.ghostCurse;
+
+        // Player Controls (disabled during ghost curse)
+        if (!isGhostCursed) {
+            if (keys['ArrowLeft']) playerKart.angle -= TURN_SPEED;
+            if (keys['ArrowRight']) playerKart.angle += TURN_SPEED;
+        } else {
+            // Ghost curse: can't move
+            playerKart.speed = 0;
+        }
         
         // Auto accelerate (Mario Kart style) or manual? Let's do auto for accessibility
         // But slow down if button not pressed? No, let's keep it simple:
@@ -686,7 +1297,7 @@
         if(playerKart.speed < targetSpeed) playerKart.speed += ACCELERATION;
         if(playerKart.speed > targetSpeed) playerKart.speed -= ACCELERATION * 2; // Slow down fast offroad
 
-        // Item Box Collision
+        // Question Box Collision
         ITEM_BOXES.forEach(box => {
             if(box.active) {
                 let dx = playerKart.x - box.x;
@@ -697,6 +1308,27 @@
                 }
             }
         });
+
+        // Power-up Box Collision
+        POWERUP_BOXES.forEach(box => {
+            if(box.active) {
+                let dx = playerKart.x - box.x;
+                let dy = playerKart.y - box.y;
+                if(Math.sqrt(dx*dx + dy*dy) < 25) {
+                    box.active = false;
+                    triggerSlotMachine();
+                }
+            }
+        });
+
+        // Banana collision detection for opponents
+        bananas.forEach(banana => {
+            karts.filter(k => !k.isPlayer).forEach(kart => {
+                banana.checkCollision(kart);
+            });
+        });
+        // Remove inactive bananas
+        bananas = bananas.filter(b => b.active);
 
         // Update all karts
         karts.forEach(k => k.update());
@@ -724,7 +1356,10 @@
         
         drawTrack();
         drawItemBoxes();
-        
+
+        // Draw red shells
+        redShells.forEach(shell => shell.draw());
+
         // Draw karts (Player last so on top)
         karts.filter(k => !k.isPlayer).forEach(k => k.draw());
         playerKart.draw();
@@ -743,10 +1378,78 @@
         const modal = document.getElementById('quiz-modal');
         const container = document.getElementById('options-container');
         const qText = document.getElementById('question-text');
-        
-        // Pick random question
-        const qObj = questionsPool[Math.floor(Math.random() * questionsPool.length)];
-        
+        const passageContainer = document.getElementById('passage-container');
+        const passageText = document.getElementById('passage-text');
+        const difficultyBadge = document.getElementById('difficulty-badge');
+
+        // Decide: 25% chance for comprehension, 75% for regular phonics
+        const isComprehension = Math.random() < 0.25 && comprehensionPassageUsed.length < COMPREHENSION_DATA.length;
+
+        let qObj;
+        let questionKey;
+
+        if (isComprehension) {
+            // Pick a comprehension passage we haven't used yet
+            let availablePassages = COMPREHENSION_DATA.filter((p, idx) => !comprehensionPassageUsed.includes(idx));
+
+            if(availablePassages.length === 0) {
+                // Reset if all used
+                comprehensionPassageUsed = [];
+                availablePassages = COMPREHENSION_DATA;
+            }
+
+            const passageObj = availablePassages[Math.floor(Math.random() * availablePassages.length)];
+            const passageIdx = COMPREHENSION_DATA.indexOf(passageObj);
+            comprehensionPassageUsed.push(passageIdx);
+
+            // Pick one question from this passage
+            qObj = passageObj.questions[Math.floor(Math.random() * passageObj.questions.length)];
+
+            // Show passage
+            passageContainer.classList.remove('hidden');
+            passageText.innerText = passageObj.passage;
+
+            // Update badge
+            difficultyBadge.innerText = 'Comprehension';
+            difficultyBadge.className = 'inline-block px-3 py-1 rounded-full text-xs font-bold mb-3 bg-purple-200 text-purple-800';
+
+        } else {
+            // Hide passage container
+            passageContainer.classList.add('hidden');
+
+            // Get questions for current difficulty
+            let pool = ALL_QUESTIONS[currentDifficulty];
+
+            // Filter out already asked questions
+            let availableQuestions = pool.filter((q, idx) => {
+                questionKey = `${currentDifficulty}-${idx}`;
+                return !questionsAsked.includes(questionKey);
+            });
+
+            // Reset if all questions asked
+            if(availableQuestions.length === 0) {
+                questionsAsked = questionsAsked.filter(q => !q.startsWith(currentDifficulty));
+                availableQuestions = pool;
+            }
+
+            // Pick random question
+            const randomIdx = Math.floor(Math.random() * availableQuestions.length);
+            qObj = availableQuestions[randomIdx];
+
+            // Track this question
+            const actualIdx = pool.indexOf(qObj);
+            questionKey = `${currentDifficulty}-${actualIdx}`;
+            questionsAsked.push(questionKey);
+
+            // Update difficulty badge
+            let badgeColor = currentDifficulty === 'easy' ? 'bg-green-200 text-green-800' :
+                           currentDifficulty === 'medium' ? 'bg-yellow-200 text-yellow-800' :
+                           'bg-red-200 text-red-800';
+            difficultyBadge.innerText = currentDifficulty.charAt(0).toUpperCase() + currentDifficulty.slice(1);
+            difficultyBadge.className = `inline-block px-3 py-1 rounded-full text-xs font-bold mb-3 ${badgeColor}`;
+        }
+
+        // Display question
         qText.innerText = qObj.q;
         container.innerHTML = '';
 
@@ -764,17 +1467,26 @@
     function handleAnswer(isCorrect) {
         const modal = document.getElementById('quiz-modal');
         modal.classList.add('hidden');
-        
+
         gameState = 'racing';
 
         if (isCorrect) {
-            // Turbo Boost!
-            playerKart.speed = BOOST_SPEED;
-            showFloatingText("TURBO!", playerKart.x, playerKart.y, "#eab308");
+            // Reward system based on lap
+            if (playerKart.lap === 1) {
+                // Lap 1: Slow opponents briefly
+                opponentsSlowed = true;
+                slowEndTime = Date.now() + 1500; // 1.5 seconds
+                showFloatingText("Nice! Opponents Slowed!", playerKart.x, playerKart.y, "#22c55e");
+            } else {
+                // Lap 2+: Small freeze reward
+                opponentsFrozen = true;
+                freezeEndTime = Date.now() + 1000; // 1 second freeze
+                showFloatingText("Good Job! Freeze!", playerKart.x, playerKart.y, "#22c55e");
+            }
         } else {
             // Spin out!
             playerKart.speed = 0;
-            playerKart.angle += Math.PI * 2; // Visual spin logic handled in update? 
+            playerKart.angle += Math.PI * 2; // Visual spin logic handled in update?
             // Simplified: just stop them
             showFloatingText("Spin Out!", playerKart.x, playerKart.y, "#ef4444");
         }
@@ -785,11 +1497,103 @@
 
     function showFloatingText(text, x, y, color) {
         // Simple canvas text injection next frame
-        // For simplicity, we just assume the loop picks it up, 
+        // For simplicity, we just assume the loop picks it up,
         // but creating a temp object is better.
         // Let's just update a global 'effect' variable if we had one.
-        // Since we don't, we'll skip the visual effect for code brevity 
+        // Since we don't, we'll skip the visual effect for code brevity
         // and rely on the speed change which is immediately noticeable.
+    }
+
+    // --- Slot Machine Power-Up System ---
+
+    const POWERUPS = [
+        { icon: '⚡', name: 'Lightning Strike', color: '#fbbf24', type: 'lightning' },
+        { icon: '🐢', name: 'Red Shells', color: '#ef4444', type: 'redshell' },
+        { icon: '🍌', name: 'Banana Peel', color: '#fde047', type: 'banana' },
+        { icon: '👻', name: 'Ghost Curse!', color: '#a78bfa', type: 'ghost' }
+    ];
+
+    function triggerSlotMachine() {
+        gameState = 'slot';
+        slotMachineActive = true;
+
+        const modal = document.getElementById('slot-machine');
+        const display = document.getElementById('slot-display');
+        const nameDisplay = document.getElementById('slot-name');
+
+        modal.classList.remove('hidden');
+
+        // Spinning animation
+        let spinCount = 0;
+        const maxSpins = 20; // 20 spins over 2 seconds
+        const spinInterval = 100; // 100ms per spin
+
+        const spinTimer = setInterval(() => {
+            // Pick random power-up to display
+            const randomPowerup = POWERUPS[Math.floor(Math.random() * POWERUPS.length)];
+            display.textContent = randomPowerup.icon;
+            nameDisplay.textContent = randomPowerup.name;
+
+            spinCount++;
+
+            if (spinCount >= maxSpins) {
+                clearInterval(spinTimer);
+                // Choose final power-up
+                const finalPowerup = POWERUPS[Math.floor(Math.random() * POWERUPS.length)];
+                display.textContent = finalPowerup.icon;
+                nameDisplay.textContent = finalPowerup.name;
+                slotMachineResult = finalPowerup;
+
+                // Wait a moment then activate power-up
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    activatePowerUp(finalPowerup.type);
+                    slotMachineActive = false;
+                    gameState = 'racing';
+                    gameLoop();
+                }, 1000);
+            }
+        }, spinInterval);
+    }
+
+    function activatePowerUp(type) {
+        const opponentKarts = karts.filter(k => !k.isPlayer);
+
+        switch(type) {
+            case 'lightning':
+                // Slow all opponents for 2 seconds
+                opponentsSlowed = true;
+                slowEndTime = Date.now() + 2000;
+                showFloatingText("Lightning Strike! ⚡", playerKart.x, playerKart.y, "#fbbf24");
+                break;
+
+            case 'redshell':
+                // Fire 3 red shells
+                for (let i = 0; i < Math.min(3, opponentKarts.length); i++) {
+                    const shell = new RedShell(playerKart.x, playerKart.y, opponentKarts[i]);
+                    redShells.push(shell);
+                }
+                showFloatingText("Red Shells! 🐢", playerKart.x, playerKart.y, "#ef4444");
+                break;
+
+            case 'banana':
+                // Drop 3 bananas behind the player
+                for (let i = 1; i <= 3; i++) {
+                    const offsetX = Math.cos(playerKart.angle + Math.PI) * (20 * i);
+                    const offsetY = Math.sin(playerKart.angle + Math.PI) * (20 * i);
+                    const banana = new Banana(playerKart.x + offsetX, playerKart.y + offsetY);
+                    bananas.push(banana);
+                }
+                showFloatingText("Banana Peels! 🍌", playerKart.x, playerKart.y, "#fde047");
+                break;
+
+            case 'ghost':
+                // Curse! Player stops for 2 seconds
+                playerKart.speed = 0;
+                playerKart.ghostCurse = Date.now() + 2000;
+                showFloatingText("Ghost Curse! 👻", playerKart.x, playerKart.y, "#a78bfa");
+                break;
+        }
     }
 
     function finishGame() {
