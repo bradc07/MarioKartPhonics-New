@@ -321,31 +321,20 @@
         suffix: {
             name: "Suffix Circuit",
             skill: "Suffixes",
-            description: "Add endings - Figure-8 Track!",
+            description: "Add endings - Diamond Track!",
             color: "#3b82f6", // Blue theme
-            // Figure-8 shape
+            // Diamond/rhombus shape - simple and clear
             trackPoints: [
-                {x: 80, y: 200}, {x: 150, y: 80}, {x: 300, y: 50},
-                {x: 400, y: 150}, {x: 400, y: 300},
-                {x: 400, y: 450}, {x: 300, y: 550}, {x: 150, y: 520},
-                {x: 80, y: 400}, {x: 150, y: 300},
-                {x: 250, y: 300}, {x: 400, y: 300},
-                {x: 550, y: 300}, {x: 650, y: 300},
-                {x: 720, y: 400}, {x: 650, y: 520}, {x: 500, y: 550},
-                {x: 400, y: 450}, {x: 400, y: 300},
-                {x: 400, y: 150}, {x: 500, y: 50}, {x: 650, y: 80},
-                {x: 720, y: 200}, {x: 650, y: 300},
-                {x: 550, y: 300}, {x: 400, y: 300},
-                {x: 250, y: 300}, {x: 150, y: 300},
-                {x: 80, y: 200}
+                {x: 400, y: 50}, {x: 720, y: 300}, {x: 400, y: 550},
+                {x: 80, y: 300}, {x: 400, y: 50}
             ],
             itemBoxes: [
-                {x: 300, y: 50, active: true},
-                {x: 500, y: 50, active: true},
-                {x: 300, y: 550, active: true},
-                {x: 500, y: 550, active: true}
+                {x: 560, y: 175, active: true},
+                {x: 560, y: 425, active: true},
+                {x: 240, y: 425, active: true},
+                {x: 240, y: 175, active: true}
             ],
-            trees: [{x:200, y:200}, {x:200, y:400}, {x:600, y:200}, {x:600, y:400}],
+            trees: [{x:400, y:300}, {x:350, y:250}, {x:450, y:350}, {x:350, y:350}, {x:450, y:250}],
             questions: [
                 { q: "Past tense of 'jump':", options: ["Jumped", "Jumpt", "Jumpd"], a: 0 },
                 { q: "Add -ing to 'run':", options: ["Runing", "Running", "Runeing"], a: 1 },
@@ -503,7 +492,7 @@
     // Load Player Image
     const playerKartImg = new Image();
     // Using the filename detected from your upload
-    playerKartImg.src = 'player-kart.png.jpg'; 
+    playerKartImg.src = 'player-kart.png.jpg.png'; 
     let playerKartImgLoaded = false;
     playerKartImg.onload = () => {
         playerKartImgLoaded = true;
@@ -979,19 +968,37 @@
     function drawItemBoxes() {
         ITEM_BOXES.forEach(box => {
             if (!box.active) return;
-            
-            ctx.fillStyle = "#eab308"; // Gold
-            ctx.fillRect(box.x - 15, box.y - 15, 30, 30);
-            
-            // Question Mark
-            ctx.fillStyle = "#fff";
-            ctx.font = "bold 20px Fredoka";
-            ctx.fillText("?", box.x - 5, box.y + 7);
 
-            // Pulse effect
-            ctx.strokeStyle = `rgba(255,255,255,${(Math.sin(Date.now()/200)+1)/2})`;
+            // Draw shadow
+            ctx.fillStyle = "rgba(0,0,0,0.3)";
+            ctx.fillRect(box.x - 18, box.y - 15, 40, 40);
+
+            // Draw golden box (larger and more visible)
+            ctx.fillStyle = "#eab308"; // Gold
+            ctx.fillRect(box.x - 20, box.y - 20, 40, 40);
+
+            // Draw red border
+            ctx.strokeStyle = "#dc2626";
             ctx.lineWidth = 3;
-            ctx.strokeRect(box.x - 15, box.y - 15, 30, 30);
+            ctx.strokeRect(box.x - 20, box.y - 20, 40, 40);
+
+            // Question Mark (larger)
+            ctx.fillStyle = "#fff";
+            ctx.font = "bold 28px Fredoka";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("?", box.x, box.y);
+            ctx.textAlign = "left";
+            ctx.textBaseline = "alphabetic";
+
+            // Animated glow effect
+            let glowSize = 5 + Math.sin(Date.now()/150) * 3;
+            ctx.shadowColor = "#fbbf24";
+            ctx.shadowBlur = glowSize * 2;
+            ctx.strokeStyle = `rgba(251, 191, 36, ${(Math.sin(Date.now()/200)+1)/2})`;
+            ctx.lineWidth = 4;
+            ctx.strokeRect(box.x - 22, box.y - 22, 44, 44);
+            ctx.shadowBlur = 0;
         });
     }
 
@@ -1044,7 +1051,7 @@
             if(box.active) {
                 let dx = playerKart.x - box.x;
                 let dy = playerKart.y - box.y;
-                if(Math.sqrt(dx*dx + dy*dy) < 25) {
+                if(Math.sqrt(dx*dx + dy*dy) < 35) {
                     box.active = false;
                     triggerQuiz();
                 }
