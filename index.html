@@ -1421,7 +1421,7 @@
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Start/Finish Line - aligned to the first straight for a clean checkerboard
+        // Start/Finish Line - crisp checkerboard band perpendicular to the first straight
         const startPoint = TRACK_POINTS[0];
         const nextPoint = TRACK_POINTS[1];
         const startAngle = Math.atan2(nextPoint.y - startPoint.y, nextPoint.x - startPoint.x);
@@ -1431,19 +1431,34 @@
         ctx.rotate(startAngle);
 
         const checkSize = 10 * avgScale;
-        const lineThickness = 22 * avgScale;
-        const lineHeight = trackHalfWidth * 1.8;
-        const cols = Math.ceil(lineThickness / checkSize);
-        const rows = Math.ceil(lineHeight / checkSize);
-        const xStart = -lineThickness / 2;
+        const bandDepth = 28 * avgScale; // thickness along the driving direction
+        const lineHeight = trackHalfWidth * 1.6; // span across the full track width
+        const cols = Math.ceil(bandDepth / checkSize) + 1;
+        const rows = Math.ceil(lineHeight / checkSize) + 1;
+        const xStart = -bandDepth / 2;
         const yStart = -lineHeight / 2;
+
+        // Base to tidy up underlying curbs
+        ctx.fillStyle = '#2f2f2f';
+        ctx.fillRect(xStart, yStart, bandDepth, lineHeight);
+
+        // Clip to the band so checker edges stay clean
+        ctx.beginPath();
+        ctx.rect(xStart, yStart, bandDepth, lineHeight);
+        ctx.clip();
 
         for (let i = 0; i < cols; i++) {
             for (let j = 0; j < rows; j++) {
-                ctx.fillStyle = (i + j) % 2 === 0 ? "white" : "black";
+                ctx.fillStyle = (i + j) % 2 === 0 ? 'white' : 'black';
                 ctx.fillRect(xStart + i * checkSize, yStart + j * checkSize, checkSize, checkSize);
             }
         }
+
+        // Crisp outline for definition
+        ctx.lineWidth = 2 * avgScale;
+        ctx.strokeStyle = 'white';
+        ctx.strokeRect(xStart, yStart, bandDepth, lineHeight);
+
         ctx.restore();
 
         // Center dashed line - scaled
