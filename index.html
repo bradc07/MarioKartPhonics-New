@@ -489,20 +489,40 @@
         plurals: "+s"
     };
 
-    // Load Player Image
-    const playerKartImg = new Image();
-    // Using the filename detected from your upload
-    playerKartImg.src = 'player-kart.png.jpg.png'; 
-    let playerKartImgLoaded = false;
-    playerKartImg.onload = () => {
-        playerKartImgLoaded = true;
-    };
+    // Load Kart Images
+    const marioImg = new Image();
+    marioImg.src = 'mario.png';
+    let marioImgLoaded = false;
+    marioImg.onload = () => { marioImgLoaded = true; };
+
+    const warioImg = new Image();
+    warioImg.src = 'wario.png';
+    let warioImgLoaded = false;
+    warioImg.onload = () => { warioImgLoaded = true; };
+
+    const kongImg = new Image();
+    kongImg.src = 'kong.png';
+    let kongImgLoaded = false;
+    kongImg.onload = () => { kongImgLoaded = true; };
+
+    const bowserImg = new Image();
+    bowserImg.src = 'bowser.png';
+    let bowserImgLoaded = false;
+    bowserImg.onload = () => { bowserImgLoaded = true; };
+
+    // Map kart images by index (0=player/mario, 1=wario, 2=kong, 3=bowser)
+    const kartImages = [
+        { img: marioImg, loaded: () => marioImgLoaded },
+        { img: warioImg, loaded: () => warioImgLoaded },
+        { img: kongImg, loaded: () => kongImgLoaded },
+        { img: bowserImg, loaded: () => bowserImgLoaded }
+    ];
 
 
     // --- Classes ---
 
     class Kart {
-        constructor(x, y, color, isPlayer = false, startOffset = 0) {
+        constructor(x, y, color, isPlayer = false, startOffset = 0, imageIndex = 0) {
             this.x = x;
             this.y = y;
             this.color = color;
@@ -512,7 +532,8 @@
             this.lap = 1;
             this.checkpointIndex = 0; // To track progress
             this.finished = false;
-            
+            this.imageIndex = imageIndex; // Which kart image to use (0=mario, 1=wario, 2=kong, 3=bowser)
+
             // AI specific
             this.waypointIndex = 1;
             this.startOffset = startOffset; // Stagger AI start
@@ -579,22 +600,26 @@
             ctx.save();
             ctx.translate(this.x, this.y);
             ctx.rotate(this.angle);
-            
-            // Scale up slightly for better visibility
-            ctx.scale(1.2, 1.2);
 
-            // Draw Player Image if loaded, otherwise fallback to procedural drawing
-            if (this.isPlayer && playerKartImgLoaded) {
+            // Scale up for better visibility
+            ctx.scale(1.4, 1.4);
+
+            // Get the correct kart image based on imageIndex
+            const kartData = kartImages[this.imageIndex];
+            const kartImg = kartData.img;
+            const isLoaded = kartData.loaded();
+
+            // Draw kart image if loaded, otherwise fallback to procedural drawing
+            if (isLoaded && kartImg.width > 0) {
                 // Calculate aspect ratio to prevent squashing
-                // Target width is 40px
-                const targetWidth = 45;
-                const scaleFactor = targetWidth / playerKartImg.width;
-                const targetHeight = playerKartImg.height * scaleFactor;
+                const targetWidth = 50;
+                const scaleFactor = targetWidth / kartImg.width;
+                const targetHeight = kartImg.height * scaleFactor;
 
                 // Draw centered
-                ctx.drawImage(playerKartImg, -targetWidth / 2, -targetHeight / 2, targetWidth, targetHeight);
+                ctx.drawImage(kartImg, -targetWidth / 2, -targetHeight / 2, targetWidth, targetHeight);
             } else {
-                // Draw AI Karts (Procedural) OR Player Fallback
+                // Fallback: Draw procedural kart
 
                 // Shadow
                 ctx.fillStyle = "rgba(0,0,0,0.2)";
@@ -604,12 +629,10 @@
 
                 // Wheels (Black rubber)
                 ctx.fillStyle = "#1a1a1a";
-                // Rear wheels (wider)
-                ctx.fillRect(-12, -14, 10, 6); // Rear Left
-                ctx.fillRect(-12, 8, 10, 6);   // Rear Right
-                // Front wheels (smaller)
-                ctx.fillRect(8, -13, 8, 5);    // Front Left
-                ctx.fillRect(8, 8, 8, 5);      // Front Right
+                ctx.fillRect(-12, -14, 10, 6);
+                ctx.fillRect(-12, 8, 10, 6);
+                ctx.fillRect(8, -13, 8, 5);
+                ctx.fillRect(8, 8, 8, 5);
 
                 // Exhaust Pipes (Silver)
                 ctx.fillStyle = "#9ca3af";
@@ -618,53 +641,34 @@
 
                 // Main Body (Color)
                 ctx.fillStyle = this.color;
-                
-                // Side pods/Main block
                 ctx.beginPath();
-                // Rear block
-                ctx.roundRect(-10, -10, 20, 20, 4); 
-                // Front nose
+                ctx.roundRect(-10, -10, 20, 20, 4);
                 ctx.roundRect(5, -6, 15, 12, 6);
                 ctx.fill();
 
-                // White stripe or number plate on nose
+                // Number plate
                 ctx.fillStyle = "white";
                 ctx.beginPath();
                 ctx.arc(12, 0, 4, 0, Math.PI*2);
                 ctx.fill();
 
-                // Driver Body (Shirt)
-                ctx.fillStyle = this.color; // Or slightly darker?
+                // Driver
+                ctx.fillStyle = this.color;
                 ctx.beginPath();
                 ctx.arc(-2, 0, 7, 0, Math.PI*2);
                 ctx.fill();
 
-                // Steering Wheel (Black ring)
-                ctx.strokeStyle = "#333";
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.arc(6, 0, 3, 0, Math.PI*2); // Holding it in front
-                ctx.stroke();
-
-                // Driver Head (Skin)
+                // Head
                 ctx.fillStyle = "#ffdbac";
                 ctx.beginPath();
                 ctx.arc(-2, 0, 5, 0, Math.PI*2);
                 ctx.fill();
 
-                // Helmet (Color with M-logo style accent maybe?)
+                // Helmet
                 ctx.fillStyle = this.color;
                 ctx.beginPath();
-                ctx.arc(-2, -1, 5.5, Math.PI, 0); // Top half helmet
+                ctx.arc(-2, -1, 5.5, Math.PI, 0);
                 ctx.fill();
-                
-                // Goggles/Visor (Black band)
-                ctx.strokeStyle = "#333";
-                ctx.lineWidth = 1.5;
-                ctx.beginPath();
-                ctx.moveTo(-7, -1);
-                ctx.lineTo(3, -1);
-                ctx.stroke();
             }
 
             ctx.restore();
@@ -761,10 +765,10 @@
         const startX = TRACK_POINTS[0].x;
         const startY = TRACK_POINTS[0].y;
         karts = [
-            new Kart(startX, startY - 20, currentTrack.color, true), // Player with track color
-            new Kart(startX, startY + 20, '#3b82f6', false, 100), // Blue
-            new Kart(startX - 20, startY - 10, '#22c55e', false, 200), // Green
-            new Kart(startX - 20, startY + 30, '#eab308', false, 300)  // Yellow
+            new Kart(startX, startY - 20, '#ef4444', true, 0, 0),      // Mario (player)
+            new Kart(startX, startY + 20, '#eab308', false, 100, 1),   // Wario
+            new Kart(startX - 20, startY - 10, '#8b4513', false, 200, 2), // Kong
+            new Kart(startX - 20, startY + 30, '#22c55e', false, 300, 3)  // Bowser
         ];
         playerKart = karts[0];
         playerKart.angle = -Math.PI / 4; // Face start direction
