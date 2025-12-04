@@ -140,6 +140,81 @@
         }
 
         .hidden { display: none !important; }
+
+        /* Track Selection Buttons */
+        .track-btn {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .track-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .track-btn:active {
+            transform: translateY(0);
+        }
+
+        .track-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .track-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .track-name {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #1f2937;
+            margin-bottom: 2px;
+        }
+
+        .track-skill {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+
+        .track-desc {
+            font-size: 0.7rem;
+            color: #9ca3af;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Skill HUD */
+        .hud-skill {
+            position: absolute;
+            top: 50px;
+            left: 10px;
+            z-index: 10;
+            background: rgba(255,255,255,0.9);
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            color: #1a472a;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
@@ -152,23 +227,29 @@
         <!-- HUD -->
         <div id="hud-pos" class="hud hidden">Position: 1/4</div>
         <div id="hud-lap" class="hud-lap hidden">Lap: 1/3</div>
+        <div id="hud-skill" class="hud-skill hidden">Skill: Split Digraphs</div>
 
         <!-- Start Screen -->
         <div id="start-screen" class="overlay">
-            <div class="modal-card">
+            <div class="modal-card" style="max-width: 500px; width: 95%;">
                 <h1 class="text-3xl font-bold mb-2 text-center text-green-900">Phonics Grand Prix</h1>
-                <p class="text-gray-600 mb-6 text-center">Year 2 Edition</p>
-                <div class="space-y-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 bg-yellow-400 rounded flex items-center justify-center font-bold text-white shadow">?</div>
-                        <p class="text-sm">Hit boxes to answer phonics questions!</p>
+                <p class="text-gray-600 mb-4 text-center">Year 2 Edition - Choose Your Track!</p>
+
+                <!-- Track Selection -->
+                <div id="track-selection" class="space-y-2 max-h-64 overflow-y-auto pr-2">
+                    <!-- Tracks will be injected here by JS -->
+                </div>
+
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <div class="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                        <div class="w-6 h-6 bg-yellow-400 rounded flex items-center justify-center font-bold text-white text-xs">?</div>
+                        <span>Hit boxes to answer questions!</span>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 bg-green-600 rounded flex items-center justify-center font-bold text-white shadow">✓</div>
-                        <p class="text-sm">Correct answers give a <span class="font-bold text-green-600">TURBO BOOST</span>.</p>
+                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                        <div class="w-6 h-6 bg-green-600 rounded flex items-center justify-center font-bold text-white text-xs">+</div>
+                        <span>Correct = <span class="font-bold text-green-600">TURBO BOOST</span></span>
                     </div>
                 </div>
-                <button onclick="startGame()" class="w-full mt-8 bg-green-800 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition shadow-lg">Start Engines!</button>
             </div>
         </div>
 
@@ -199,31 +280,171 @@
     </div>
 
 <script>
-    /** * Year 2 Phonics Data
-     * Includes: Split digraphs, homophones, suffixes, alternative spellings.
+    /** * Track Configurations with Skill-Focused Phonics
+     * Each track focuses on a specific Year 2 phonics skill
      */
-    const PHONICS_DATA = [
-        { q: "Which word has a split digraph?", options: ["Rain", "Time", "Boat"], a: 1 },
-        { q: "Choose the correct spelling:", options: ["Nite", "Night", "Nighght"], a: 1 },
-        { q: "Finish the word: Hap__", options: ["py", "pie", "pee"], a: 0 },
-        { q: "Which word uses 'a-e'?", options: ["Wait", "Day", "Cake"], a: 2 },
-        { q: "Find the homophone for 'Sea'", options: ["See", "Cee", "Say"], a: 0 },
-        { q: "Which is a real word?", options: ["Thramp", "Cloud", "Sploy"], a: 1 },
-        { q: "Past tense of 'jump':", options: ["Jumped", "Jumpt", "Jumping"], a: 0 },
-        { q: "Which word has the /igh/ sound?", options: ["Bright", "Plate", "Tree"], a: 0 },
-        { q: "Plural of 'baby':", options: ["Babys", "Babies", "Baby's"], a: 1 },
-        { q: "Which word rhymes with 'Blue'?", options: ["Grew", "Go", "Bow"], a: 0 }
-    ];
+    const TRACKS = {
+        splitDigraph: {
+            name: "Split Digraph Speedway",
+            skill: "Split Digraphs",
+            description: "Master the magic 'e' that splits words!",
+            color: "#ef4444", // Red theme
+            trackPoints: [
+                {x: 100, y: 300}, {x: 150, y: 150}, {x: 400, y: 100},
+                {x: 650, y: 150}, {x: 700, y: 300}, {x: 650, y: 450},
+                {x: 400, y: 500}, {x: 150, y: 450}, {x: 100, y: 300}
+            ],
+            itemBoxes: [
+                {x: 275, y: 125, active: true},
+                {x: 675, y: 300, active: true},
+                {x: 275, y: 475, active: true}
+            ],
+            trees: [{x:400, y:300}, {x:200, y:250}, {x:600, y:350}, {x:100, y:100}, {x:700, y:500}],
+            questions: [
+                { q: "Which word has a split digraph?", options: ["Rain", "Make", "Boat"], a: 1 },
+                { q: "Which word uses 'a-e'?", options: ["Wait", "Day", "Cake"], a: 2 },
+                { q: "Find the split digraph word:", options: ["Time", "Tim", "Team"], a: 0 },
+                { q: "Which has 'i-e' pattern?", options: ["Big", "Bike", "Bit"], a: 1 },
+                { q: "Which word uses 'o-e'?", options: ["Boat", "Hope", "Hot"], a: 1 },
+                { q: "Find the 'u-e' word:", options: ["Cup", "Cute", "Cut"], a: 1 },
+                { q: "Which is a split digraph?", options: ["Late", "Latte", "Lat"], a: 0 },
+                { q: "The 'e' makes the vowel say its name in:", options: ["Pet", "Pete", "Pep"], a: 1 },
+                { q: "Which has 'a-e'?", options: ["Name", "Nap", "Nan"], a: 0 },
+                { q: "Find the split digraph:", options: ["Ripe", "Rip", "Ripped"], a: 0 }
+            ]
+        },
+        suffix: {
+            name: "Suffix Circuit",
+            skill: "Suffixes",
+            description: "Add endings to change word meanings!",
+            color: "#3b82f6", // Blue theme
+            trackPoints: [
+                {x: 100, y: 300}, {x: 200, y: 100}, {x: 400, y: 200},
+                {x: 600, y: 100}, {x: 700, y: 300}, {x: 600, y: 500},
+                {x: 400, y: 400}, {x: 200, y: 500}, {x: 100, y: 300}
+            ],
+            itemBoxes: [
+                {x: 300, y: 150, active: true},
+                {x: 500, y: 150, active: true},
+                {x: 500, y: 450, active: true}
+            ],
+            trees: [{x:400, y:300}, {x:150, y:300}, {x:650, y:300}, {x:50, y:50}, {x:750, y:550}],
+            questions: [
+                { q: "Past tense of 'jump':", options: ["Jumped", "Jumpt", "Jumpd"], a: 0 },
+                { q: "Add -ing to 'run':", options: ["Runing", "Running", "Runeing"], a: 1 },
+                { q: "Finish the word: Hap__", options: ["py", "pie", "pee"], a: 0 },
+                { q: "Add -ed to 'stop':", options: ["Stoped", "Stopped", "Stopd"], a: 1 },
+                { q: "Which is correct?", options: ["Hopeing", "Hoping", "Hoppping"], a: 1 },
+                { q: "Add -er to 'fast':", options: ["Faster", "Faser", "Fasster"], a: 0 },
+                { q: "Add -est to 'big':", options: ["Bigest", "Biggest", "Bigist"], a: 1 },
+                { q: "Add -ly to 'quick':", options: ["Quickley", "Quickly", "Quikly"], a: 1 },
+                { q: "Add -ful to 'help':", options: ["Helpfull", "Helpful", "Helful"], a: 1 },
+                { q: "Add -less to 'care':", options: ["Carless", "Careless", "Carelass"], a: 1 }
+            ]
+        },
+        homophone: {
+            name: "Homophone Highway",
+            skill: "Homophones",
+            description: "Words that sound the same but mean different things!",
+            color: "#22c55e", // Green theme
+            trackPoints: [
+                {x: 100, y: 300}, {x: 150, y: 100}, {x: 350, y: 150},
+                {x: 450, y: 300}, {x: 550, y: 450}, {x: 700, y: 400},
+                {x: 700, y: 200}, {x: 550, y: 100}, {x: 350, y: 500},
+                {x: 150, y: 450}, {x: 100, y: 300}
+            ],
+            itemBoxes: [
+                {x: 250, y: 125, active: true},
+                {x: 625, y: 300, active: true},
+                {x: 250, y: 475, active: true}
+            ],
+            trees: [{x:450, y:200}, {x:200, y:300}, {x:600, y:500}, {x:50, y:150}, {x:750, y:100}],
+            questions: [
+                { q: "Find the homophone for 'sea':", options: ["See", "Cee", "Say"], a: 0 },
+                { q: "Which means 'belonging to them'?", options: ["There", "Their", "They're"], a: 1 },
+                { q: "'I can __ the answer':", options: ["Here", "Hear", "Heer"], a: 1 },
+                { q: "Which is a number?", options: ["Too", "To", "Two"], a: 2 },
+                { q: "'The __ is shining':", options: ["Son", "Sun", "Sunn"], a: 1 },
+                { q: "Which means 'correct'?", options: ["Write", "Right", "Rite"], a: 1 },
+                { q: "'I __ the ball':", options: ["Through", "Threw", "Thru"], a: 1 },
+                { q: "Which is the animal?", options: ["Bear", "Bare", "Bair"], a: 0 },
+                { q: "'The __ blew hard':", options: ["Wind", "Wined", "Whined"], a: 0 },
+                { q: "Which is a body part?", options: ["Knows", "Nose", "Noes"], a: 1 }
+            ]
+        },
+        spelling: {
+            name: "Spelling Serpentine",
+            skill: "Tricky Spellings",
+            description: "Master those tricky words that trip you up!",
+            color: "#eab308", // Yellow theme
+            trackPoints: [
+                {x: 100, y: 250}, {x: 200, y: 100}, {x: 350, y: 150},
+                {x: 450, y: 300}, {x: 350, y: 450}, {x: 500, y: 500},
+                {x: 650, y: 400}, {x: 700, y: 200}, {x: 600, y: 100},
+                {x: 200, y: 400}, {x: 100, y: 250}
+            ],
+            itemBoxes: [
+                {x: 275, y: 125, active: true},
+                {x: 400, y: 375, active: true},
+                {x: 650, y: 150, active: true}
+            ],
+            trees: [{x:500, y:200}, {x:150, y:250}, {x:550, y:500}, {x:75, y:100}, {x:725, y:450}],
+            questions: [
+                { q: "Choose the correct spelling:", options: ["Nite", "Night", "Nighght"], a: 1 },
+                { q: "Which is spelled correctly?", options: ["Becuz", "Because", "Becuase"], a: 1 },
+                { q: "Which is a real word?", options: ["Thramp", "Cloud", "Sploy"], a: 1 },
+                { q: "Correct spelling:", options: ["Freind", "Frend", "Friend"], a: 2 },
+                { q: "Which is right?", options: ["Said", "Sed", "Siad"], a: 0 },
+                { q: "Correct spelling:", options: ["Pepole", "People", "Peeple"], a: 1 },
+                { q: "Which is correct?", options: ["Would", "Woud", "Wuld"], a: 0 },
+                { q: "Correct spelling:", options: ["Lauf", "Laugh", "Largh"], a: 1 },
+                { q: "Which is right?", options: ["Enough", "Enuff", "Enugh"], a: 0 },
+                { q: "Correct spelling:", options: ["Bueatiful", "Butiful", "Beautiful"], a: 2 }
+            ]
+        },
+        plurals: {
+            name: "Plurals Parkway",
+            skill: "Plurals",
+            description: "Learn to make one into many!",
+            color: "#a855f7", // Purple theme
+            trackPoints: [
+                {x: 100, y: 300}, {x: 200, y: 100}, {x: 500, y: 100},
+                {x: 700, y: 300}, {x: 600, y: 500}, {x: 400, y: 400},
+                {x: 200, y: 500}, {x: 100, y: 300}
+            ],
+            itemBoxes: [
+                {x: 350, y: 100, active: true},
+                {x: 650, y: 300, active: true},
+                {x: 300, y: 450, active: true}
+            ],
+            trees: [{x:400, y:300}, {x:150, y:150}, {x:650, y:450}, {x:50, y:50}, {x:750, y:550}],
+            questions: [
+                { q: "Plural of 'baby':", options: ["Babys", "Babies", "Baby's"], a: 1 },
+                { q: "More than one 'box':", options: ["Boxs", "Boxes", "Boxies"], a: 1 },
+                { q: "Plural of 'child':", options: ["Childs", "Childes", "Children"], a: 2 },
+                { q: "More than one 'bus':", options: ["Buss", "Buses", "Busies"], a: 1 },
+                { q: "Plural of 'tooth':", options: ["Tooths", "Toothes", "Teeth"], a: 2 },
+                { q: "More than one 'fly':", options: ["Flys", "Flies", "Flyes"], a: 1 },
+                { q: "Plural of 'mouse':", options: ["Mouses", "Mousies", "Mice"], a: 2 },
+                { q: "More than one 'leaf':", options: ["Leafs", "Leaves", "Leafes"], a: 1 },
+                { q: "Plural of 'party':", options: ["Partys", "Parties", "Partyies"], a: 1 },
+                { q: "More than one 'foot':", options: ["Foots", "Feets", "Feet"], a: 2 }
+            ]
+        }
+    };
+
+    // Currently selected track
+    let currentTrack = null;
 
     // --- Engine Configuration ---
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-    
+
     // Game State
     let gameState = 'start'; // start, racing, quiz, finished
     let frameId;
-    let questionsPool = [...PHONICS_DATA];
-    
+    let questionsPool = [];
+
     // Physics Constants
     const MAX_SPEED = 6;
     const BOOST_SPEED = 12;
@@ -231,23 +452,22 @@
     const ACCELERATION = 0.1;
     const TURN_SPEED = 0.06;
     const FRICTION = 0.96;
-    
-    // Track Logic (Waypoints for AI and Drawing)
-    // A squiggly loop
-    const TRACK_POINTS = [
-        {x: 100, y: 300}, {x: 200, y: 100}, {x: 500, y: 100}, 
-        {x: 700, y: 300}, {x: 600, y: 500}, {x: 400, y: 400}, 
-        {x: 200, y: 500}, {x: 100, y: 300}
-    ];
 
-    // Item Boxes
-    const ITEM_BOXES = [
-        {x: 350, y: 100, active: true},
-        {x: 650, y: 300, active: true},
-        {x: 300, y: 450, active: true}
-    ];
+    // Dynamic track data (set when track is selected)
+    let TRACK_POINTS = [];
+    let ITEM_BOXES = [];
+    let TREES = [];
 
     let lapsTotal = 3;
+
+    // Track icons for selection screen
+    const TRACK_ICONS = {
+        splitDigraph: "a-e",
+        suffix: "-ed",
+        homophone: "=",
+        spelling: "ABC",
+        plurals: "+s"
+    };
 
     // Load Player Image
     const playerKartImg = new Image();
@@ -473,42 +693,83 @@
 
     // --- Core Logic ---
 
-    function startGame() {
+    // Initialize track selection on page load
+    function initTrackSelection() {
+        const container = document.getElementById('track-selection');
+        container.innerHTML = '';
+
+        Object.keys(TRACKS).forEach(trackKey => {
+            const track = TRACKS[trackKey];
+            const btn = document.createElement('button');
+            btn.className = 'track-btn';
+            btn.onclick = () => startGame(trackKey);
+            btn.innerHTML = `
+                <div class="track-icon" style="background-color: ${track.color}; color: white;">
+                    ${TRACK_ICONS[trackKey]}
+                </div>
+                <div class="track-info">
+                    <div class="track-name">${track.name}</div>
+                    <div class="track-skill">Skill: ${track.skill}</div>
+                    <div class="track-desc">${track.description}</div>
+                </div>
+            `;
+            container.appendChild(btn);
+        });
+    }
+
+    function startGame(trackKey) {
+        // Set up the selected track
+        currentTrack = TRACKS[trackKey];
+        TRACK_POINTS = [...currentTrack.trackPoints];
+        ITEM_BOXES = currentTrack.itemBoxes.map(box => ({...box, active: true}));
+        TREES = [...currentTrack.trees];
+        questionsPool = [...currentTrack.questions];
+
+        // Hide start screen, show HUD
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('hud-pos').classList.remove('hidden');
         document.getElementById('hud-lap').classList.remove('hidden');
-        
+        document.getElementById('hud-skill').classList.remove('hidden');
+        document.getElementById('hud-skill').innerText = `Skill: ${currentTrack.skill}`;
+
         // Show mobile controls if on mobile
         if(window.innerWidth < 768) {
             document.getElementById('mobile-controls').classList.remove('hidden');
         }
 
-        // Initialize Karts
+        // Initialize Karts based on track starting position
+        const startX = TRACK_POINTS[0].x;
+        const startY = TRACK_POINTS[0].y;
         karts = [
-            new Kart(100, 280, '#ef4444', true), // Player Red
-            new Kart(100, 320, '#3b82f6', false, 100), // Blue
-            new Kart(80, 290, '#22c55e', false, 200), // Green
-            new Kart(80, 330, '#eab308', false, 300)  // Yellow
+            new Kart(startX, startY - 20, currentTrack.color, true), // Player with track color
+            new Kart(startX, startY + 20, '#3b82f6', false, 100), // Blue
+            new Kart(startX - 20, startY - 10, '#22c55e', false, 200), // Green
+            new Kart(startX - 20, startY + 30, '#eab308', false, 300)  // Yellow
         ];
         playerKart = karts[0];
         playerKart.angle = -Math.PI / 4; // Face start direction
-        
+
         // Set AI angles
         karts.slice(1).forEach(k => k.angle = -Math.PI/4);
+
+        // Reset lap counter display
+        document.getElementById('hud-lap').innerText = `Lap: 1/${lapsTotal}`;
 
         gameState = 'racing';
         gameLoop();
     }
+
+    // Initialize track selection when page loads
+    document.addEventListener('DOMContentLoaded', initTrackSelection);
 
     function drawTrack() {
         // Draw Grass
         ctx.fillStyle = "#4ade80";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Decor: Trees (Simple circles)
+        // Decor: Trees (Simple circles) - using dynamic TREES array
         ctx.fillStyle = "#14532d"; // Dark green trees
-        const trees = [{x:400, y:300}, {x:150, y:150}, {x:650, y:450}, {x:50, y:50}, {x:750, y:550}];
-        trees.forEach(t => {
+        TREES.forEach(t => {
             ctx.beginPath();
             ctx.arc(t.x, t.y, 25, 0, Math.PI*2);
             ctx.fill();
@@ -540,9 +801,9 @@
         ctx.closePath();
         ctx.stroke();
 
-        // Start Line
+        // Start Line - positioned at first track point
         ctx.save();
-        ctx.translate(100, 300);
+        ctx.translate(TRACK_POINTS[0].x, TRACK_POINTS[0].y);
         ctx.rotate(-Math.PI/4);
         ctx.fillStyle = "#fff";
         for(let i=0; i<4; i++) {
@@ -642,8 +903,9 @@
         let startNode = TRACK_POINTS[0];
         let dist = Math.sqrt((p.x - startNode.x)**2 + (p.y - startNode.y)**2);
 
-        // Very basic lap counter: must pass midpoint (index 4) then reach start
-        let midNode = TRACK_POINTS[4];
+        // Calculate midpoint dynamically based on track length
+        let midIndex = Math.floor(TRACK_POINTS.length / 2);
+        let midNode = TRACK_POINTS[midIndex];
         let midDist = Math.sqrt((p.x - midNode.x)**2 + (p.y - midNode.y)**2);
 
         if(midDist < 100) {
@@ -653,12 +915,12 @@
         if(p.passedMidpoint && dist < 100) {
             p.lap++;
             p.passedMidpoint = false;
-            
+
             // Respawn item boxes on new lap
             ITEM_BOXES.forEach(b => b.active = true);
 
             document.getElementById('hud-lap').innerText = `Lap: ${p.lap}/${lapsTotal}`;
-            
+
             if(p.lap > lapsTotal) {
                 finishGame();
             }
