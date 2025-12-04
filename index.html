@@ -319,8 +319,13 @@
                     <p class="text-lg font-bold">Your Score: <span id="final-score" class="text-green-600">0/0</span></p>
                     <p id="score-percentage" class="text-sm text-gray-600">0% correct</p>
                 </div>
+                <div id="encouragement" class="mb-4 p-4 bg-green-50 border-2 border-green-200 rounded-lg text-left">
+                    <h2 class="text-lg font-bold text-green-800 mb-1">Great driving!</h2>
+                    <p id="encouragement-text" class="text-sm text-green-700">You finished strong—keep practicing to get every answer right!</p>
+                </div>
                 <div id="review-section" class="hidden text-left mb-4">
-                    <h2 class="text-xl font-bold mb-3 text-red-600 text-center">Let's Learn From Our Mistakes!</h2>
+                    <h2 class="text-xl font-bold mb-1 text-red-600 text-center">Let's Learn From Our Mistakes!</h2>
+                    <p class="text-sm text-gray-700 mb-3 text-center">Tap an answer below to fix it and see why it's correct.</p>
                     <div id="wrong-answers-list" class="space-y-4">
                         <!-- Wrong answers injected here -->
                     </div>
@@ -1999,8 +2004,11 @@
                 question: currentQuestion.question,
                 yourAnswer: selectedAnswer,
                 correctAnswer: currentQuestion.correctAnswer,
+                options: currentQuestion.options,
+                correctIndex: currentQuestion.correctIndex,
                 explanation: currentQuestion.explanation,
-                passage: currentQuestion.passage
+                passage: currentQuestion.passage,
+                corrected: false
             });
         }
         updateScoreDisplay();
@@ -2157,6 +2165,25 @@
             scoreEl.className = 'text-red-600';
         }
 
+        // Share a tailored encouragement message
+        const encouragementEl = document.getElementById('encouragement-text');
+        let encouragementMsg = '';
+        if (score.total === 0) {
+            encouragementMsg = "You zoomed through the track! Answer the question boxes next race to collect points.";
+        } else if (percentage === 100) {
+            encouragementMsg = "Perfect score! You nailed every question—champion work!";
+        } else if (percentage >= 80) {
+            encouragementMsg = "Awesome effort! A few more practice laps and you'll have every answer locked in.";
+        } else if (percentage >= 50) {
+            encouragementMsg = "Great racing! Keep practicing the tricky ones to boost your score even higher.";
+        } else {
+            encouragementMsg = "Way to finish the race! Let's review those tough questions together and try again.";
+        }
+        if (wrongAnswers.length > 0) {
+            encouragementMsg += " Tap \"Review Mistakes\" to fix any answers now.";
+        }
+        encouragementEl.innerText = encouragementMsg;
+
         // Show review button if there were wrong answers
         if (wrongAnswers.length > 0) {
             document.getElementById('review-btn').classList.remove('hidden');
@@ -2190,9 +2217,14 @@
                 </div>
                 ${passageHtml}
                 <p class="font-semibold mb-2">${item.question}</p>
-                <div class="space-y-1 text-sm">
+                <div class="space-y-1 text-sm mb-3">
                     <p><span class="text-red-600 font-bold">Your answer:</span> ${item.yourAnswer}</p>
                     <p><span class="text-green-600 font-bold">Correct answer:</span> ${item.correctAnswer}</p>
+                </div>
+                <div class="mb-3">
+                    <p class="text-sm font-semibold text-gray-800 mb-2">Try again:</p>
+                    <div class="space-y-2 retry-options"></div>
+                    <p class="mt-2 text-sm font-bold" id="feedback-${index}"></p>
                 </div>
                 <div class="mt-3 p-3 bg-yellow-50 border border-yellow-300 rounded">
                     <div class="flex items-start gap-2">
@@ -2204,6 +2236,43 @@
                     </div>
                 </div>
             `;
+
+            const optionsContainer = card.querySelector('.retry-options');
+            const feedbackEl = card.querySelector(`#feedback-${index}`);
+
+            item.options.forEach((opt, idx) => {
+                const optBtn = document.createElement('button');
+                optBtn.className = 'w-full text-left px-3 py-2 rounded-lg border-2 border-gray-200 bg-white font-semibold text-sm hover:border-green-400 transition';
+                optBtn.innerText = opt;
+
+                optBtn.onclick = () => {
+                    if (item.corrected && idx !== item.correctIndex) {
+                        return; // Already corrected; avoid extra toggles
+                    }
+
+                    if (idx === item.correctIndex) {
+                        feedbackEl.innerText = 'You fixed it! Great job!';
+                        feedbackEl.className = 'mt-2 text-sm font-bold text-green-700';
+                        optBtn.classList.remove('border-gray-200');
+                        optBtn.classList.add('border-green-400', 'bg-green-50');
+                        item.corrected = true;
+
+                        // Dim other buttons once corrected
+                        Array.from(optionsContainer.children).forEach(btn => {
+                            btn.disabled = true;
+                            btn.classList.add('opacity-80');
+                        });
+                    } else {
+                        feedbackEl.innerText = 'Not quite. Check the hints and try another option!';
+                        feedbackEl.className = 'mt-2 text-sm font-bold text-red-700';
+                        optBtn.classList.remove('border-gray-200');
+                        optBtn.classList.add('border-red-300', 'bg-red-50');
+                    }
+                };
+
+                optionsContainer.appendChild(optBtn);
+            });
+
             container.appendChild(card);
         });
     }
