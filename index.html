@@ -282,24 +282,29 @@
 <script>
     /** * Track Configurations with Skill-Focused Phonics
      * Each track focuses on a specific Year 2 phonics skill
+     * Full-screen tracks with distinctive shapes and barriers
      */
     const TRACKS = {
         splitDigraph: {
             name: "Split Digraph Speedway",
             skill: "Split Digraphs",
-            description: "Master the magic 'e' that splits words!",
+            description: "Master the magic 'e' - Large Oval Track!",
             color: "#ef4444", // Red theme
+            // Large oval that fills the screen
             trackPoints: [
-                {x: 100, y: 300}, {x: 150, y: 150}, {x: 400, y: 100},
-                {x: 650, y: 150}, {x: 700, y: 300}, {x: 650, y: 450},
-                {x: 400, y: 500}, {x: 150, y: 450}, {x: 100, y: 300}
+                {x: 80, y: 300}, {x: 100, y: 150}, {x: 200, y: 80},
+                {x: 400, y: 50}, {x: 600, y: 80}, {x: 700, y: 150},
+                {x: 720, y: 300}, {x: 700, y: 450}, {x: 600, y: 520},
+                {x: 400, y: 550}, {x: 200, y: 520}, {x: 100, y: 450},
+                {x: 80, y: 300}
             ],
             itemBoxes: [
-                {x: 275, y: 125, active: true},
-                {x: 675, y: 300, active: true},
-                {x: 275, y: 475, active: true}
+                {x: 400, y: 50, active: true},
+                {x: 720, y: 300, active: true},
+                {x: 400, y: 550, active: true},
+                {x: 100, y: 300, active: true}
             ],
-            trees: [{x:400, y:300}, {x:200, y:250}, {x:600, y:350}, {x:100, y:100}, {x:700, y:500}],
+            trees: [{x:400, y:300}, {x:300, y:250}, {x:500, y:350}, {x:350, y:380}, {x:450, y:220}],
             questions: [
                 { q: "Which word has a split digraph?", options: ["Rain", "Make", "Boat"], a: 1 },
                 { q: "Which word uses 'a-e'?", options: ["Wait", "Day", "Cake"], a: 2 },
@@ -316,19 +321,31 @@
         suffix: {
             name: "Suffix Circuit",
             skill: "Suffixes",
-            description: "Add endings to change word meanings!",
+            description: "Add endings - Figure-8 Track!",
             color: "#3b82f6", // Blue theme
+            // Figure-8 shape
             trackPoints: [
-                {x: 100, y: 300}, {x: 200, y: 100}, {x: 400, y: 200},
-                {x: 600, y: 100}, {x: 700, y: 300}, {x: 600, y: 500},
-                {x: 400, y: 400}, {x: 200, y: 500}, {x: 100, y: 300}
+                {x: 80, y: 200}, {x: 150, y: 80}, {x: 300, y: 50},
+                {x: 400, y: 150}, {x: 400, y: 300},
+                {x: 400, y: 450}, {x: 300, y: 550}, {x: 150, y: 520},
+                {x: 80, y: 400}, {x: 150, y: 300},
+                {x: 250, y: 300}, {x: 400, y: 300},
+                {x: 550, y: 300}, {x: 650, y: 300},
+                {x: 720, y: 400}, {x: 650, y: 520}, {x: 500, y: 550},
+                {x: 400, y: 450}, {x: 400, y: 300},
+                {x: 400, y: 150}, {x: 500, y: 50}, {x: 650, y: 80},
+                {x: 720, y: 200}, {x: 650, y: 300},
+                {x: 550, y: 300}, {x: 400, y: 300},
+                {x: 250, y: 300}, {x: 150, y: 300},
+                {x: 80, y: 200}
             ],
             itemBoxes: [
-                {x: 300, y: 150, active: true},
-                {x: 500, y: 150, active: true},
-                {x: 500, y: 450, active: true}
+                {x: 300, y: 50, active: true},
+                {x: 500, y: 50, active: true},
+                {x: 300, y: 550, active: true},
+                {x: 500, y: 550, active: true}
             ],
-            trees: [{x:400, y:300}, {x:150, y:300}, {x:650, y:300}, {x:50, y:50}, {x:750, y:550}],
+            trees: [{x:200, y:200}, {x:200, y:400}, {x:600, y:200}, {x:600, y:400}],
             questions: [
                 { q: "Past tense of 'jump':", options: ["Jumped", "Jumpt", "Jumpd"], a: 0 },
                 { q: "Add -ing to 'run':", options: ["Runing", "Running", "Runeing"], a: 1 },
@@ -345,20 +362,23 @@
         homophone: {
             name: "Homophone Highway",
             skill: "Homophones",
-            description: "Words that sound the same but mean different things!",
+            description: "Sound the same - Winding S-Track!",
             color: "#22c55e", // Green theme
+            // Long winding S-shape
             trackPoints: [
-                {x: 100, y: 300}, {x: 150, y: 100}, {x: 350, y: 150},
-                {x: 450, y: 300}, {x: 550, y: 450}, {x: 700, y: 400},
-                {x: 700, y: 200}, {x: 550, y: 100}, {x: 350, y: 500},
-                {x: 150, y: 450}, {x: 100, y: 300}
+                {x: 80, y: 100}, {x: 200, y: 60}, {x: 350, y: 80},
+                {x: 500, y: 150}, {x: 600, y: 250}, {x: 650, y: 350},
+                {x: 600, y: 450}, {x: 500, y: 500}, {x: 350, y: 520},
+                {x: 200, y: 480}, {x: 100, y: 400}, {x: 80, y: 300},
+                {x: 100, y: 200}, {x: 80, y: 100}
             ],
             itemBoxes: [
-                {x: 250, y: 125, active: true},
-                {x: 625, y: 300, active: true},
-                {x: 250, y: 475, active: true}
+                {x: 350, y: 80, active: true},
+                {x: 650, y: 350, active: true},
+                {x: 350, y: 520, active: true},
+                {x: 80, y: 300, active: true}
             ],
-            trees: [{x:450, y:200}, {x:200, y:300}, {x:600, y:500}, {x:50, y:150}, {x:750, y:100}],
+            trees: [{x:300, y:300}, {x:450, y:350}, {x:250, y:200}, {x:500, y:400}],
             questions: [
                 { q: "Find the homophone for 'sea':", options: ["See", "Cee", "Say"], a: 0 },
                 { q: "Which means 'belonging to them'?", options: ["There", "Their", "They're"], a: 1 },
@@ -375,20 +395,27 @@
         spelling: {
             name: "Spelling Serpentine",
             skill: "Tricky Spellings",
-            description: "Master those tricky words that trip you up!",
+            description: "Tricky words - Zigzag Track!",
             color: "#eab308", // Yellow theme
+            // Zigzag/snake pattern
             trackPoints: [
-                {x: 100, y: 250}, {x: 200, y: 100}, {x: 350, y: 150},
-                {x: 450, y: 300}, {x: 350, y: 450}, {x: 500, y: 500},
-                {x: 650, y: 400}, {x: 700, y: 200}, {x: 600, y: 100},
-                {x: 200, y: 400}, {x: 100, y: 250}
+                {x: 80, y: 100}, {x: 200, y: 100}, {x: 300, y: 150},
+                {x: 350, y: 250}, {x: 300, y: 350}, {x: 200, y: 400},
+                {x: 150, y: 500}, {x: 250, y: 550}, {x: 400, y: 550},
+                {x: 550, y: 500}, {x: 600, y: 400}, {x: 550, y: 300},
+                {x: 600, y: 200}, {x: 700, y: 150}, {x: 720, y: 250},
+                {x: 700, y: 400}, {x: 720, y: 500}, {x: 650, y: 550},
+                {x: 400, y: 550}, {x: 250, y: 550}, {x: 150, y: 500},
+                {x: 200, y: 400}, {x: 300, y: 350}, {x: 350, y: 250},
+                {x: 300, y: 150}, {x: 200, y: 100}, {x: 80, y: 100}
             ],
             itemBoxes: [
-                {x: 275, y: 125, active: true},
-                {x: 400, y: 375, active: true},
-                {x: 650, y: 150, active: true}
+                {x: 300, y: 150, active: true},
+                {x: 200, y: 400, active: true},
+                {x: 600, y: 400, active: true},
+                {x: 400, y: 550, active: true}
             ],
-            trees: [{x:500, y:200}, {x:150, y:250}, {x:550, y:500}, {x:75, y:100}, {x:725, y:450}],
+            trees: [{x:450, y:300}, {x:150, y:250}, {x:500, y:150}, {x:350, y:450}],
             questions: [
                 { q: "Choose the correct spelling:", options: ["Nite", "Night", "Nighght"], a: 1 },
                 { q: "Which is spelled correctly?", options: ["Becuz", "Because", "Becuase"], a: 1 },
@@ -405,19 +432,23 @@
         plurals: {
             name: "Plurals Parkway",
             skill: "Plurals",
-            description: "Learn to make one into many!",
+            description: "One to many - Rectangle Track!",
             color: "#a855f7", // Purple theme
+            // Large rectangle with rounded corners
             trackPoints: [
-                {x: 100, y: 300}, {x: 200, y: 100}, {x: 500, y: 100},
-                {x: 700, y: 300}, {x: 600, y: 500}, {x: 400, y: 400},
-                {x: 200, y: 500}, {x: 100, y: 300}
+                {x: 80, y: 150}, {x: 200, y: 80}, {x: 400, y: 60},
+                {x: 600, y: 80}, {x: 720, y: 150}, {x: 720, y: 300},
+                {x: 720, y: 450}, {x: 600, y: 520}, {x: 400, y: 540},
+                {x: 200, y: 520}, {x: 80, y: 450}, {x: 80, y: 300},
+                {x: 80, y: 150}
             ],
             itemBoxes: [
-                {x: 350, y: 100, active: true},
-                {x: 650, y: 300, active: true},
-                {x: 300, y: 450, active: true}
+                {x: 400, y: 60, active: true},
+                {x: 720, y: 300, active: true},
+                {x: 400, y: 540, active: true},
+                {x: 80, y: 300, active: true}
             ],
-            trees: [{x:400, y:300}, {x:150, y:150}, {x:650, y:450}, {x:50, y:50}, {x:750, y:550}],
+            trees: [{x:400, y:300}, {x:300, y:200}, {x:500, y:400}, {x:300, y:400}, {x:500, y:200}],
             questions: [
                 { q: "Plural of 'baby':", options: ["Babys", "Babies", "Baby's"], a: 1 },
                 { q: "More than one 'box':", options: ["Boxs", "Boxes", "Boxies"], a: 1 },
@@ -781,21 +812,40 @@
         });
 
 
-        // Draw Asphalt
+        // Draw Track Barriers (outer red/white edge)
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
+        ctx.strokeStyle = "#dc2626"; // Red barriers
+        ctx.lineWidth = 110;
+
+        ctx.beginPath();
+        ctx.moveTo(TRACK_POINTS[0].x, TRACK_POINTS[0].y);
+        for(let i=1; i<TRACK_POINTS.length; i++) {
+             ctx.lineTo(TRACK_POINTS[i].x, TRACK_POINTS[i].y);
+        }
+        ctx.closePath();
+        ctx.stroke();
+
+        // Draw white stripe on barrier
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 106;
+        ctx.setLineDash([20, 20]);
+        ctx.beginPath();
+        ctx.moveTo(TRACK_POINTS[0].x, TRACK_POINTS[0].y);
+        for(let i=1; i<TRACK_POINTS.length; i++) {
+             ctx.lineTo(TRACK_POINTS[i].x, TRACK_POINTS[i].y);
+        }
+        ctx.closePath();
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Draw Asphalt (main track surface)
         ctx.strokeStyle = "#555";
         ctx.lineWidth = 100;
 
         ctx.beginPath();
         ctx.moveTo(TRACK_POINTS[0].x, TRACK_POINTS[0].y);
         for(let i=1; i<TRACK_POINTS.length; i++) {
-            // Use quadratic curves for smoothness?
-            // Simple lines for now to ensure collision logic matches visual easily
-            // Actually, let's use curveto for visuals
-             // To make it look like a track, we use the points as control points roughly
-             // For this simple demo, connecting lines is safer for "isPointInPath" check logic if we implemented that.
-             // But let's just draw lines with round join.
              ctx.lineTo(TRACK_POINTS[i].x, TRACK_POINTS[i].y);
         }
         ctx.closePath();
@@ -828,16 +878,20 @@
         ctx.setLineDash([]);
     }
 
-    function checkOnTrack(x, y) {
-        // Simplified Logic: Distance to nearest Track Line Segment
-        // In a real robust game, we'd use a hidden canvas or strict math.
-        // Here, we iterate segments.
-        let onTrack = false;
-        
+    // Track width constant for barrier collision
+    const TRACK_WIDTH = 50; // Half track width (track is 100px wide)
+    const BARRIER_BOUNCE = 0.5; // How much speed is retained when hitting barrier
+
+    function getTrackInfo(x, y) {
+        // Returns information about position relative to track
+        // Including closest point on track center and distance
+        let minDistance = Infinity;
+        let closestPoint = {x: 0, y: 0};
+
         for(let i=0; i<TRACK_POINTS.length; i++) {
             let p1 = TRACK_POINTS[i];
             let p2 = TRACK_POINTS[(i+1)%TRACK_POINTS.length];
-            
+
             // Distance from point to line segment
             let A = x - p1.x;
             let B = y - p1.y;
@@ -847,7 +901,7 @@
             let dot = A * C + B * D;
             let len_sq = C * C + D * D;
             let param = -1;
-            if (len_sq != 0) // in case of 0 length line
+            if (len_sq != 0)
                 param = dot / len_sq;
 
             let xx, yy;
@@ -869,12 +923,57 @@
             let dy = y - yy;
             let distance = Math.sqrt(dx * dx + dy * dy);
 
-            if(distance < 50) { // 50 is half track width
-                onTrack = true;
-                break;
+            if(distance < minDistance) {
+                minDistance = distance;
+                closestPoint = {x: xx, y: yy};
             }
         }
-        return onTrack;
+
+        return {
+            onTrack: minDistance < TRACK_WIDTH,
+            distance: minDistance,
+            closestPoint: closestPoint
+        };
+    }
+
+    function checkOnTrack(x, y) {
+        return getTrackInfo(x, y).onTrack;
+    }
+
+    function applyBarrierCollision(kart) {
+        // Check if kart is off track and push back onto track
+        let info = getTrackInfo(kart.x, kart.y);
+
+        if (!info.onTrack) {
+            // Calculate direction from closest point to kart
+            let dx = kart.x - info.closestPoint.x;
+            let dy = kart.y - info.closestPoint.y;
+            let dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist > 0) {
+                // Normalize direction
+                dx /= dist;
+                dy /= dist;
+
+                // Push kart back to edge of track (just inside the barrier)
+                kart.x = info.closestPoint.x + dx * (TRACK_WIDTH - 5);
+                kart.y = info.closestPoint.y + dy * (TRACK_WIDTH - 5);
+
+                // Reduce speed on barrier hit
+                kart.speed *= BARRIER_BOUNCE;
+
+                // Bounce angle slightly toward track center
+                let angleToCenter = Math.atan2(info.closestPoint.y - kart.y, info.closestPoint.x - kart.x);
+                let angleDiff = angleToCenter - kart.angle;
+
+                // Normalize angle difference
+                while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+
+                // Adjust angle slightly toward track
+                kart.angle += angleDiff * 0.3;
+            }
+        }
     }
 
     function drawItemBoxes() {
@@ -933,20 +1032,12 @@
         // Player Controls
         if (keys['ArrowLeft']) playerKart.angle -= TURN_SPEED;
         if (keys['ArrowRight']) playerKart.angle += TURN_SPEED;
-        
-        // Auto accelerate (Mario Kart style) or manual? Let's do auto for accessibility
-        // But slow down if button not pressed? No, let's keep it simple:
-        // Always accel unless offroad.
-        let targetSpeed = MAX_SPEED;
 
-        // Check Terrain
-        if(!checkOnTrack(playerKart.x, playerKart.y)) {
-            targetSpeed = OFFROAD_SPEED;
-        }
+        // Auto accelerate - always at max speed (barriers keep you on track)
+        let targetSpeed = MAX_SPEED;
 
         // Apply Speed
         if(playerKart.speed < targetSpeed) playerKart.speed += ACCELERATION;
-        if(playerKart.speed > targetSpeed) playerKart.speed -= ACCELERATION * 2; // Slow down fast offroad
 
         // Item Box Collision
         ITEM_BOXES.forEach(box => {
@@ -962,6 +1053,9 @@
 
         // Update all karts
         karts.forEach(k => k.update());
+
+        // Apply barrier collision to all karts (keeps them on track)
+        karts.forEach(k => applyBarrierCollision(k));
 
         checkLapLogic();
 
