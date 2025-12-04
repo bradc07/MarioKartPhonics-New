@@ -204,12 +204,16 @@
         <div id="hud-score" class="hud hidden" style="top: 50px;">Score: 0/0</div>
 
         <!-- Speed Toggle -->
-        <div id="speed-toggle" class="speed-toggle hidden">
+        <div id="speed-toggle" class="speed-toggle hidden" style="bottom: 20px;">
             <div class="speed-toggle-label">Race Speed</div>
             <div class="speed-options">
                 <button class="speed-btn" onclick="setRaceSpeed('slow')">Slow</button>
                 <button class="speed-btn active" onclick="setRaceSpeed('medium')">Medium</button>
                 <button class="speed-btn" onclick="setRaceSpeed('fast')">Fast</button>
+            </div>
+            <div class="speed-toggle-label" style="margin-top: 10px;">Assist Mode</div>
+            <div class="speed-options">
+                <button class="speed-btn active" id="assist-btn" onclick="toggleAssist()">Assist: ON</button>
             </div>
         </div>
 
@@ -585,6 +589,10 @@
     let wrongAnswers = []; // Store wrong answers for review
     let currentQuestion = null; // Currently displayed question (for tracking wrong answers)
 
+    // Assist Mode (makes game easier for younger players)
+    let steeringAssist = true; // Auto-steer toward track
+    let easyMode = true; // Slower AI opponents
+
     // Speed Presets
     const SPEED_PRESETS = {
         slow: {
@@ -738,7 +746,8 @@
             // AI specific
             this.waypointIndex = 1;
             this.startOffset = startOffset; // Stagger AI start
-            this.aiSpeedMod = 0.8 + Math.random() * 0.3; // Slight variance in AI skill
+            // AI speed - slower in easy mode to let player win more easily
+            this.aiSpeedMod = easyMode ? (0.5 + Math.random() * 0.2) : (0.8 + Math.random() * 0.3);
         }
 
         update() {
@@ -1239,6 +1248,28 @@
         console.log(`Race speed set to: ${speed}`);
     }
 
+    function toggleAssist() {
+        // Toggle both steering assist and easy mode together
+        steeringAssist = !steeringAssist;
+        easyMode = !easyMode;
+
+        const btn = document.getElementById('assist-btn');
+        if (steeringAssist) {
+            btn.innerText = 'Assist: ON';
+            btn.classList.add('active');
+        } else {
+            btn.innerText = 'Assist: OFF';
+            btn.classList.remove('active');
+        }
+
+        // Update AI speeds for existing karts
+        karts.filter(k => !k.isPlayer).forEach(k => {
+            k.aiSpeedMod = easyMode ? (0.5 + Math.random() * 0.2) : (0.8 + Math.random() * 0.3);
+        });
+
+        console.log(`Assist mode: ${steeringAssist ? 'ON' : 'OFF'}`);
+    }
+
     function drawTrack() {
         const scale = getScale();
         const avgScale = (scale.x + scale.y) / 2; // Average scale for circular elements
@@ -1616,19 +1647,60 @@
         if (!isGhostCursed) {
             if (keys['ArrowLeft']) playerKart.angle -= TURN_SPEED;
             if (keys['ArrowRight']) playerKart.angle += TURN_SPEED;
+
+            // Steering Assist - gently guide player toward track when not steering
+            if (steeringAssist && !keys['ArrowLeft'] && !keys['ArrowRight']) {
+                // Find the nearest waypoint ahead
+                let bestWaypoint = null;
+                let bestScore = -Infinity;
+
+                for (let i = 0; i < TRACK_POINTS.length; i++) {
+                    const wp = TRACK_POINTS[i];
+                    const dx = wp.x - playerKart.x;
+                    const dy = wp.y - playerKart.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    // Calculate angle to waypoint
+                    const angleToWp = Math.atan2(dy, dx);
+                    let angleDiff = angleToWp - playerKart.angle;
+                    while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                    while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+
+                    // Score waypoints that are ahead of us and not too close
+                    if (dist > 50 && dist < 400 && Math.abs(angleDiff) < Math.PI * 0.7) {
+                        const score = (1 / dist) * 1000 - Math.abs(angleDiff) * 50;
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestWaypoint = wp;
+                        }
+                    }
+                }
+
+                // Gently steer toward the best waypoint
+                if (bestWaypoint) {
+                    const dx = bestWaypoint.x - playerKart.x;
+                    const dy = bestWaypoint.y - playerKart.y;
+                    const targetAngle = Math.atan2(dy, dx);
+                    let angleDiff = targetAngle - playerKart.angle;
+
+                    while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                    while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+
+                    // Apply gentle steering (30% of normal turn speed)
+                    playerKart.angle += angleDiff * TURN_SPEED * 0.3;
+                }
+            }
         } else {
             // Ghost curse: can't move
             playerKart.speed = 0;
         }
-        
-        // Auto accelerate (Mario Kart style) or manual? Let's do auto for accessibility
-        // But slow down if button not pressed? No, let's keep it simple:
-        // Always accel unless offroad.
+
+        // Auto accelerate (Mario Kart style) - always moving forward
         let targetSpeed = MAX_SPEED;
 
-        // Check Terrain
+        // Check Terrain - but with assist mode, reduce offroad penalty
         if(!checkOnTrack(playerKart.x, playerKart.y)) {
-            targetSpeed = OFFROAD_SPEED;
+            targetSpeed = easyMode ? OFFROAD_SPEED * 1.5 : OFFROAD_SPEED; // Less penalty in easy mode
         }
 
         // Apply Speed
