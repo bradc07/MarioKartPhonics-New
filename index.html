@@ -387,66 +387,6 @@
     // TRACK DEFINITIONS - Each track has a theme, color, and skill-specific questions
     const TRACKS = [
         {
-            id: 'vowel-sounds',
-            name: 'Vowel Valley',
-            icon: '🌈',
-            color: '#ef4444',
-            description: 'Long & short vowel sounds (ai, ee, oa, oo)',
-            questions: {
-                easy: [
-                    { q: "Which word has the /ai/ sound?", options: ["Rain", "Run", "Red"], a: 0, explanation: "'Rain' has the /ai/ sound. The 'ai' makes a long 'a' sound like in 'train' and 'pain'." },
-                    { q: "Which word has the /ee/ sound?", options: ["Tree", "Trick", "Truck"], a: 0, explanation: "'Tree' has the /ee/ sound. The 'ee' makes a long 'e' sound like in 'bee' and 'see'." },
-                    { q: "Pick the word with 'oo':", options: ["Book", "Bake", "Bike"], a: 0, explanation: "'Book' has 'oo'. This 'oo' makes a short sound. In 'moon' it makes a long sound." },
-                    { q: "What sound does 'oa' make in 'boat'?", options: ["Long o", "Short o", "Ow"], a: 0, explanation: "'oa' makes a long 'o' sound, like saying the letter O. Boat, coat, and goat all have this sound." },
-                    { q: "Which has the /oo/ sound like 'moon'?", options: ["Soon", "Book", "Foot"], a: 0, explanation: "'Soon' has the long /oo/ sound like 'moon'. 'Book' and 'foot' have the short /oo/ sound." }
-                ],
-                medium: [
-                    { q: "Which word has the long 'a' sound?", options: ["Cat", "Cake", "Car"], a: 1, explanation: "'Cake' has the long 'a' sound because of the magic 'e' at the end. The 'e' makes the 'a' say its name." },
-                    { q: "Find the word with /igh/ sound:", options: ["Bright", "Bit", "Boat"], a: 0, explanation: "'Bright' has the /igh/ sound. The 'igh' makes a long 'i' sound like in 'night' and 'light'." },
-                    { q: "Which uses 'ea' for /ee/?", options: ["Bread", "Beach", "Break"], a: 1, explanation: "'Beach' uses 'ea' to make the /ee/ sound. But be careful - 'bread' and 'break' use 'ea' differently!" },
-                    { q: "Pick the word with long 'o':", options: ["Hope", "Hop", "Hot"], a: 0, explanation: "'Hope' has the long 'o' because of the magic 'e'. Without it, 'hop' has a short 'o' sound." },
-                    { q: "Which word has /ow/ like 'snow'?", options: ["Grow", "Now", "How"], a: 0, explanation: "'Grow' has the /ow/ sound like 'snow'. 'Now' and 'how' have a different 'ow' sound like 'cow'." }
-                ],
-                hard: [
-                    { q: "Which has 'ough' making /oo/?", options: ["Through", "Tough", "Though"], a: 0, explanation: "'Through' has 'ough' making /oo/. English is tricky - 'tough' sounds like 'uff' and 'though' sounds like 'oh'!" },
-                    { q: "Find the silent 'e' word:", options: ["Have", "Make", "Give"], a: 1, explanation: "'Make' has a silent 'e' that makes the 'a' long. 'Have' and 'give' are tricky words where 'e' doesn't follow the rule." },
-                    { q: "Which 'ei' makes /ee/?", options: ["Receive", "Eight", "Vein"], a: 0, explanation: "'Receive' uses 'ei' to make /ee/. Remember: 'i before e except after c' - receive has 'c' before it!" },
-                    { q: "Pick the word where 'y' sounds like /ee/:", options: ["My", "Happy", "Yes"], a: 1, explanation: "'Happy' ends with 'y' that sounds like /ee/. At the end of words, 'y' often makes the /ee/ sound." },
-                    { q: "Which has /or/ sound?", options: ["Word", "Worn", "Worm"], a: 1, explanation: "'Worn' has the clear /or/ sound. 'Word' and 'worm' have 'or' but sound like /er/ - tricky!" }
-                ]
-            }
-        },
-        {
-            id: 'consonant-blends',
-            name: 'Blend Boulevard',
-            icon: '🔤',
-            color: '#3b82f6',
-            description: 'Consonant digraphs & blends (ch, sh, th, bl, str)',
-            questions: {
-                easy: [
-                    { q: "Which word starts with 'ch'?", options: ["Chip", "Ship", "Trip"], a: 0, explanation: "'Chip' starts with 'ch'. The 'ch' sound is different from 'sh' - try saying them both!" },
-                    { q: "What makes the /sh/ sound?", options: ["s", "sh", "ch"], a: 1, explanation: "'sh' makes the /sh/ sound like in 'ship', 'shop', and 'shell'. Put your finger to your lips - shhh!" },
-                    { q: "Which starts with 'th'?", options: ["That", "Cat", "Fat"], a: 0, explanation: "'That' starts with 'th'. Put your tongue between your teeth to make the /th/ sound!" },
-                    { q: "Pick the 'bl' blend word:", options: ["Black", "Back", "Brick"], a: 0, explanation: "'Black' starts with 'bl' blend. You hear both the 'b' and 'l' sounds together quickly." },
-                    { q: "Which ends with 'ck'?", options: ["Duck", "Dug", "Duke"], a: 0, explanation: "'Duck' ends with 'ck'. After a short vowel, we usually use 'ck' not just 'k'." }
-                ],
-                medium: [
-                    { q: "Find the 'str' blend:", options: ["Strong", "Song", "Sting"], a: 0, explanation: "'Strong' has the 'str' blend - three consonants together! Say it slowly: s-t-r-ong." },
-                    { q: "Which has 'wh' sound?", options: ["What", "Wet", "Want"], a: 0, explanation: "'What' starts with 'wh'. Some people say /w/ and some say /hw/ - both are correct!" },
-                    { q: "Pick the word with 'ng':", options: ["Ring", "Rig", "Rim"], a: 0, explanation: "'Ring' has 'ng' at the end. This makes a special sound at the back of your throat - try it!" },
-                    { q: "Which starts with 'spr'?", options: ["Spring", "Sing", "String"], a: 0, explanation: "'Spring' has the 'spr' blend - three sounds s-p-r together at the start." },
-                    { q: "Find the 'nch' ending:", options: ["Lunch", "Lung", "Lush"], a: 0, explanation: "'Lunch' ends with 'nch'. You can hear 'n' then 'ch' - like 'bunch' and 'punch'." }
-                ],
-                hard: [
-                    { q: "Which has 'tch' making /ch/?", options: ["Catch", "Chat", "Much"], a: 0, explanation: "'Catch' uses 'tch' for the /ch/ sound. After a short vowel, we often use 'tch' instead of 'ch'." },
-                    { q: "Find the 'dge' sound:", options: ["Bridge", "Big", "Bring"], a: 0, explanation: "'Bridge' has 'dge' making a /j/ sound. After a short vowel, we use 'dge' not just 'ge'." },
-                    { q: "Which 'ph' makes /f/?", options: ["Phone", "Hop", "Pen"], a: 0, explanation: "'Phone' uses 'ph' to make the /f/ sound. This comes from Greek words - like 'photo' and 'elephant'." },
-                    { q: "Pick the silent 'w' word:", options: ["Write", "Wait", "Want"], a: 0, explanation: "'Write' has a silent 'w'. We don't say the 'w' in 'write', 'wrong', or 'wrist'." },
-                    { q: "Which has silent 'k'?", options: ["Knee", "Keep", "Key"], a: 0, explanation: "'Knee' has a silent 'k'. When 'kn' starts a word, the 'k' is silent - like 'know' and 'knife'." }
-                ]
-            }
-        },
-        {
             id: 'spelling-patterns',
             name: 'Spelling Speedway',
             icon: '✏️',
@@ -473,66 +413,6 @@
                     { q: "Past tense of 'try':", options: ["Tryed", "Tried", "Tryd"], a: 1, explanation: "'Tried' is correct. Change 'y' to 'i' before adding 'ed'." },
                     { q: "Choose the tricky word:", options: ["Should", "Shoud", "Shood"], a: 0, explanation: "'Should' is correct. The 'oul' is silent - we just say /shud/. Same pattern in 'could' and 'would'." },
                     { q: "Correct spelling:", options: ["Diffrent", "Different", "Diferent"], a: 1, explanation: "'Different' is correct. It has two 'f's and an 'e' - dif-fer-ent." }
-                ]
-            }
-        },
-        {
-            id: 'homophones',
-            name: 'Homophone Highway',
-            icon: '👯',
-            color: '#eab308',
-            description: 'Words that sound the same but spell differently',
-            questions: {
-                easy: [
-                    { q: "I can ___ with my eyes.", options: ["See", "Sea", "Cee"], a: 0, explanation: "'See' means to look with your eyes. 'Sea' is the ocean water. They sound the same but mean different things!" },
-                    { q: "I ___ to the shop.", options: ["Went", "Want", "Won't"], a: 0, explanation: "'Went' is past tense of 'go'. 'Want' means to wish for something." },
-                    { q: "The sky is ___.", options: ["Blew", "Blue", "Blu"], a: 1, explanation: "'Blue' is the color. 'Blew' is past tense of 'blow' - like the wind blew." },
-                    { q: "I have ___ books.", options: ["Too", "Two", "To"], a: 1, explanation: "'Two' is the number 2. 'Too' means also or very much. 'To' shows direction." },
-                    { q: "I can ___ the bell.", options: ["Here", "Hear", "Heer"], a: 1, explanation: "'Hear' means to listen with your ears. 'Here' means in this place." }
-                ],
-                medium: [
-                    { q: "The dog wagged its ___.", options: ["Tail", "Tale", "Tael"], a: 0, explanation: "'Tail' is the body part animals have. 'Tale' is a story - like a fairy tale!" },
-                    { q: "I ___ a letter.", options: ["Wrote", "Rote", "Right"], a: 0, explanation: "'Wrote' is past tense of write. 'Right' means correct or a direction." },
-                    { q: "Pick the homophone for 'Flour':", options: ["Floor", "Flower", "Flow"], a: 1, explanation: "'Flower' sounds like 'flour' (what we bake with). They're homophones - same sound, different meaning!" },
-                    { q: "We ___ the whole cake!", options: ["Ate", "Eight", "Ait"], a: 0, explanation: "'Ate' is past tense of eat. 'Eight' is the number 8. They sound exactly the same!" },
-                    { q: "The ___ is shining.", options: ["Sun", "Son", "Sunn"], a: 0, explanation: "'Sun' is the star in the sky. 'Son' is a male child. Same sound, different spelling!" }
-                ],
-                hard: [
-                    { q: "Which is the homophone for 'There'?", options: ["Their", "They're", "Both"], a: 2, explanation: "Both 'their' (belonging to them) and 'they're' (they are) sound like 'there' (a place). Three homophones!" },
-                    { q: "I ___ a bike yesterday.", options: ["Road", "Rode", "Rowed"], a: 1, explanation: "'Rode' is past tense of ride. 'Road' is a street. 'Rowed' means used oars in a boat." },
-                    { q: "Homophone for 'Piece':", options: ["Peace", "Peas", "Peice"], a: 0, explanation: "'Peace' (calm, no fighting) sounds like 'piece' (a part of something). Different meanings!" },
-                    { q: "The ___ is heavy.", options: ["Wait", "Weight", "Wate"], a: 1, explanation: "'Weight' is how heavy something is. 'Wait' means to stay and not go yet." },
-                    { q: "___ going to the park.", options: ["There", "Their", "They're"], a: 2, explanation: "'They're' means 'they are' going to the park. It's short for two words joined together." }
-                ]
-            }
-        },
-        {
-            id: 'suffixes-prefixes',
-            name: 'Prefix Peak',
-            icon: '🏔️',
-            color: '#8b5cf6',
-            description: 'Word beginnings & endings (un-, re-, -ed, -ing, -ful)',
-            questions: {
-                easy: [
-                    { q: "Which word has 'ing'?", options: ["Running", "Run", "Ran"], a: 0, explanation: "'Running' has 'ing' added to 'run'. We add 'ing' to show something is happening right now." },
-                    { q: "Add 'ed' to 'jump':", options: ["Jumped", "Jumping", "Jumper"], a: 0, explanation: "'Jumped' has 'ed' added. We use 'ed' to show something already happened in the past." },
-                    { q: "Which has 's' added?", options: ["Cats", "Cat", "Catch"], a: 0, explanation: "'Cats' has 's' added to show more than one cat. This is called making it plural." },
-                    { q: "'Un' means:", options: ["Not", "Again", "Before"], a: 0, explanation: "'Un' means not. Unhappy = not happy. Unkind = not kind." },
-                    { q: "Which word ends in 'er'?", options: ["Bigger", "Big", "Bigg"], a: 0, explanation: "'Bigger' ends in 'er' which means more. Big → bigger → biggest." }
-                ],
-                medium: [
-                    { q: "Which suffix means 'more'?", options: ["-ed", "-er", "-est"], a: 1, explanation: "'-er' means more. Tall → taller (more tall). Fast → faster (more fast)." },
-                    { q: "'Re' in 'redo' means:", options: ["Not", "Again", "Before"], a: 1, explanation: "'Re' means again. Redo = do again. Replay = play again. Reread = read again." },
-                    { q: "Add prefix: un + happy =", options: ["Unhappy", "Rehappy", "Dishappy"], a: 0, explanation: "'Unhappy' means not happy. 'Un-' goes at the start to make the opposite meaning." },
-                    { q: "Which has suffix '-ful'?", options: ["Careful", "Careless", "Caring"], a: 0, explanation: "'Careful' has '-ful' meaning full of care. 'Careless' has '-less' meaning without care." },
-                    { q: "Add suffix: play + ing =", options: ["Playing", "Played", "Player"], a: 0, explanation: "'Playing' adds 'ing' to show the action is happening now. Just add 'ing' to 'play'." }
-                ],
-                hard: [
-                    { q: "happy + ness =", options: ["Happyness", "Happiness", "Happness"], a: 1, explanation: "'Happiness' is correct. Change 'y' to 'i' before adding 'ness'." },
-                    { q: "Which uses '-less'?", options: ["Hopeless", "Hopeful", "Hoping"], a: 0, explanation: "'Hopeless' uses '-less' meaning without hope. '-less' means without something." },
-                    { q: "'Dis' in 'disagree' means:", options: ["Again", "Not", "Before"], a: 1, explanation: "'Dis' means not or opposite. Disagree = not agree. Disappear = not appear." },
-                    { q: "run + er =", options: ["Runer", "Runner", "Runing"], a: 1, explanation: "'Runner' doubles the 'n'. When adding 'er' to short words with short vowels, double the last letter." },
-                    { q: "Which suffix makes a noun?", options: ["-ment", "-ly", "-ed"], a: 0, explanation: "'-ment' makes nouns: enjoy → enjoyment, move → movement. '-ly' makes adverbs, '-ed' makes past tense." }
                 ]
             }
         },
