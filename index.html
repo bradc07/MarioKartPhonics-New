@@ -235,7 +235,7 @@
                 <div class="space-y-3">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 bg-yellow-400 rounded flex items-center justify-center font-bold text-white shadow">?</div>
-                        <p class="text-sm">Yellow boxes = Answer questions!</p>
+                        <p class="text-sm">Yellow boxes = Answer questions! Collect all 3 each lap to cross the finish.</p>
                     </div>
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 bg-gradient-to-r from-red-500 via-yellow-500 to-purple-500 rounded flex items-center justify-center font-bold text-white shadow">★</div>
@@ -322,6 +322,13 @@
                 <div id="encouragement" class="mb-4 p-4 bg-green-50 border-2 border-green-200 rounded-lg text-left">
                     <h2 class="text-lg font-bold text-green-800 mb-1">Great driving!</h2>
                     <p id="encouragement-text" class="text-sm text-green-700">You finished strong—keep practicing to get every answer right!</p>
+                </div>
+                <div id="award-banner" class="mb-4 p-4 bg-indigo-50 border-2 border-indigo-200 rounded-lg text-left hidden">
+                    <div class="flex items-center justify-between mb-2">
+                        <h2 class="text-lg font-bold text-indigo-900">Special Award</h2>
+                        <span id="award-label" class="px-3 py-1 text-xs font-bold rounded-full bg-indigo-100 text-indigo-800">Consistency Cup</span>
+                    </div>
+                    <p id="award-criteria" class="text-sm text-indigo-800">Earned by keeping accuracy high across lots of questions.</p>
                 </div>
                 <div class="mb-4 p-4 bg-white border-2 border-gray-100 rounded-lg shadow-sm">
                     <div class="flex items-center justify-between mb-3">
@@ -626,6 +633,9 @@
         {x: 700, y: 300}, {x: 600, y: 500}, {x: 400, y: 400},
         {x: 200, y: 500}, {x: 100, y: 300}
     ];
+
+    const QUESTIONS_PER_LAP = 3;
+    let questionsThisLap = 0;
 
     // Start/Finish band sizing (applied after scaling)
     const FINISH_BAND_DEPTH = 28;
@@ -1296,6 +1306,7 @@
         totalResponseTime = 0;
         questionStartTime = 0;
         raceStartTime = Date.now();
+        questionsThisLap = 0;
         updateScoreDisplay();
 
         // Show mobile controls if on mobile
@@ -1322,7 +1333,7 @@
     }
 
     function updateScoreDisplay() {
-        document.getElementById('hud-score').innerText = `Score: ${score.correct}/${score.total}`;
+        document.getElementById('hud-score').innerText = `Score: ${score.correct}/${score.total} | Lap Q: ${Math.min(questionsThisLap, QUESTIONS_PER_LAP)}/${QUESTIONS_PER_LAP}`;
     }
 
     function setRaceSpeed(speed) {
@@ -1801,28 +1812,35 @@
 
         if(onFinishBand) {
             if (!p.inFinishZone && p.passedMidpoint) {
-                p.lap++;
-                p.passedMidpoint = false;
+                if (questionsThisLap < QUESTIONS_PER_LAP) {
+                    const remaining = QUESTIONS_PER_LAP - questionsThisLap;
+                    showFloatingText(`Answer ${remaining} more question${remaining === 1 ? '' : 's'}!`, p.x, p.y, '#facc15');
+                } else {
+                    p.lap++;
+                    p.passedMidpoint = false;
+                    questionsThisLap = 0;
 
-                // Respawn item boxes on new lap
-                ITEM_BOXES.forEach(b => b.active = true);
+                    // Respawn item boxes on new lap
+                    ITEM_BOXES.forEach(b => b.active = true);
 
-                // Enable power-up boxes from lap 2+
-                if(p.lap >= 2) {
-                    POWERUP_BOXES.forEach(b => b.active = true);
-                }
+                    // Enable power-up boxes from lap 2+
+                    if(p.lap >= 2) {
+                        POWERUP_BOXES.forEach(b => b.active = true);
+                    }
 
-                // Update difficulty based on lap
-                if(p.lap === 2) {
-                    currentDifficulty = 'medium';
-                } else if(p.lap === 3) {
-                    currentDifficulty = 'hard';
-                }
+                    // Update difficulty based on lap
+                    if(p.lap === 2) {
+                        currentDifficulty = 'medium';
+                    } else if(p.lap === 3) {
+                        currentDifficulty = 'hard';
+                    }
 
-                document.getElementById('hud-lap').innerText = `Lap: ${p.lap}/${lapsTotal}`;
+                    document.getElementById('hud-lap').innerText = `Lap: ${p.lap}/${lapsTotal}`;
+                    updateScoreDisplay();
 
-                if(p.lap > lapsTotal) {
-                    finishGame();
+                    if(p.lap > lapsTotal) {
+                        finishGame();
+                    }
                 }
             }
             p.inFinishZone = true;
@@ -2147,6 +2165,7 @@
 
         gameState = 'racing';
 
+        questionsThisLap++;
         if (isCorrect) {
             // Reward system based on lap
             if (playerKart.lap === 1) {
@@ -2324,6 +2343,29 @@
         document.getElementById('final-score').innerText = `${score.correct}/${score.total}`;
         const percentage = score.total > 0 ? Math.round((score.correct / score.total) * 100) : 0;
         document.getElementById('score-percentage').innerText = `${percentage}% correct`;
+
+        const awardBanner = document.getElementById('award-banner');
+        const awardLabel = document.getElementById('award-label');
+        const awardCriteria = document.getElementById('award-criteria');
+        const fullLapQuestionGoal = lapsTotal * QUESTIONS_PER_LAP;
+
+        let awardName = 'Warm-Up Ribbon';
+        let awardMessage = `Answer at least ${QUESTIONS_PER_LAP} questions each lap to unlock the big trophies.`;
+
+        if (score.total >= fullLapQuestionGoal && percentage >= 90) {
+            awardName = 'Grand Champion Cup';
+            awardMessage = "Earned for answering every lap's questions with 90%+ accuracy—stellar stamina and skill!";
+        } else if (score.total >= fullLapQuestionGoal && percentage >= 75) {
+            awardName = 'Consistency Cup';
+            awardMessage = "Awarded for keeping strong accuracy while tackling every lap's questions.";
+        } else if (score.total >= QUESTIONS_PER_LAP && percentage >= 60) {
+            awardName = 'Determined Driver Medal';
+            awardMessage = `Great effort! Try answering all ${fullLapQuestionGoal} boxes next race to level up the award.`;
+        }
+
+        awardLabel.innerText = awardName;
+        awardCriteria.innerText = awardMessage;
+        awardBanner.classList.remove('hidden');
 
         // Populate stat cards
         const avgResponse = score.total > 0 ? (totalResponseTime / score.total) / 1000 : 0;
