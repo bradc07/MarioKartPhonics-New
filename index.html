@@ -694,6 +694,10 @@
         {x: 200, y: 500}, {x: 100, y: 300}
     ];
 
+    // Start/Finish band sizing (applied after scaling)
+    const FINISH_BAND_DEPTH = 28;
+    const FINISH_LINE_HEIGHT_FACTOR = 1.6;
+
     // Item Boxes (Question boxes) - Base coordinates
     const BASE_ITEM_BOXES = [
         {x: 350, y: 100, active: true, type: 'question'},
@@ -720,6 +724,14 @@
     let TRACK_POINTS = [];
     let ITEM_BOXES = [];
     let POWERUP_BOXES = [];
+    let startFinishAnchor = { x: 0, y: 0 };
+    let startFinishAngle = 0;
+
+    function getTrackHalfWidth() {
+        const scale = getScale();
+        const avgScale = (scale.x + scale.y) / 2;
+        return 50 * avgScale;
+    }
 
     function updateScaledPositions() {
         const scale = getScale();
@@ -742,6 +754,15 @@
             active: b.active,
             type: b.type
         }));
+
+        // Anchor the start/finish band on the long top straight between points 1 and 2
+        const startNode = TRACK_POINTS[1];
+        const endNode = TRACK_POINTS[2];
+        startFinishAnchor = {
+            x: (startNode.x + endNode.x) / 2,
+            y: (startNode.y + endNode.y) / 2
+        };
+        startFinishAngle = Math.atan2(endNode.y - startNode.y, endNode.x - startNode.x);
     }
 
     let lapsTotal = 3;
@@ -792,6 +813,8 @@
             this.lap = 1;
             this.checkpointIndex = 0; // To track progress
             this.finished = false;
+            this.passedMidpoint = false;
+            this.inFinishZone = false;
             this.spinUntil = 0; // Timestamp for spin effect
             this.characterImg = characterImg; // Character image
             this.imgLoaded = imgLoaded; // Function to check if image is loaded
@@ -1309,7 +1332,7 @@
     function drawTrack() {
         const scale = getScale();
         const avgScale = (scale.x + scale.y) / 2;
-        const trackHalfWidth = 50 * avgScale;
+        const trackHalfWidth = getTrackHalfWidth();
         const barrierWidth = 10 * avgScale;
 
         // Premium grass with gradient
@@ -1470,18 +1493,14 @@
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Start/Finish Line - crisp checkerboard band perpendicular to the first straight
-        const startPoint = TRACK_POINTS[0];
-        const nextPoint = TRACK_POINTS[1];
-        const startAngle = Math.atan2(nextPoint.y - startPoint.y, nextPoint.x - startPoint.x);
-
+        // Start/Finish Line - crisp checkerboard band set on the long top straight
         ctx.save();
-        ctx.translate(startPoint.x, startPoint.y);
-        ctx.rotate(startAngle);
+        ctx.translate(startFinishAnchor.x, startFinishAnchor.y);
+        ctx.rotate(startFinishAngle);
 
         const checkSize = 10 * avgScale;
-        const bandDepth = 28 * avgScale; // thickness along the driving direction
-        const lineHeight = trackHalfWidth * 1.6; // span across the full track width
+        const bandDepth = FINISH_BAND_DEPTH * avgScale; // thickness along the driving direction
+        const lineHeight = trackHalfWidth * FINISH_LINE_HEIGHT_FACTOR; // span across the full track width
         const cols = Math.ceil(bandDepth / checkSize) + 1;
         const rows = Math.ceil(lineHeight / checkSize) + 1;
         const xStart = -bandDepth / 2;
@@ -1774,45 +1793,71 @@
         bananas.forEach(banana => banana.draw());
     }
 
+    function isInFinishBand(kart) {
+        const scale = getScale();
+        const avgScale = (scale.x + scale.y) / 2;
+        const trackHalfWidth = getTrackHalfWidth();
+        const bandDepth = FINISH_BAND_DEPTH * avgScale;
+        const lineHeight = trackHalfWidth * FINISH_LINE_HEIGHT_FACTOR;
+
+        const dx = kart.x - startFinishAnchor.x;
+        const dy = kart.y - startFinishAnchor.y;
+        const cosA = Math.cos(-startFinishAngle);
+        const sinA = Math.sin(-startFinishAngle);
+
+        // Rotate into band space (x = travel direction, y = across track)
+        const localX = dx * cosA - dy * sinA;
+        const localY = dx * sinA + dy * cosA;
+
+        const withinAlongTrack = Math.abs(localX) <= bandDepth * 0.7; // generous depth to avoid missed laps
+        const withinAcrossTrack = Math.abs(localY) <= lineHeight / 2;
+
+        return withinAlongTrack && withinAcrossTrack;
+    }
+
     function checkLapLogic() {
         // Determine player progress.
-        // Simplified: Check distance to start line (index 0)
+        // Simplified: Check distance to midpoint and crossing through finish band on the top straight
         let p = playerKart;
-        let startNode = TRACK_POINTS[0];
-        let dist = Math.sqrt((p.x - startNode.x)**2 + (p.y - startNode.y)**2);
-
-        // Very basic lap counter: must pass midpoint (index 4) then reach start
         let midNode = TRACK_POINTS[4];
         let midDist = Math.sqrt((p.x - midNode.x)**2 + (p.y - midNode.y)**2);
+        const midThreshold = getTrackHalfWidth() * 2;
 
-        if(midDist < 100) {
+        if(midDist < midThreshold) {
             p.passedMidpoint = true;
         }
 
-        if(p.passedMidpoint && dist < 100) {
-            p.lap++;
-            p.passedMidpoint = false;
+        const onFinishBand = isInFinishBand(p);
 
-            // Respawn item boxes on new lap
-            ITEM_BOXES.forEach(b => b.active = true);
+        if(onFinishBand) {
+            if (!p.inFinishZone && p.passedMidpoint) {
+                p.lap++;
+                p.passedMidpoint = false;
 
-            // Enable power-up boxes from lap 2+
-            if(p.lap >= 2) {
-                POWERUP_BOXES.forEach(b => b.active = true);
+                // Respawn item boxes on new lap
+                ITEM_BOXES.forEach(b => b.active = true);
+
+                // Enable power-up boxes from lap 2+
+                if(p.lap >= 2) {
+                    POWERUP_BOXES.forEach(b => b.active = true);
+                }
+
+                // Update difficulty based on lap
+                if(p.lap === 2) {
+                    currentDifficulty = 'medium';
+                } else if(p.lap === 3) {
+                    currentDifficulty = 'hard';
+                }
+
+                document.getElementById('hud-lap').innerText = `Lap: ${p.lap}/${lapsTotal}`;
+
+                if(p.lap > lapsTotal) {
+                    finishGame();
+                }
             }
-
-            // Update difficulty based on lap
-            if(p.lap === 2) {
-                currentDifficulty = 'medium';
-            } else if(p.lap === 3) {
-                currentDifficulty = 'hard';
-            }
-
-            document.getElementById('hud-lap').innerText = `Lap: ${p.lap}/${lapsTotal}`;
-
-            if(p.lap > lapsTotal) {
-                finishGame();
-            }
+            p.inFinishZone = true;
+        } else {
+            p.inFinishZone = false;
         }
     }
 
