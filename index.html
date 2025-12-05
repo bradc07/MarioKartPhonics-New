@@ -398,21 +398,36 @@
                     { q: "Which is spelled right?", options: ["Sed", "Said", "Sayd"], a: 1, explanation: "'Said' is correct. This is a tricky word - it doesn't sound like it's spelled!" },
                     { q: "Pick the correct spelling:", options: ["Wen", "When", "Whn"], a: 1, explanation: "'When' is correct. It starts with 'wh' and has an 'e' in the middle." },
                     { q: "Which is a real word?", options: ["Frog", "Frug", "Frag"], a: 0, explanation: "'Frog' is the real word - it's a green animal that hops and says ribbit!" },
-                    { q: "Correct spelling?", options: ["Thay", "They", "Thei"], a: 1, explanation: "'They' is correct. This is a tricky word you need to remember - t-h-e-y." }
+                    { q: "Correct spelling?", options: ["Thay", "They", "Thei"], a: 1, explanation: "'They' is correct. This is a tricky word you need to remember - t-h-e-y." },
+                    { q: "Spot the tricky word:", options: ["Becaws", "Because", "Becauss"], a: 1, explanation: "'Because' is a common exception word. Remember the rhyme 'big elephants can always understand small elephants'!" },
+                    { q: "Which word is spelled correctly?", options: ["House", "Howse", "Housse"], a: 0, explanation: "'House' has the sneaky 'ou' that sounds like /ow/." },
+                    { q: "Choose the right ending:", options: ["Play", "Plae", "Plei"], a: 0, explanation: "'Play' uses 'ay' for the long a sound at the end." },
+                    { q: "Which tricky word is right?", options: ["People", "Peaple", "Peopel"], a: 0, explanation: "'People' is correct. Say it like 'pee-pul' to remember the 'eo'." },
+                    { q: "Find the correct spelling:", options: ["Floor", "Flor", "Flloor"], a: 0, explanation: "'Floor' has the double 'o' to make the /or/ sound." }
                 ],
                 medium: [
                     { q: "Finish the word: Hap__", options: ["py", "pie", "pee"], a: 0, explanation: "'Happy' ends with 'py'. When adding 'y' to make a word happy-sounding, we use 'py'." },
                     { q: "Past tense of 'jump':", options: ["Jumped", "Jumpt", "Jumpd"], a: 0, explanation: "'Jumped' is correct. We add 'ed' to make past tense, and here it sounds like /t/." },
                     { q: "Plural of 'baby':", options: ["Babys", "Babies", "Babyes"], a: 1, explanation: "'Babies' is correct. When a word ends in 'y', change the 'y' to 'i' and add 'es'." },
                     { q: "Past tense of 'stop':", options: ["Stoped", "Stopped", "Stopt"], a: 1, explanation: "'Stopped' is correct. We double the 'p' before adding 'ed' because 'stop' has a short vowel." },
-                    { q: "Plural of 'fox':", options: ["Foxs", "Foxes", "Foxies"], a: 1, explanation: "'Foxes' is correct. Words ending in 'x' need 'es' to make them plural." }
+                    { q: "Plural of 'fox':", options: ["Foxs", "Foxes", "Foxies"], a: 1, explanation: "'Foxes' is correct. Words ending in 'x' need 'es' to make them plural." },
+                    { type: 'drag', q: "Drag the tricky word to finish the sentence: '____ are going to the park.'", options: ["They", "Thay", "Thei"], a: 0, answer: "They", explanation: "'They' is the tricky word spelled t-h-e-y. It doesn't follow the sound you hear." },
+                    { type: 'drag', q: "Drag the correct word: 'I can spell it ______ I practise.'", options: ["because", "becos", "becosz"], a: 0, answer: "because", explanation: "'Because' is an exception word. Use 'be-cause' to remember the parts." },
+                    { q: "Pick the right homophone:", options: ["There", "Their", "They're"], a: 1, explanation: "'Their' shows something belongs to them. Look for the 'ir' like in 'pair'—their pair of shoes." },
+                    { q: "Which ending makes sense?", options: ["Hoping", "Hopeing", "Hopeingg"], a: 0, explanation: "Drop the 'e' before adding 'ing' to get 'hoping'." },
+                    { q: "Choose the tricky word:", options: ["After", "Aftur", "Aphter"], a: 0, explanation: "'After' has the /f/ sound spelled with 'ft'." }
                 ],
                 hard: [
                     { q: "Correct spelling:", options: ["Beutiful", "Beautiful", "Beatiful"], a: 1, explanation: "'Beautiful' is correct. Remember: b-e-a-u-t-i-f-u-l. 'Beau' means beautiful in French!" },
                     { q: "Add suffix: happy + est =", options: ["Happyest", "Happiest", "Hapiest"], a: 1, explanation: "'Happiest' is correct. Change 'y' to 'i' before adding 'est'." },
                     { q: "Past tense of 'try':", options: ["Tryed", "Tried", "Tryd"], a: 1, explanation: "'Tried' is correct. Change 'y' to 'i' before adding 'ed'." },
                     { q: "Choose the tricky word:", options: ["Should", "Shoud", "Shood"], a: 0, explanation: "'Should' is correct. The 'oul' is silent - we just say /shud/. Same pattern in 'could' and 'would'." },
-                    { q: "Correct spelling:", options: ["Diffrent", "Different", "Diferent"], a: 1, explanation: "'Different' is correct. It has two 'f's and an 'e' - dif-fer-ent." }
+                    { q: "Correct spelling:", options: ["Diffrent", "Different", "Diferent"], a: 1, explanation: "'Different' is correct. It has two 'f's and an 'e' - dif-fer-ent." },
+                    { type: 'drag', q: "Drag the correct tricky word: 'The boy scored a goal ______ he aimed carefully.'", options: ["because", "becaus", "becoz"], a: 0, answer: "because", explanation: "'Because' links the reason. It's spelled b-e-c-a-u-s-e." },
+                    { type: 'drag', q: "Drag the missing word: 'My friends and I will meet ______ the stadium.'", options: ["at", "att", "et"], a: 0, answer: "at", explanation: "'At' is the correct short word to show the place." },
+                    { q: "Choose the exception word:", options: ["People", "Peepol", "Peopal"], a: 0, explanation: "'People' doesn't sound like it's spelled. Remember 'eo' makes the /ee/ sound here." },
+                    { q: "Which spelling is correct?", options: ["Water", "Woter", "Waterr"], a: 0, explanation: "'Water' has the /or/ sound spelled with 'a'." },
+                    { q: "Pick the correct suffix:", options: ["Caring", "Careing", "Caaring"], a: 0, explanation: "Drop the silent 'e' before adding 'ing' to make 'caring'." }
                 ]
             }
         },
@@ -485,6 +500,42 @@
                 { q: "What did Maurits paint?", options: ["Flowers", "A racing car", "A house"], a: 1, explanation: "'Maurits painted a racing car' - Jules painted the flowers, not Maurits. Read carefully who did what!" },
                 { q: "Who said the pictures were wonderful?", options: ["Mrs Cole", "Ms O'Shea", "Susan"], a: 1, explanation: "'Ms O'Shea came to look and said their pictures were wonderful.' She was the one who said they were wonderful." },
                 { q: "Who helped clean up?", options: ["Susan", "Mr Clay", "Floris"], a: 0, explanation: "'Susan helped them clean up afterwards.' Look for who did the action - Susan helped with cleaning." }
+            ]
+        },
+        {
+            passage: "Maurits went to football practice with his friend Hugo. Coach Zara asked them to pass the ball five times before shooting. Maurits scored a goal and everyone cheered.",
+            questions: [
+                { q: "Who did Maurits go to football with?", options: ["Jules", "Hugo", "Wilbur"], a: 1, explanation: "The passage says 'with his friend Hugo'. Look for the name right after 'with'." },
+                { q: "What did Coach Zara ask them to do first?", options: ["Shoot right away", "Pass five times", "Kick the cones"], a: 1, explanation: "Coach Zara said 'pass the ball five times before shooting.' That was the instruction." },
+                { q: "What happened after Maurits followed the instructions?", options: ["He fell", "He scored a goal", "He went home"], a: 1, explanation: "The story states 'Maurits scored a goal and everyone cheered.'" },
+                { q: "How did the others react?", options: ["They were silent", "They cheered", "They left"], a: 1, explanation: "'Everyone cheered' shows their reaction. Cheering means they were happy!" }
+            ]
+        },
+        {
+            passage: "On Story Street, Maurits imagined driving a blue kart like Mario. He zoomed past the library, waved at Ms O'Shea, and slid around the final corner to cross the finish line first.",
+            questions: [
+                { q: "What colour was Maurits's kart in his story?", options: ["Red", "Blue", "Green"], a: 1, explanation: "It says 'driving a blue kart like Mario'. The colour is given clearly." },
+                { q: "Who did he wave at?", options: ["Coach Zara", "Ms O'Shea", "Mr Clay"], a: 1, explanation: "The passage states he 'waved at Ms O'Shea' when zooming past." },
+                { q: "Where did he imagine racing?", options: ["In a forest", "Past the library", "In the mountains"], a: 1, explanation: "He 'zoomed past the library,' so the race is along Story Street near the library." },
+                { q: "What happened at the end of the race?", options: ["He stopped", "He crashed", "He crossed first"], a: 2, explanation: "The passage says he 'cross the finish line first.'" }
+            ]
+        },
+        {
+            passage: "Maurits wrote his own short comic about a football match. In the story, he and Jules were the strikers, and Wilbur was the speedy winger. They worked together to win 3-2 with a last-minute kick.",
+            questions: [
+                { q: "What did Maurits make?", options: ["A song", "A short comic", "A painting"], a: 1, explanation: "The passage opens with 'Maurits wrote his own short comic.'" },
+                { q: "Who were the strikers?", options: ["Maurits and Jules", "Hugo and Wilbur", "Zane and Harvey"], a: 0, explanation: "It says 'he and Jules were the strikers'." },
+                { q: "What position was Wilbur?", options: ["Goalkeeper", "Speedy winger", "Referee"], a: 1, explanation: "Wilbur was 'the speedy winger'—a winger runs down the side to cross the ball." },
+                { q: "What was the final score in the comic?", options: ["1-0", "3-2", "5-4"], a: 1, explanation: "They 'win 3-2 with a last-minute kick.'" }
+            ]
+        },
+        {
+            passage: "During a rainy afternoon, Maurits and Sophie read a story about a kart race in a forest. The racer had to dodge puddles and fallen leaves. In the end, the kart splashed through a big puddle but still won.",
+            questions: [
+                { q: "What was the weather like?", options: ["Sunny", "Snowy", "Rainy"], a: 2, explanation: "It was 'a rainy afternoon'—that sets the scene." },
+                { q: "Who read with Maurits?", options: ["Hugo", "Sophie", "Coach Zara"], a: 1, explanation: "The passage notes 'Maurits and Sophie read a story' together." },
+                { q: "What did the racer have to dodge?", options: ["Other karts", "Puddles and leaves", "Football cones"], a: 1, explanation: "It says 'dodge puddles and fallen leaves.'" },
+                { q: "What happened at the end?", options: ["The kart stopped", "The kart splashed but won", "The kart broke"], a: 1, explanation: "The racer 'splashed through a big puddle but still won.'" }
             ]
         }
     ];
@@ -1994,13 +2045,66 @@
         qText.innerText = qObj.q;
         container.innerHTML = '';
 
-        qObj.options.forEach((opt, idx) => {
-            const btn = document.createElement('button');
-            btn.className = 'answer-btn';
-            btn.innerText = opt;
-            btn.onclick = () => handleAnswer(idx === qObj.a, opt);
-            container.appendChild(btn);
-        });
+        if (qObj.type === 'drag') {
+            let dragSelectedOption = null;
+
+            const hint = document.createElement('p');
+            hint.className = 'text-sm text-gray-600 mb-2 text-center';
+            hint.innerText = 'Drag a word into the box, then submit your answer.';
+            container.appendChild(hint);
+
+            const dropZone = document.createElement('div');
+            dropZone.className = 'mb-3 p-4 border-2 border-dashed border-purple-300 rounded-lg bg-purple-50 text-center font-bold text-purple-800';
+            dropZone.innerText = 'Drop word here';
+            dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('bg-purple-100'); };
+            dropZone.ondragleave = () => dropZone.classList.remove('bg-purple-100');
+            dropZone.ondrop = (e) => {
+                e.preventDefault();
+                const word = e.dataTransfer.getData('text/plain');
+                if (word) {
+                    dragSelectedOption = word;
+                    dropZone.innerText = `Selected: ${word}`;
+                    dropZone.classList.remove('bg-purple-100');
+                    submitBtn.disabled = false;
+                }
+            };
+            container.appendChild(dropZone);
+
+            const chips = document.createElement('div');
+            chips.className = 'flex flex-wrap gap-2 justify-center';
+
+            qObj.options.forEach((opt, idx) => {
+                const chip = document.createElement('button');
+                chip.className = 'px-4 py-2 rounded-full bg-white border border-purple-200 shadow-sm hover:bg-purple-100 text-sm font-semibold';
+                chip.innerText = opt;
+                chip.draggable = true;
+                chip.ondragstart = (e) => {
+                    e.dataTransfer.setData('text/plain', opt);
+                };
+                chip.onclick = () => {
+                    dragSelectedOption = opt;
+                    dropZone.innerText = `Selected: ${opt}`;
+                    submitBtn.disabled = false;
+                };
+                chips.appendChild(chip);
+            });
+            container.appendChild(chips);
+
+            const submitBtn = document.createElement('button');
+            submitBtn.className = 'mt-4 w-full bg-purple-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-purple-500 shadow-lg disabled:opacity-50';
+            submitBtn.innerText = 'Submit Answer';
+            submitBtn.disabled = true;
+            submitBtn.onclick = () => handleAnswer(dragSelectedOption === qObj.answer, dragSelectedOption || '');
+            container.appendChild(submitBtn);
+        } else {
+            qObj.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'answer-btn';
+                btn.innerText = opt;
+                btn.onclick = () => handleAnswer(idx === qObj.a, opt);
+                container.appendChild(btn);
+            });
+        }
 
         modal.classList.remove('hidden');
     }
