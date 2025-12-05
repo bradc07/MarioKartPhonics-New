@@ -254,8 +254,8 @@
                         <p class="text-sm">Questions get <span class="font-bold text-purple-600">HARDER</span> each lap!</p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <span class="text-xl">⚡🐢🍌</span>
-                        <p class="text-sm"><span class="font-bold">Power-ups:</span> Lightning, Shells, Bananas</p>
+                        <span class="text-xl">⚡🐢🍌🛡️❄️🏎️🧹</span>
+                        <p class="text-sm"><span class="font-bold">Power-ups:</span> Lightning, Shells, Bananas, Shields, Mega Freeze, Turbo Dash, Track Sweeper</p>
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="text-xl">👻</span>
@@ -623,6 +623,8 @@
     let freezeEndTime = 0; // Timestamp when freeze ends
     let opponentsSlowed = false; // Track if opponents are slowed (lightning)
     let slowEndTime = 0; // Timestamp when slow effect ends
+    let playerShieldUntil = 0; // Timestamp when shield expires
+    let playerBoostUntil = 0; // Timestamp when turbo dash expires
     let redShells = []; // Active red shells in the game
     let bananas = []; // Banana peels on track
     let slotMachineActive = false; // Is slot machine spinning?
@@ -1049,6 +1051,39 @@
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
                 ctx.fillText("👻", 0, -20);
+            }
+
+            // Draw bubble shield effect if active
+            if (this.isPlayer && Date.now() < playerShieldUntil) {
+                ctx.strokeStyle = "rgba(20, 184, 166, 0.8)";
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.arc(0, 0, 28, 0, Math.PI * 2);
+                ctx.stroke();
+
+                ctx.fillStyle = "rgba(20, 184, 166, 0.15)";
+                ctx.beginPath();
+                ctx.arc(0, 0, 28, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Draw turbo dash flames when boost is active
+            if (this.isPlayer && Date.now() < playerBoostUntil) {
+                ctx.fillStyle = "#fb923c";
+                ctx.beginPath();
+                ctx.moveTo(-28, 6);
+                ctx.lineTo(-45, 0);
+                ctx.lineTo(-28, -6);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.fillStyle = "#f97316";
+                ctx.beginPath();
+                ctx.moveTo(-24, 4);
+                ctx.lineTo(-38, 0);
+                ctx.lineTo(-24, -4);
+                ctx.closePath();
+                ctx.fill();
             }
 
             ctx.restore();
@@ -1878,8 +1913,18 @@
         redShells.forEach(shell => shell.update());
         redShells = redShells.filter(shell => shell.active);
 
+        const shieldActive = Date.now() < playerShieldUntil;
+
+        // Clear any ghost curse if the shield is active
+        if (shieldActive && playerKart.ghostCurse) {
+            playerKart.ghostCurse = 0;
+        }
+
         // Check if ghost curse is active
         let isGhostCursed = playerKart.ghostCurse && Date.now() < playerKart.ghostCurse;
+
+        // Check if turbo dash is active
+        const boostActive = Date.now() < playerBoostUntil;
 
         // Player Controls (disabled during ghost curse)
         if (!isGhostCursed) {
@@ -1891,7 +1936,7 @@
         }
 
         // Auto accelerate (Mario Kart style) - always moving forward
-        let targetSpeed = MAX_SPEED;
+        let targetSpeed = boostActive ? BOOST_SPEED : MAX_SPEED;
 
         // Check Terrain - reduced offroad penalty in easy mode
         if(!checkOnTrack(playerKart.x, playerKart.y)) {
@@ -2150,7 +2195,11 @@
         { icon: '⚡', name: 'Lightning Strike', color: '#fbbf24', type: 'lightning' },
         { icon: '🐢', name: 'Red Shells', color: '#ef4444', type: 'redshell' },
         { icon: '🍌', name: 'Banana Peel', color: '#fde047', type: 'banana' },
-        { icon: '👻', name: 'Ghost Curse!', color: '#a78bfa', type: 'ghost' }
+        { icon: '👻', name: 'Ghost Curse!', color: '#a78bfa', type: 'ghost' },
+        { icon: '❄️', name: 'Mega Freeze', color: '#60a5fa', type: 'megafreeze' },
+        { icon: '🏎️', name: 'Turbo Dash', color: '#22c55e', type: 'boost' },
+        { icon: '🛡️', name: 'Bubble Shield', color: '#14b8a6', type: 'shield' },
+        { icon: '🧹', name: 'Track Sweeper', color: '#f472b6', type: 'sweeper' }
     ];
 
     function triggerSlotMachine() {
@@ -2198,6 +2247,7 @@
 
     function activatePowerUp(type) {
         const opponentKarts = karts.filter(k => !k.isPlayer);
+        const shieldActive = Date.now() < playerShieldUntil;
 
         switch(type) {
             case 'lightning':
@@ -2228,10 +2278,43 @@
                 break;
 
             case 'ghost':
-                // Curse! Player stops for 2 seconds
-                playerKart.speed = 0;
-                playerKart.ghostCurse = Date.now() + 2000;
-                showFloatingText("Ghost Curse! 👻", playerKart.x, playerKart.y, "#a78bfa");
+                // Curse! Player stops for 2 seconds unless shielded
+                if (shieldActive) {
+                    showFloatingText("Shield Blocked the Ghost! 🛡️", playerKart.x, playerKart.y, "#14b8a6");
+                } else {
+                    playerKart.speed = 0;
+                    playerKart.ghostCurse = Date.now() + 2000;
+                    showFloatingText("Ghost Curse! 👻", playerKart.x, playerKart.y, "#a78bfa");
+                }
+                break;
+
+            case 'megafreeze':
+                // Freeze all opponents for longer
+                opponentsFrozen = true;
+                freezeEndTime = Date.now() + 2500;
+                showFloatingText("Mega Freeze! ❄️", playerKart.x, playerKart.y, "#60a5fa");
+                break;
+
+            case 'boost':
+                // Short turbo dash for the player
+                playerBoostUntil = Date.now() + 3000;
+                playerKart.speed = Math.max(playerKart.speed, BOOST_SPEED);
+                showFloatingText("Turbo Dash! 🏎️", playerKart.x, playerKart.y, "#22c55e");
+                break;
+
+            case 'shield':
+                // Protective bubble that blocks the next curse or spin
+                playerShieldUntil = Date.now() + 5000;
+                playerKart.ghostCurse = 0; // clear any existing ghost effect
+                showFloatingText("Bubble Shield! 🛡️", playerKart.x, playerKart.y, "#14b8a6");
+                break;
+
+            case 'sweeper':
+                // Clear hazards and refresh boxes for the lap
+                bananas.forEach(b => b.active = false);
+                bananas = [];
+                POWERUP_BOXES.forEach(box => box.active = true);
+                showFloatingText("Track Sweeper! 🧹", playerKart.x, playerKart.y, "#f472b6");
                 break;
         }
     }
