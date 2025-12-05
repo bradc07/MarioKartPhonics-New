@@ -323,6 +323,40 @@
                     <h2 class="text-lg font-bold text-green-800 mb-1">Great driving!</h2>
                     <p id="encouragement-text" class="text-sm text-green-700">You finished strong—keep practicing to get every answer right!</p>
                 </div>
+                <div class="mb-4 p-4 bg-white border-2 border-gray-100 rounded-lg shadow-sm">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-lg font-bold text-gray-800">Race Highlights</h2>
+                        <span id="performance-badge" class="px-3 py-1 text-xs font-bold rounded-full bg-green-100 text-green-800">Learning Legend</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 text-left text-sm">
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <p class="text-gray-500 text-xs uppercase tracking-wide">Accuracy</p>
+                            <p class="text-2xl font-extrabold text-gray-900" id="stat-accuracy">0%</p>
+                            <div class="mt-2 w-full bg-gray-200 rounded-full h-2">
+                                <div id="accuracy-bar" class="h-2 rounded-full bg-green-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <p class="text-gray-500 text-xs uppercase tracking-wide">Best Correct Streak</p>
+                            <p class="text-2xl font-extrabold text-gray-900" id="stat-streak">0</p>
+                            <p class="text-xs text-gray-500">Keep chaining right answers to level up!</p>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <p class="text-gray-500 text-xs uppercase tracking-wide">Avg. Answer Time</p>
+                            <p class="text-2xl font-extrabold text-gray-900" id="stat-time">0s</p>
+                            <p class="text-xs text-gray-500">Quick and careful wins the lap!</p>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <p class="text-gray-500 text-xs uppercase tracking-wide">Race Time</p>
+                            <p class="text-2xl font-extrabold text-gray-900" id="stat-race-time">0s</p>
+                            <p class="text-xs text-gray-500">From green light to finish line.</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="growth-tips" class="mb-4 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg text-left hidden">
+                    <h2 class="text-lg font-bold text-blue-900 mb-1">Next Race Power-Ups</h2>
+                    <ul id="growth-list" class="list-disc list-inside text-sm text-blue-800 space-y-1"></ul>
+                </div>
                 <div id="review-section" class="hidden text-left mb-4">
                     <h2 class="text-xl font-bold mb-1 text-red-600 text-center">Let's Learn From Our Mistakes!</h2>
                     <p class="text-sm text-gray-700 mb-3 text-center">Tap an answer below to fix it and see why it's correct.</p>
@@ -603,6 +637,11 @@
     let score = { correct: 0, total: 0 };
     let wrongAnswers = []; // Store wrong answers for review
     let currentQuestion = null; // Currently displayed question (for tracking wrong answers)
+    let currentStreak = 0; // Track consecutive correct answers
+    let bestStreak = 0; // Highest streak for the session
+    let questionStartTime = 0; // Timestamp when a question appears
+    let totalResponseTime = 0; // Sum of all response durations
+    let raceStartTime = 0; // Timestamp when the race begins
 
     // Easy Mode (makes game easier for younger players)
     let easyMode = true; // Slower AI opponents
@@ -1210,6 +1249,11 @@
         wrongAnswers = [];
         questionsAsked = [];
         comprehensionPassageUsed = [];
+        currentStreak = 0;
+        bestStreak = 0;
+        totalResponseTime = 0;
+        questionStartTime = 0;
+        raceStartTime = Date.now();
         updateScoreDisplay();
 
         // Show mobile controls if on mobile
@@ -1976,6 +2020,7 @@
         };
 
         // Display question
+        questionStartTime = Date.now();
         qText.innerText = qObj.q;
         container.innerHTML = '';
 
@@ -1994,11 +2039,20 @@
         const modal = document.getElementById('quiz-modal');
         modal.classList.add('hidden');
 
+        // Capture response timing for stat cards
+        if (questionStartTime) {
+            totalResponseTime += Date.now() - questionStartTime;
+            questionStartTime = 0;
+        }
+
         // Update score
         score.total++;
         if (isCorrect) {
             score.correct++;
+            currentStreak++;
+            bestStreak = Math.max(bestStreak, currentStreak);
         } else {
+            currentStreak = 0;
             // Store wrong answer for review
             wrongAnswers.push({
                 question: currentQuestion.question,
@@ -2155,6 +2209,19 @@
         const percentage = score.total > 0 ? Math.round((score.correct / score.total) * 100) : 0;
         document.getElementById('score-percentage').innerText = `${percentage}% correct`;
 
+        // Populate stat cards
+        const avgResponse = score.total > 0 ? (totalResponseTime / score.total) / 1000 : 0;
+        const totalRaceSeconds = raceStartTime ? Math.round((Date.now() - raceStartTime) / 1000) : 0;
+
+        document.getElementById('stat-accuracy').innerText = `${percentage}%`;
+        document.getElementById('stat-streak').innerText = `${bestStreak} in a row`;
+        document.getElementById('stat-time').innerText = `${avgResponse.toFixed(1)}s`;
+        document.getElementById('stat-race-time').innerText = `${totalRaceSeconds}s`;
+
+        const accuracyBar = document.getElementById('accuracy-bar');
+        accuracyBar.style.width = `${Math.min(100, percentage)}%`;
+        accuracyBar.className = `h-2 rounded-full ${percentage >= 80 ? 'bg-green-500' : percentage >= 50 ? 'bg-yellow-400' : 'bg-red-400'}`;
+
         // Color the score based on performance
         const scoreEl = document.getElementById('final-score');
         if (percentage >= 80) {
@@ -2183,6 +2250,50 @@
             encouragementMsg += " Tap \"Review Mistakes\" to fix any answers now.";
         }
         encouragementEl.innerText = encouragementMsg;
+
+        // Badge + growth tips to keep players motivated
+        const badgeEl = document.getElementById('performance-badge');
+        if (percentage === 100) {
+            badgeEl.innerText = 'Flawless Driver';
+            badgeEl.className = 'px-3 py-1 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800';
+        } else if (percentage >= 80) {
+            badgeEl.innerText = 'Speed Scholar';
+            badgeEl.className = 'px-3 py-1 text-xs font-bold rounded-full bg-green-100 text-green-800';
+        } else if (percentage >= 50) {
+            badgeEl.innerText = 'Resilient Racer';
+            badgeEl.className = 'px-3 py-1 text-xs font-bold rounded-full bg-yellow-100 text-yellow-800';
+        } else {
+            badgeEl.innerText = 'Never Give Up';
+            badgeEl.className = 'px-3 py-1 text-xs font-bold rounded-full bg-red-100 text-red-800';
+        }
+
+        const tips = [];
+        if (percentage < 80) {
+            tips.push('Aim for 80%+ accuracy to unlock the Speed Scholar badge next race.');
+        }
+        if (bestStreak < 3 && score.total > 0) {
+            tips.push('Build a 3-question streak by slowing down and double-checking choices.');
+        }
+        if (avgResponse > 6) {
+            tips.push('Try to answer in under 6s—read the story once, then pick your best answer.');
+        }
+        if (wrongAnswers.length > 0) {
+            tips.push('Use Review Mistakes to replay tricky questions with hints.');
+        }
+
+        const growthContainer = document.getElementById('growth-tips');
+        const growthList = document.getElementById('growth-list');
+        if (tips.length > 0) {
+            growthList.innerHTML = '';
+            tips.forEach(tip => {
+                const li = document.createElement('li');
+                li.innerText = tip;
+                growthList.appendChild(li);
+            });
+            growthContainer.classList.remove('hidden');
+        } else {
+            growthContainer.classList.add('hidden');
+        }
 
         // Show review button if there were wrong answers
         if (wrongAnswers.length > 0) {
