@@ -270,15 +270,11 @@
         <div id="track-selection" class="overlay hidden">
             <div class="modal-card" style="max-width: 500px; max-height: 90vh; overflow-y: auto;">
                 <h1 class="text-2xl font-bold mb-4 text-center text-green-900">Choose Your Track</h1>
-                <p class="text-gray-600 mb-4 text-center text-sm">Pick your race layout, spice level, then choose the learning focus.</p>
-
-                <div class="mb-4">
-                    <h2 class="text-lg font-bold text-green-800 mb-2">Track Shape (no crossovers)</h2>
-                    <div id="shape-buttons" class="grid grid-cols-1 gap-2"></div>
-                </div>
+                <p class="text-gray-600 mb-4 text-center text-sm">Pick your spice level, then choose the learning focus.</p>
 
                 <div class="mb-4">
                     <h2 class="text-lg font-bold text-orange-700 mb-2">Difficulty</h2>
+                    <p class="text-xs text-gray-600 mb-2">Higher spice = tougher questions and faster opponents.</p>
                     <div class="grid grid-cols-3 gap-2">
                         <button class="speed-btn active" id="shape-mild" onclick="setDifficulty('mild')">Mild</button>
                         <button class="speed-btn" id="shape-medium" onclick="setDifficulty('medium')">Medium</button>
@@ -648,6 +644,12 @@
         }
     };
 
+    const DIFFICULTY_QUESTION_MAP = {
+        mild: 'easy',
+        medium: 'medium',
+        spicy: 'hard'
+    };
+
     // Physics Constants (mutable based on difficulty) - defaults to mild for younger players
     let MAX_SPEED = SPEED_PRESETS.mild.MAX_SPEED;
     let BOOST_SPEED = SPEED_PRESETS.mild.BOOST_SPEED;
@@ -661,45 +663,16 @@
     const BASE_WIDTH = 800;
     const BASE_HEIGHT = 600;
 
-    // Track Logic (Waypoints for AI and Drawing)
+    // Track Logic (Waypoints for AI and Drawing) - single angular layout
     const TRACK_SHAPES = [
         {
-            id: 'meadow-oval',
-            name: 'Meadow Oval',
-            description: 'Smooth, wide bends with no crossovers.',
+            id: 'angled-classic',
+            name: 'Angled Classic',
+            description: 'Jagged bends like the original course with no crossovers.',
             points: [
-                {x: 140, y: 300}, {x: 190, y: 170}, {x: 360, y: 120},
-                {x: 630, y: 160}, {x: 700, y: 320}, {x: 640, y: 480},
-                {x: 360, y: 520}, {x: 170, y: 460}, {x: 140, y: 300}
-            ],
-            finishSegment: [2, 3],
-            startAngle: -Math.PI / 8,
-            startGrid: [
-                {x: 200, y: 320}, {x: 200, y: 360}, {x: 170, y: 330}, {x: 170, y: 370}
-            ],
-            itemBoxes: [
-                {x: 320, y: 140, active: true, type: 'question'},
-                {x: 640, y: 340, active: true, type: 'question'},
-                {x: 320, y: 500, active: true, type: 'question'}
-            ],
-            powerupBoxes: [
-                {x: 240, y: 200, active: false, type: 'powerup'},
-                {x: 520, y: 200, active: false, type: 'powerup'},
-                {x: 520, y: 430, active: false, type: 'powerup'}
-            ],
-            trees: [
-                {x: 120, y: 140, size: 0.9}, {x: 720, y: 140, size: 1}, {x: 720, y: 480, size: 1.1},
-                {x: 120, y: 500, size: 1}, {x: 400, y: 300, size: 1.2}
-            ]
-        },
-        {
-            id: 'river-chicane',
-            name: 'River Chicane',
-            description: 'S-curves and short straights by the water.',
-            points: [
-                {x: 140, y: 330}, {x: 240, y: 150}, {x: 460, y: 140},
-                {x: 640, y: 230}, {x: 660, y: 380}, {x: 480, y: 500},
-                {x: 260, y: 500}, {x: 140, y: 380}, {x: 140, y: 330}
+                {x: 130, y: 330}, {x: 210, y: 190}, {x: 380, y: 150},
+                {x: 560, y: 190}, {x: 720, y: 150}, {x: 710, y: 320},
+                {x: 630, y: 470}, {x: 430, y: 520}, {x: 240, y: 500}, {x: 130, y: 380}, {x: 130, y: 330}
             ],
             finishSegment: [2, 3],
             startAngle: -Math.PI / 12,
@@ -707,75 +680,17 @@
                 {x: 190, y: 340}, {x: 190, y: 380}, {x: 160, y: 350}, {x: 160, y: 390}
             ],
             itemBoxes: [
-                {x: 360, y: 150, active: true, type: 'question'},
-                {x: 640, y: 320, active: true, type: 'question'},
-                {x: 330, y: 480, active: true, type: 'question'}
-            ],
-            powerupBoxes: [
-                {x: 240, y: 230, active: false, type: 'powerup'},
-                {x: 520, y: 260, active: false, type: 'powerup'},
-                {x: 440, y: 420, active: false, type: 'powerup'}
-            ],
-            trees: [
-                {x: 120, y: 120, size: 0.8}, {x: 700, y: 150, size: 1.1}, {x: 730, y: 430, size: 1},
-                {x: 120, y: 480, size: 1}, {x: 430, y: 320, size: 1.1}
-            ]
-        },
-        {
-            id: 'canyon-bridge',
-            name: 'Canyon Bridge Run',
-            description: 'Elevated bridge straight with canyon bends—no ground crossovers.',
-            points: [
-                {x: 170, y: 320}, {x: 240, y: 170}, {x: 500, y: 150},
-                {x: 670, y: 220}, {x: 640, y: 360}, {x: 480, y: 470},
-                {x: 280, y: 500}, {x: 170, y: 380}, {x: 170, y: 320}
-            ],
-            finishSegment: [2, 3],
-            startAngle: -Math.PI / 10,
-            startGrid: [
-                {x: 210, y: 340}, {x: 210, y: 380}, {x: 180, y: 350}, {x: 180, y: 390}
-            ],
-            itemBoxes: [
-                {x: 360, y: 170, active: true, type: 'question'},
-                {x: 660, y: 300, active: true, type: 'question'},
-                {x: 350, y: 490, active: true, type: 'question'}
-            ],
-            powerupBoxes: [
-                {x: 250, y: 240, active: false, type: 'powerup'},
-                {x: 520, y: 240, active: false, type: 'powerup'},
-                {x: 450, y: 410, active: false, type: 'powerup'}
-            ],
-            trees: [
-                {x: 130, y: 150, size: 0.9}, {x: 720, y: 190, size: 1.1}, {x: 720, y: 450, size: 1.2},
-                {x: 130, y: 480, size: 0.95}, {x: 430, y: 330, size: 1.05}
-            ]
-        },
-        {
-            id: 'coast-sprint',
-            name: 'Coastline Sprint',
-            description: 'Long seaside straights and wide sweepers.',
-            points: [
-                {x: 150, y: 320}, {x: 220, y: 180}, {x: 470, y: 140},
-                {x: 670, y: 180}, {x: 700, y: 340}, {x: 560, y: 500},
-                {x: 320, y: 520}, {x: 150, y: 420}, {x: 150, y: 320}
-            ],
-            finishSegment: [3, 4],
-            startAngle: 0,
-            startGrid: [
-                {x: 210, y: 340}, {x: 210, y: 380}, {x: 180, y: 350}, {x: 180, y: 390}
-            ],
-            itemBoxes: [
-                {x: 360, y: 150, active: true, type: 'question'},
-                {x: 680, y: 260, active: true, type: 'question'},
+                {x: 340, y: 160, active: true, type: 'question'},
+                {x: 640, y: 260, active: true, type: 'question'},
                 {x: 360, y: 500, active: true, type: 'question'}
             ],
             powerupBoxes: [
-                {x: 250, y: 230, active: false, type: 'powerup'},
-                {x: 530, y: 210, active: false, type: 'powerup'},
+                {x: 240, y: 230, active: false, type: 'powerup'},
+                {x: 520, y: 210, active: false, type: 'powerup'},
                 {x: 480, y: 430, active: false, type: 'powerup'}
             ],
             trees: [
-                {x: 120, y: 150, size: 0.9}, {x: 730, y: 150, size: 1.05}, {x: 740, y: 470, size: 1.1},
+                {x: 120, y: 150, size: 0.9}, {x: 730, y: 160, size: 1.05}, {x: 740, y: 470, size: 1.1},
                 {x: 120, y: 480, size: 1}, {x: 430, y: 320, size: 1.15}
             ]
         }
@@ -1403,31 +1318,6 @@
         document.getElementById('track-selection').classList.remove('hidden');
         setDifficulty(currentDifficulty);
 
-        // Generate track shape buttons
-        const shapeContainer = document.getElementById('shape-buttons');
-        shapeContainer.innerHTML = '';
-        TRACK_SHAPES.forEach(shape => {
-            const btn = document.createElement('button');
-            btn.className = 'w-full p-3 rounded-lg border-2 text-left transition hover:scale-102 hover:shadow-lg flex items-center justify-between';
-            btn.style.borderColor = '#22c55e';
-            if (shape.id === selectedTrackShape.id) {
-                btn.classList.add('active');
-                btn.style.background = 'linear-gradient(135deg, #ecfdf3 0%, #dcfce7 100%)';
-            } else {
-                btn.style.background = 'white';
-            }
-
-            btn.innerHTML = `
-                <div>
-                    <h3 class="font-bold text-lg text-green-800">${shape.name}</h3>
-                    <p class="text-sm text-gray-600">${shape.description}</p>
-                </div>
-                <span class="text-xs font-bold text-green-700">No crossovers</span>
-            `;
-            btn.onclick = () => selectTrackShape(shape);
-            shapeContainer.appendChild(btn);
-        });
-
         // Generate track buttons
         const container = document.getElementById('track-buttons');
         container.innerHTML = '';
@@ -1454,13 +1344,6 @@
     function hideTrackSelection() {
         document.getElementById('track-selection').classList.add('hidden');
         document.getElementById('start-screen').classList.remove('hidden');
-    }
-
-    function selectTrackShape(shape) {
-        selectedTrackShape = shape;
-        updateScaledPositions();
-        setTimeout(resize, 0); // ensure canvas sizing stays synced
-        showTrackSelection();
     }
 
     function selectTrack(track) {
@@ -2066,13 +1949,6 @@
                         POWERUP_BOXES.forEach(b => b.active = true);
                     }
 
-                    // Update difficulty based on lap
-                    if(p.lap === 2) {
-                        currentDifficulty = 'medium';
-                    } else if(p.lap === 3) {
-                        currentDifficulty = 'hard';
-                    }
-
                     document.getElementById('hud-lap').innerText = `Lap: ${p.lap}/${lapsTotal}`;
                     updateScoreDisplay();
 
@@ -2216,6 +2092,10 @@
         }
     }
 
+    function getQuestionDifficulty(level = currentDifficulty) {
+        return DIFFICULTY_QUESTION_MAP[level] || 'easy';
+    }
+
     // --- Quiz Logic ---
 
     function triggerQuiz() {
@@ -2260,17 +2140,18 @@
             // Track-specific questions
             passageContainer.classList.add('hidden');
 
-            let pool = selectedTrack.questions[currentDifficulty] || [];
+            const questionTier = getQuestionDifficulty();
+            let pool = selectedTrack.questions[questionTier] || [];
 
             // Filter out already asked questions
             let availableQuestions = pool.filter((q, idx) => {
-                questionKey = `${selectedTrack.id}-${currentDifficulty}-${idx}`;
+                questionKey = `${selectedTrack.id}-${questionTier}-${idx}`;
                 return !questionsAsked.includes(questionKey);
             });
 
             // Reset if all questions asked
             if(availableQuestions.length === 0) {
-                questionsAsked = questionsAsked.filter(q => !q.startsWith(`${selectedTrack.id}-${currentDifficulty}`));
+                questionsAsked = questionsAsked.filter(q => !q.startsWith(`${selectedTrack.id}-${questionTier}`));
                 availableQuestions = pool;
             }
 
@@ -2280,14 +2161,15 @@
 
             // Track this question
             const actualIdx = pool.indexOf(qObj);
-            questionKey = `${selectedTrack.id}-${currentDifficulty}-${actualIdx}`;
+            questionKey = `${selectedTrack.id}-${questionTier}-${actualIdx}`;
             questionsAsked.push(questionKey);
 
             // Update difficulty badge with track color
-            let badgeColor = currentDifficulty === 'easy' ? 'bg-green-200 text-green-800' :
-                           currentDifficulty === 'medium' ? 'bg-yellow-200 text-yellow-800' :
+            let badgeColor = questionTier === 'easy' ? 'bg-green-200 text-green-800' :
+                           questionTier === 'medium' ? 'bg-yellow-200 text-yellow-800' :
                            'bg-red-200 text-red-800';
-            difficultyBadge.innerText = `${selectedTrack.icon} ${currentDifficulty.charAt(0).toUpperCase() + currentDifficulty.slice(1)}`;
+            const spiceLabel = currentDifficulty.charAt(0).toUpperCase() + currentDifficulty.slice(1);
+            difficultyBadge.innerText = `${selectedTrack.icon} ${spiceLabel} Questions`;
             difficultyBadge.className = `inline-block px-3 py-1 rounded-full text-xs font-bold mb-3 ${badgeColor}`;
         }
 
