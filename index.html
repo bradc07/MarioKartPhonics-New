@@ -217,13 +217,13 @@
         <div id="hud-lap" class="hud-lap hidden">Lap: 1/3</div>
         <div id="hud-score" class="hud hidden" style="top: 50px;">Score: 0/0</div>
 
-        <!-- Speed Toggle -->
+        <!-- Difficulty Toggle -->
         <div id="speed-toggle" class="speed-toggle hidden" style="bottom: 20px;">
-            <div class="speed-toggle-label">Race Speed</div>
+            <div class="speed-toggle-label">Race Spice Level</div>
             <div class="speed-options">
-                <button class="speed-btn active" id="speed-slow" onclick="setRaceSpeed('slow')">Slow</button>
-                <button class="speed-btn" id="speed-medium" onclick="setRaceSpeed('medium')">Medium</button>
-                <button class="speed-btn" id="speed-fast" onclick="setRaceSpeed('fast')">Fast</button>
+                <button class="speed-btn active" id="speed-mild" onclick="setDifficulty('mild')">Mild</button>
+                <button class="speed-btn" id="speed-medium" onclick="setDifficulty('medium')">Medium</button>
+                <button class="speed-btn" id="speed-spicy" onclick="setDifficulty('spicy')">Spicy</button>
             </div>
         </div>
 
@@ -270,6 +270,23 @@
         <div id="track-selection" class="overlay hidden">
             <div class="modal-card" style="max-width: 500px; max-height: 90vh; overflow-y: auto;">
                 <h1 class="text-2xl font-bold mb-4 text-center text-green-900">Choose Your Track</h1>
+                <p class="text-gray-600 mb-4 text-center text-sm">Pick your race layout, spice level, then choose the learning focus.</p>
+
+                <div class="mb-4">
+                    <h2 class="text-lg font-bold text-green-800 mb-2">Track Shape (no crossovers)</h2>
+                    <div id="shape-buttons" class="grid grid-cols-1 gap-2"></div>
+                </div>
+
+                <div class="mb-4">
+                    <h2 class="text-lg font-bold text-orange-700 mb-2">Difficulty</h2>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button class="speed-btn active" id="shape-mild" onclick="setDifficulty('mild')">Mild</button>
+                        <button class="speed-btn" id="shape-medium" onclick="setDifficulty('medium')">Medium</button>
+                        <button class="speed-btn" id="shape-spicy" onclick="setDifficulty('spicy')">Spicy</button>
+                    </div>
+                </div>
+
+                <h2 class="text-lg font-bold text-green-800 mb-2">Learning Track</h2>
                 <p class="text-gray-600 mb-4 text-center text-sm">Each track focuses on different phonics skills!</p>
                 <div class="space-y-3" id="track-buttons">
                     <!-- Track buttons injected by JS -->
@@ -554,7 +571,7 @@
     // Game State
     let gameState = 'start'; // start, racing, quiz, finished
     let frameId;
-    let currentDifficulty = 'easy'; // easy, medium, hard
+    let currentDifficulty = 'mild'; // mild, medium, spicy
     let questionsAsked = []; // Track asked questions to avoid repeats
     let comprehensionPassageUsed = []; // Track used passages
     let opponentsFrozen = false; // Track if opponents are frozen
@@ -567,7 +584,6 @@
     let bananas = []; // Banana peels on track
     let slotMachineActive = false; // Is slot machine spinning?
     let slotMachineResult = null; // Result of slot machine
-    let currentRaceSpeed = 'slow'; // slow, medium, fast - starts on slow for younger players
 
     // Track Selection
     let selectedTrack = null; // Currently selected track object
@@ -583,55 +599,186 @@
     let totalResponseTime = 0; // Sum of all response durations
     let raceStartTime = 0; // Timestamp when the race begins
 
-    // Easy Mode (makes game easier for younger players)
-    let easyMode = true; // Slower AI opponents
-
-    // Speed Presets
+    // Speed Presets and difficulty tuning
     const SPEED_PRESETS = {
-        slow: {
-            MAX_SPEED: 3.5,
-            BOOST_SPEED: 6.5,
-            OFFROAD_SPEED: 1.2,
-            ACCELERATION: 0.06,
-            TURN_SPEED: 0.045,
-            RED_SHELL_SPEED: 5.5
-        },
-        medium: {
+        mild: {
             MAX_SPEED: 5,
             BOOST_SPEED: 9.5,
-            OFFROAD_SPEED: 1.6,
+            OFFROAD_SPEED: 1.7,
             ACCELERATION: 0.085,
             TURN_SPEED: 0.055,
             RED_SHELL_SPEED: 7
         },
-        fast: {
-            MAX_SPEED: 6.5,
-            BOOST_SPEED: 11.5,
+        medium: {
+            MAX_SPEED: 5.9,
+            BOOST_SPEED: 10.6,
+            OFFROAD_SPEED: 1.85,
+            ACCELERATION: 0.098,
+            TURN_SPEED: 0.06,
+            RED_SHELL_SPEED: 7.6
+        },
+        spicy: {
+            MAX_SPEED: 6.6,
+            BOOST_SPEED: 11.6,
             OFFROAD_SPEED: 2,
-            ACCELERATION: 0.11,
-            TURN_SPEED: 0.065,
-            RED_SHELL_SPEED: 8.5
+            ACCELERATION: 0.112,
+            TURN_SPEED: 0.07,
+            RED_SHELL_SPEED: 8.6
         }
     };
 
-    // Physics Constants (mutable based on speed setting) - defaults to slow for younger players
-    let MAX_SPEED = SPEED_PRESETS.slow.MAX_SPEED;
-    let BOOST_SPEED = SPEED_PRESETS.slow.BOOST_SPEED;
-    let OFFROAD_SPEED = SPEED_PRESETS.slow.OFFROAD_SPEED;
-    let ACCELERATION = SPEED_PRESETS.slow.ACCELERATION;
-    let TURN_SPEED = SPEED_PRESETS.slow.TURN_SPEED;
-    let RED_SHELL_SPEED = SPEED_PRESETS.slow.RED_SHELL_SPEED;
+    const DIFFICULTY_SETTINGS = {
+        mild: {
+            aiBase: 0.26,
+            aiVariance: 0.1,
+            offroadForgiveness: 1.6,
+            description: 'Gentle laps with forgiving grass edges.'
+        },
+        medium: {
+            aiBase: 0.36,
+            aiVariance: 0.12,
+            offroadForgiveness: 1.2,
+            description: 'Balanced pace and snappier rivals.'
+        },
+        spicy: {
+            aiBase: 0.48,
+            aiVariance: 0.14,
+            offroadForgiveness: 1,
+            description: 'Tight lines, faster rivals, hold on!'
+        }
+    };
+
+    // Physics Constants (mutable based on difficulty) - defaults to mild for younger players
+    let MAX_SPEED = SPEED_PRESETS.mild.MAX_SPEED;
+    let BOOST_SPEED = SPEED_PRESETS.mild.BOOST_SPEED;
+    let OFFROAD_SPEED = SPEED_PRESETS.mild.OFFROAD_SPEED;
+    let ACCELERATION = SPEED_PRESETS.mild.ACCELERATION;
+    let TURN_SPEED = SPEED_PRESETS.mild.TURN_SPEED;
+    let RED_SHELL_SPEED = SPEED_PRESETS.mild.RED_SHELL_SPEED;
     const FRICTION = 0.96;
     
     // Base track design (at 800x600 reference)
     const BASE_WIDTH = 800;
     const BASE_HEIGHT = 600;
 
-    // Track Logic (Waypoints for AI and Drawing) - Base coordinates
-    const BASE_TRACK_POINTS = [
-        {x: 100, y: 300}, {x: 200, y: 100}, {x: 500, y: 100},
-        {x: 700, y: 300}, {x: 600, y: 500}, {x: 400, y: 400},
-        {x: 200, y: 500}, {x: 100, y: 300}
+    // Track Logic (Waypoints for AI and Drawing)
+    const TRACK_SHAPES = [
+        {
+            id: 'meadow-oval',
+            name: 'Meadow Oval',
+            description: 'Smooth, wide bends with no crossovers.',
+            points: [
+                {x: 140, y: 300}, {x: 190, y: 170}, {x: 360, y: 120},
+                {x: 630, y: 160}, {x: 700, y: 320}, {x: 640, y: 480},
+                {x: 360, y: 520}, {x: 170, y: 460}, {x: 140, y: 300}
+            ],
+            finishSegment: [2, 3],
+            startAngle: -Math.PI / 8,
+            startGrid: [
+                {x: 200, y: 320}, {x: 200, y: 360}, {x: 170, y: 330}, {x: 170, y: 370}
+            ],
+            itemBoxes: [
+                {x: 320, y: 140, active: true, type: 'question'},
+                {x: 640, y: 340, active: true, type: 'question'},
+                {x: 320, y: 500, active: true, type: 'question'}
+            ],
+            powerupBoxes: [
+                {x: 240, y: 200, active: false, type: 'powerup'},
+                {x: 520, y: 200, active: false, type: 'powerup'},
+                {x: 520, y: 430, active: false, type: 'powerup'}
+            ],
+            trees: [
+                {x: 120, y: 140, size: 0.9}, {x: 720, y: 140, size: 1}, {x: 720, y: 480, size: 1.1},
+                {x: 120, y: 500, size: 1}, {x: 400, y: 300, size: 1.2}
+            ]
+        },
+        {
+            id: 'river-chicane',
+            name: 'River Chicane',
+            description: 'S-curves and short straights by the water.',
+            points: [
+                {x: 140, y: 330}, {x: 240, y: 150}, {x: 460, y: 140},
+                {x: 640, y: 230}, {x: 660, y: 380}, {x: 480, y: 500},
+                {x: 260, y: 500}, {x: 140, y: 380}, {x: 140, y: 330}
+            ],
+            finishSegment: [2, 3],
+            startAngle: -Math.PI / 12,
+            startGrid: [
+                {x: 190, y: 340}, {x: 190, y: 380}, {x: 160, y: 350}, {x: 160, y: 390}
+            ],
+            itemBoxes: [
+                {x: 360, y: 150, active: true, type: 'question'},
+                {x: 640, y: 320, active: true, type: 'question'},
+                {x: 330, y: 480, active: true, type: 'question'}
+            ],
+            powerupBoxes: [
+                {x: 240, y: 230, active: false, type: 'powerup'},
+                {x: 520, y: 260, active: false, type: 'powerup'},
+                {x: 440, y: 420, active: false, type: 'powerup'}
+            ],
+            trees: [
+                {x: 120, y: 120, size: 0.8}, {x: 700, y: 150, size: 1.1}, {x: 730, y: 430, size: 1},
+                {x: 120, y: 480, size: 1}, {x: 430, y: 320, size: 1.1}
+            ]
+        },
+        {
+            id: 'canyon-bridge',
+            name: 'Canyon Bridge Run',
+            description: 'Elevated bridge straight with canyon bends—no ground crossovers.',
+            points: [
+                {x: 170, y: 320}, {x: 240, y: 170}, {x: 500, y: 150},
+                {x: 670, y: 220}, {x: 640, y: 360}, {x: 480, y: 470},
+                {x: 280, y: 500}, {x: 170, y: 380}, {x: 170, y: 320}
+            ],
+            finishSegment: [2, 3],
+            startAngle: -Math.PI / 10,
+            startGrid: [
+                {x: 210, y: 340}, {x: 210, y: 380}, {x: 180, y: 350}, {x: 180, y: 390}
+            ],
+            itemBoxes: [
+                {x: 360, y: 170, active: true, type: 'question'},
+                {x: 660, y: 300, active: true, type: 'question'},
+                {x: 350, y: 490, active: true, type: 'question'}
+            ],
+            powerupBoxes: [
+                {x: 250, y: 240, active: false, type: 'powerup'},
+                {x: 520, y: 240, active: false, type: 'powerup'},
+                {x: 450, y: 410, active: false, type: 'powerup'}
+            ],
+            trees: [
+                {x: 130, y: 150, size: 0.9}, {x: 720, y: 190, size: 1.1}, {x: 720, y: 450, size: 1.2},
+                {x: 130, y: 480, size: 0.95}, {x: 430, y: 330, size: 1.05}
+            ]
+        },
+        {
+            id: 'coast-sprint',
+            name: 'Coastline Sprint',
+            description: 'Long seaside straights and wide sweepers.',
+            points: [
+                {x: 150, y: 320}, {x: 220, y: 180}, {x: 470, y: 140},
+                {x: 670, y: 180}, {x: 700, y: 340}, {x: 560, y: 500},
+                {x: 320, y: 520}, {x: 150, y: 420}, {x: 150, y: 320}
+            ],
+            finishSegment: [3, 4],
+            startAngle: 0,
+            startGrid: [
+                {x: 210, y: 340}, {x: 210, y: 380}, {x: 180, y: 350}, {x: 180, y: 390}
+            ],
+            itemBoxes: [
+                {x: 360, y: 150, active: true, type: 'question'},
+                {x: 680, y: 260, active: true, type: 'question'},
+                {x: 360, y: 500, active: true, type: 'question'}
+            ],
+            powerupBoxes: [
+                {x: 250, y: 230, active: false, type: 'powerup'},
+                {x: 530, y: 210, active: false, type: 'powerup'},
+                {x: 480, y: 430, active: false, type: 'powerup'}
+            ],
+            trees: [
+                {x: 120, y: 150, size: 0.9}, {x: 730, y: 150, size: 1.05}, {x: 740, y: 470, size: 1.1},
+                {x: 120, y: 480, size: 1}, {x: 430, y: 320, size: 1.15}
+            ]
+        }
     ];
 
     const QUESTIONS_PER_LAP = 3;
@@ -641,20 +788,6 @@
     const FINISH_BAND_DEPTH = 28;
     const FINISH_LINE_HEIGHT_FACTOR = 1.6;
 
-    // Item Boxes (Question boxes) - Base coordinates
-    const BASE_ITEM_BOXES = [
-        {x: 350, y: 100, active: true, type: 'question'},
-        {x: 650, y: 300, active: true, type: 'question'},
-        {x: 300, y: 450, active: true, type: 'question'}
-    ];
-
-    // Power-up Boxes (appear from lap 2+) - Base coordinates
-    const BASE_POWERUP_BOXES = [
-        {x: 200, y: 200, active: false, type: 'powerup'},
-        {x: 550, y: 200, active: false, type: 'powerup'},
-        {x: 450, y: 350, active: false, type: 'powerup'}
-    ];
-
     // Get scale factors based on current canvas size
     function getScale() {
         return {
@@ -663,10 +796,15 @@
         };
     }
 
+    let selectedTrackShape = TRACK_SHAPES[0];
+
     // Scaled track points (updated on resize)
     let TRACK_POINTS = [];
     let ITEM_BOXES = [];
     let POWERUP_BOXES = [];
+    let startGridPositions = [];
+    let trackTrees = [];
+    let trackStartAngle = -Math.PI / 4;
     let startFinishAnchor = { x: 0, y: 0 };
     let startFinishAngle = 0;
 
@@ -731,34 +869,40 @@
 
     function updateScaledPositions() {
         const scale = getScale();
+        const shape = selectedTrackShape || TRACK_SHAPES[0];
 
-        TRACK_POINTS = BASE_TRACK_POINTS.map(p => ({
+        TRACK_POINTS = shape.points.map(p => ({
             x: p.x * scale.x,
             y: p.y * scale.y
         }));
 
-        ITEM_BOXES = BASE_ITEM_BOXES.map(b => ({
+        ITEM_BOXES = shape.itemBoxes.map(b => ({
             x: b.x * scale.x,
             y: b.y * scale.y,
             active: b.active,
             type: b.type
         }));
 
-        POWERUP_BOXES = BASE_POWERUP_BOXES.map(b => ({
+        POWERUP_BOXES = shape.powerupBoxes.map(b => ({
             x: b.x * scale.x,
             y: b.y * scale.y,
             active: b.active,
             type: b.type
         }));
 
-        // Anchor the start/finish band on the long top straight between points 1 and 2
-        const startNode = TRACK_POINTS[1];
-        const endNode = TRACK_POINTS[2];
+        startGridPositions = shape.startGrid.map(p => ({ x: p.x * scale.x, y: p.y * scale.y }));
+        trackTrees = (shape.trees || []).map(t => ({ x: t.x * scale.x, y: t.y * scale.y, size: t.size }));
+
+        // Anchor the start/finish band on a clean straight between configured nodes
+        const segment = shape.finishSegment || [1, 2];
+        const startNode = TRACK_POINTS[segment[0]];
+        const endNode = TRACK_POINTS[segment[1]];
         startFinishAnchor = {
             x: (startNode.x + endNode.x) / 2,
             y: (startNode.y + endNode.y) / 2
         };
         startFinishAngle = Math.atan2(endNode.y - startNode.y, endNode.x - startNode.x);
+        trackStartAngle = shape.startAngle ?? startFinishAngle;
     }
 
     let lapsTotal = 3;
@@ -796,6 +940,11 @@
     bowserImg.onerror = () => { console.error('Failed to load bowser.png'); bowserImgLoaded = false; };
 
 
+    function getAiSpeedMod() {
+        const config = DIFFICULTY_SETTINGS[currentDifficulty] || DIFFICULTY_SETTINGS.mild;
+        return config.aiBase + Math.random() * config.aiVariance;
+    }
+
     // --- Classes ---
 
     class Kart {
@@ -818,8 +967,8 @@
             // AI specific
             this.waypointIndex = 1;
             this.startOffset = startOffset; // Stagger AI start
-            // AI speed - even slower in easy mode so young players can win consistently
-            this.aiSpeedMod = easyMode ? (0.24 + Math.random() * 0.12) : (0.65 + Math.random() * 0.2);
+            // AI speed tuned by difficulty
+            this.aiSpeedMod = getAiSpeedMod();
         }
 
         update() {
@@ -1252,6 +1401,32 @@
     function showTrackSelection() {
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('track-selection').classList.remove('hidden');
+        setDifficulty(currentDifficulty);
+
+        // Generate track shape buttons
+        const shapeContainer = document.getElementById('shape-buttons');
+        shapeContainer.innerHTML = '';
+        TRACK_SHAPES.forEach(shape => {
+            const btn = document.createElement('button');
+            btn.className = 'w-full p-3 rounded-lg border-2 text-left transition hover:scale-102 hover:shadow-lg flex items-center justify-between';
+            btn.style.borderColor = '#22c55e';
+            if (shape.id === selectedTrackShape.id) {
+                btn.classList.add('active');
+                btn.style.background = 'linear-gradient(135deg, #ecfdf3 0%, #dcfce7 100%)';
+            } else {
+                btn.style.background = 'white';
+            }
+
+            btn.innerHTML = `
+                <div>
+                    <h3 class="font-bold text-lg text-green-800">${shape.name}</h3>
+                    <p class="text-sm text-gray-600">${shape.description}</p>
+                </div>
+                <span class="text-xs font-bold text-green-700">No crossovers</span>
+            `;
+            btn.onclick = () => selectTrackShape(shape);
+            shapeContainer.appendChild(btn);
+        });
 
         // Generate track buttons
         const container = document.getElementById('track-buttons');
@@ -1281,6 +1456,13 @@
         document.getElementById('start-screen').classList.remove('hidden');
     }
 
+    function selectTrackShape(shape) {
+        selectedTrackShape = shape;
+        updateScaledPositions();
+        setTimeout(resize, 0); // ensure canvas sizing stays synced
+        showTrackSelection();
+    }
+
     function selectTrack(track) {
         selectedTrack = track;
         currentTrackColor = track.color;
@@ -1295,6 +1477,9 @@
         document.getElementById('hud-lap').classList.remove('hidden');
         document.getElementById('hud-score').classList.remove('hidden');
         document.getElementById('speed-toggle').classList.remove('hidden');
+
+        // Reset track geometry, item boxes, and trees for the chosen layout
+        updateScaledPositions();
 
         // Reset scoring
         score = { correct: 0, total: 0 };
@@ -1315,18 +1500,24 @@
         }
 
         // Initialize Karts with character images - scale positions to current canvas size
-        const scale = getScale();
+        const grid = startGridPositions.length ? startGridPositions : [
+            {x: 100 * getScale().x, y: 280 * getScale().y},
+            {x: 100 * getScale().x, y: 320 * getScale().y},
+            {x: 80 * getScale().x, y: 290 * getScale().y},
+            {x: 80 * getScale().x, y: 330 * getScale().y}
+        ];
+
         karts = [
-            new Kart(100 * scale.x, 280 * scale.y, '#ef4444', true, 0, playerKartImg, () => playerKartImgLoaded), // Player - Mario
-            new Kart(100 * scale.x, 320 * scale.y, '#3b82f6', false, 100, warioImg, () => warioImgLoaded), // AI 1 - Wario
-            new Kart(80 * scale.x, 290 * scale.y, '#22c55e', false, 200, kongImg, () => kongImgLoaded), // AI 2 - Donkey Kong
-            new Kart(80 * scale.x, 330 * scale.y, '#eab308', false, 300, bowserImg, () => bowserImgLoaded)  // AI 3 - Bowser
+            new Kart(grid[0].x, grid[0].y, '#ef4444', true, 0, playerKartImg, () => playerKartImgLoaded), // Player - Mario
+            new Kart(grid[1].x, grid[1].y, '#3b82f6', false, 100, warioImg, () => warioImgLoaded), // AI 1 - Wario
+            new Kart(grid[2].x, grid[2].y, '#22c55e', false, 200, kongImg, () => kongImgLoaded), // AI 2 - Donkey Kong
+            new Kart(grid[3].x, grid[3].y, '#eab308', false, 300, bowserImg, () => bowserImgLoaded)  // AI 3 - Bowser
         ];
         playerKart = karts[0];
-        playerKart.angle = -Math.PI / 4; // Face start direction
+        playerKart.angle = trackStartAngle;
 
         // Set AI angles
-        karts.slice(1).forEach(k => k.angle = -Math.PI/4);
+        karts.slice(1).forEach(k => k.angle = trackStartAngle);
 
         gameState = 'racing';
         gameLoop();
@@ -1336,11 +1527,11 @@
         document.getElementById('hud-score').innerText = `Score: ${score.correct}/${score.total} | Lap Q: ${Math.min(questionsThisLap, QUESTIONS_PER_LAP)}/${QUESTIONS_PER_LAP}`;
     }
 
-    function setRaceSpeed(speed) {
-        if (!SPEED_PRESETS[speed]) return;
+    function setDifficulty(level) {
+        if (!SPEED_PRESETS[level]) return;
 
-        currentRaceSpeed = speed;
-        const preset = SPEED_PRESETS[speed];
+        currentDifficulty = level;
+        const preset = SPEED_PRESETS[level];
 
         // Update physics constants
         MAX_SPEED = preset.MAX_SPEED;
@@ -1350,13 +1541,22 @@
         TURN_SPEED = preset.TURN_SPEED;
         RED_SHELL_SPEED = preset.RED_SHELL_SPEED;
 
-        // Update active button state using IDs
-        document.getElementById('speed-slow').classList.remove('active');
-        document.getElementById('speed-medium').classList.remove('active');
-        document.getElementById('speed-fast').classList.remove('active');
-        document.getElementById('speed-' + speed).classList.add('active');
+        // Retune AI speeds to match the new spice level
+        karts.filter(k => !k.isPlayer).forEach(k => {
+            k.aiSpeedMod = getAiSpeedMod();
+        });
 
-        console.log(`Race speed set to: ${speed}`);
+        // Update active button state using IDs (both overlays share the same classes)
+        ['speed-mild','speed-medium','speed-spicy','shape-mild','shape-medium','shape-spicy'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.remove('active');
+        });
+        ['speed-' + level, 'shape-' + level].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('active');
+        });
+
+        console.log(`Race difficulty set to: ${level} (${DIFFICULTY_SETTINGS[level].description})`);
     }
 
     function drawTrack() {
@@ -1384,15 +1584,16 @@
         }
 
         // Premium trees with shadows and 3D effect
-        const baseTrees = [
-            {x:400, y:300, size: 1.2}, {x:150, y:150, size: 1}, {x:650, y:450, size: 1.1},
-            {x:50, y:50, size: 0.8}, {x:750, y:550, size: 1.3}, {x:720, y:120, size: 0.9},
-            {x:80, y:450, size: 1}, {x:420, y:520, size: 0.85}
+        const fallbackTrees = [
+            {x:400 * scale.x, y:300 * scale.y, size: 1.2}, {x:150 * scale.x, y:150 * scale.y, size: 1}, {x:650 * scale.x, y:450 * scale.y, size: 1.1},
+            {x:50 * scale.x, y:50 * scale.y, size: 0.8}, {x:750 * scale.x, y:550 * scale.y, size: 1.3}, {x:720 * scale.x, y:120 * scale.y, size: 0.9},
+            {x:80 * scale.x, y:450 * scale.y, size: 1}, {x:420 * scale.x, y:520 * scale.y, size: 0.85}
         ];
-        baseTrees.forEach(t => {
+        const trees = trackTrees.length ? trackTrees : fallbackTrees;
+        trees.forEach(t => {
             const treeSize = 28 * avgScale * t.size;
-            const tx = t.x * scale.x;
-            const ty = t.y * scale.y;
+            const tx = t.x;
+            const ty = t.y;
 
             // Tree shadow
             ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
@@ -1469,6 +1670,43 @@
         trackGradient.addColorStop(0.7, '#374151');
         trackGradient.addColorStop(1, '#1f2937');
         fillBand(asphaltOuter, asphaltInner, trackGradient);
+
+        // Bridge decking for elevated crossover-safe layout
+        if (selectedTrackShape.id === 'canyon-bridge') {
+            const segment = selectedTrackShape.finishSegment || [2, 3];
+            const a = TRACK_POINTS[segment[0]];
+            const b = TRACK_POINTS[segment[1]];
+            const vx = b.x - a.x;
+            const vy = b.y - a.y;
+            const len = Math.hypot(vx, vy) || 1;
+            const nx = -vy / len;
+            const ny = vx / len;
+            const halfW = trackHalfWidth * 1.25;
+
+            const bridgePoints = [
+                { x: a.x + nx * halfW, y: a.y + ny * halfW },
+                { x: b.x + nx * halfW, y: b.y + ny * halfW },
+                { x: b.x - nx * halfW, y: b.y - ny * halfW },
+                { x: a.x - nx * halfW, y: a.y - ny * halfW }
+            ];
+
+            const bridgeGrad = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+            bridgeGrad.addColorStop(0, '#fcd34d');
+            bridgeGrad.addColorStop(1, '#f59e0b');
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(bridgePoints[0].x, bridgePoints[0].y);
+            bridgePoints.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+            ctx.closePath();
+            ctx.fillStyle = bridgeGrad;
+            ctx.fill();
+
+            ctx.strokeStyle = '#92400e';
+            ctx.lineWidth = 4 * avgScale;
+            ctx.stroke();
+            ctx.restore();
+        }
 
         // Track edge lines (white racing lines)
         strokeLoop(outerEdgeLine, 3 * avgScale, 'rgba(255, 255, 255, 0.9)');
@@ -1891,9 +2129,10 @@
         // Auto accelerate (Mario Kart style) - always moving forward
         let targetSpeed = boostActive ? BOOST_SPEED : MAX_SPEED;
 
-        // Check Terrain - reduced offroad penalty in easy mode
+        // Check Terrain - tuning based on difficulty forgiveness
         if(!checkOnTrack(playerKart.x, playerKart.y)) {
-            targetSpeed = easyMode ? OFFROAD_SPEED * 1.5 : OFFROAD_SPEED;
+            const forgiveness = (DIFFICULTY_SETTINGS[currentDifficulty]?.offroadForgiveness) || 1;
+            targetSpeed = OFFROAD_SPEED * forgiveness;
         }
 
         // Apply Speed
