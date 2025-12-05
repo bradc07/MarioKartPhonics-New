@@ -822,8 +822,8 @@
             // AI specific
             this.waypointIndex = 1;
             this.startOffset = startOffset; // Stagger AI start
-            // AI speed - much slower in easy mode so younger players can win
-            this.aiSpeedMod = easyMode ? (0.35 + Math.random() * 0.15) : (0.8 + Math.random() * 0.3);
+            // AI speed - even slower in easy mode so young players can win consistently
+            this.aiSpeedMod = easyMode ? (0.24 + Math.random() * 0.12) : (0.65 + Math.random() * 0.2);
         }
 
         update() {
