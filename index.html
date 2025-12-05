@@ -217,13 +217,13 @@
         <div id="hud-lap" class="hud-lap hidden">Lap: 1/3</div>
         <div id="hud-score" class="hud hidden" style="top: 50px;">Score: 0/0</div>
 
-        <!-- Speed Toggle -->
+        <!-- Difficulty Toggle -->
         <div id="speed-toggle" class="speed-toggle hidden" style="bottom: 20px;">
-            <div class="speed-toggle-label">Race Speed</div>
+            <div class="speed-toggle-label">Race Spice Level</div>
             <div class="speed-options">
-                <button class="speed-btn active" id="speed-slow" onclick="setRaceSpeed('slow')">Slow</button>
-                <button class="speed-btn" id="speed-medium" onclick="setRaceSpeed('medium')">Medium</button>
-                <button class="speed-btn" id="speed-fast" onclick="setRaceSpeed('fast')">Fast</button>
+                <button class="speed-btn active" id="speed-mild" onclick="setDifficulty('mild')">Mild</button>
+                <button class="speed-btn" id="speed-medium" onclick="setDifficulty('medium')">Medium</button>
+                <button class="speed-btn" id="speed-spicy" onclick="setDifficulty('spicy')">Spicy</button>
             </div>
         </div>
 
@@ -235,7 +235,7 @@
                 <div class="space-y-3">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 bg-yellow-400 rounded flex items-center justify-center font-bold text-white shadow">?</div>
-                        <p class="text-sm">Yellow boxes = Answer questions!</p>
+                        <p class="text-sm">Yellow boxes = Answer questions! Collect all 3 each lap to cross the finish.</p>
                     </div>
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 bg-gradient-to-r from-red-500 via-yellow-500 to-purple-500 rounded flex items-center justify-center font-bold text-white shadow">★</div>
@@ -254,8 +254,8 @@
                         <p class="text-sm">Questions get <span class="font-bold text-purple-600">HARDER</span> each lap!</p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <span class="text-xl">⚡🐢🍌</span>
-                        <p class="text-sm"><span class="font-bold">Power-ups:</span> Lightning, Shells, Bananas</p>
+                        <span class="text-xl">⚡🐢🍌🛡️❄️🏎️🧹</span>
+                        <p class="text-sm"><span class="font-bold">Power-ups:</span> Lightning, Shells, Bananas, Shields, Mega Freeze, Turbo Dash, Track Sweeper</p>
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="text-xl">👻</span>
@@ -270,6 +270,19 @@
         <div id="track-selection" class="overlay hidden">
             <div class="modal-card" style="max-width: 500px; max-height: 90vh; overflow-y: auto;">
                 <h1 class="text-2xl font-bold mb-4 text-center text-green-900">Choose Your Track</h1>
+                <p class="text-gray-600 mb-4 text-center text-sm">Pick your spice level, then choose the learning focus.</p>
+
+                <div class="mb-4">
+                    <h2 class="text-lg font-bold text-orange-700 mb-2">Difficulty</h2>
+                    <p class="text-xs text-gray-600 mb-2">Higher spice = tougher questions and faster opponents.</p>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button class="speed-btn active" id="shape-mild" onclick="setDifficulty('mild')">Mild</button>
+                        <button class="speed-btn" id="shape-medium" onclick="setDifficulty('medium')">Medium</button>
+                        <button class="speed-btn" id="shape-spicy" onclick="setDifficulty('spicy')">Spicy</button>
+                    </div>
+                </div>
+
+                <h2 class="text-lg font-bold text-green-800 mb-2">Learning Track</h2>
                 <p class="text-gray-600 mb-4 text-center text-sm">Each track focuses on different phonics skills!</p>
                 <div class="space-y-3" id="track-buttons">
                     <!-- Track buttons injected by JS -->
@@ -319,8 +332,54 @@
                     <p class="text-lg font-bold">Your Score: <span id="final-score" class="text-green-600">0/0</span></p>
                     <p id="score-percentage" class="text-sm text-gray-600">0% correct</p>
                 </div>
+                <div id="encouragement" class="mb-4 p-4 bg-green-50 border-2 border-green-200 rounded-lg text-left">
+                    <h2 class="text-lg font-bold text-green-800 mb-1">Great driving!</h2>
+                    <p id="encouragement-text" class="text-sm text-green-700">You finished strong—keep practicing to get every answer right!</p>
+                </div>
+                <div id="award-banner" class="mb-4 p-4 bg-indigo-50 border-2 border-indigo-200 rounded-lg text-left hidden">
+                    <div class="flex items-center justify-between mb-2">
+                        <h2 class="text-lg font-bold text-indigo-900">Special Award</h2>
+                        <span id="award-label" class="px-3 py-1 text-xs font-bold rounded-full bg-indigo-100 text-indigo-800">Consistency Cup</span>
+                    </div>
+                    <p id="award-criteria" class="text-sm text-indigo-800">Earned by keeping accuracy high across lots of questions.</p>
+                </div>
+                <div class="mb-4 p-4 bg-white border-2 border-gray-100 rounded-lg shadow-sm">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-lg font-bold text-gray-800">Race Highlights</h2>
+                        <span id="performance-badge" class="px-3 py-1 text-xs font-bold rounded-full bg-green-100 text-green-800">Learning Legend</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 text-left text-sm">
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <p class="text-gray-500 text-xs uppercase tracking-wide">Accuracy</p>
+                            <p class="text-2xl font-extrabold text-gray-900" id="stat-accuracy">0%</p>
+                            <div class="mt-2 w-full bg-gray-200 rounded-full h-2">
+                                <div id="accuracy-bar" class="h-2 rounded-full bg-green-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <p class="text-gray-500 text-xs uppercase tracking-wide">Best Correct Streak</p>
+                            <p class="text-2xl font-extrabold text-gray-900" id="stat-streak">0</p>
+                            <p class="text-xs text-gray-500">Keep chaining right answers to level up!</p>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <p class="text-gray-500 text-xs uppercase tracking-wide">Avg. Answer Time</p>
+                            <p class="text-2xl font-extrabold text-gray-900" id="stat-time">0s</p>
+                            <p class="text-xs text-gray-500">Quick and careful wins the lap!</p>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <p class="text-gray-500 text-xs uppercase tracking-wide">Race Time</p>
+                            <p class="text-2xl font-extrabold text-gray-900" id="stat-race-time">0s</p>
+                            <p class="text-xs text-gray-500">From green light to finish line.</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="growth-tips" class="mb-4 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg text-left hidden">
+                    <h2 class="text-lg font-bold text-blue-900 mb-1">Next Race Power-Ups</h2>
+                    <ul id="growth-list" class="list-disc list-inside text-sm text-blue-800 space-y-1"></ul>
+                </div>
                 <div id="review-section" class="hidden text-left mb-4">
-                    <h2 class="text-xl font-bold mb-3 text-red-600 text-center">Let's Learn From Our Mistakes!</h2>
+                    <h2 class="text-xl font-bold mb-1 text-red-600 text-center">Let's Learn From Our Mistakes!</h2>
+                    <p class="text-sm text-gray-700 mb-3 text-center">Tap an answer below to fix it and see why it's correct.</p>
                     <div id="wrong-answers-list" class="space-y-4">
                         <!-- Wrong answers injected here -->
                     </div>
@@ -348,66 +407,6 @@
     // TRACK DEFINITIONS - Each track has a theme, color, and skill-specific questions
     const TRACKS = [
         {
-            id: 'vowel-sounds',
-            name: 'Vowel Valley',
-            icon: '🌈',
-            color: '#ef4444',
-            description: 'Long & short vowel sounds (ai, ee, oa, oo)',
-            questions: {
-                easy: [
-                    { q: "Which word has the /ai/ sound?", options: ["Rain", "Run", "Red"], a: 0, explanation: "'Rain' has the /ai/ sound. The 'ai' makes a long 'a' sound like in 'train' and 'pain'." },
-                    { q: "Which word has the /ee/ sound?", options: ["Tree", "Trick", "Truck"], a: 0, explanation: "'Tree' has the /ee/ sound. The 'ee' makes a long 'e' sound like in 'bee' and 'see'." },
-                    { q: "Pick the word with 'oo':", options: ["Book", "Bake", "Bike"], a: 0, explanation: "'Book' has 'oo'. This 'oo' makes a short sound. In 'moon' it makes a long sound." },
-                    { q: "What sound does 'oa' make in 'boat'?", options: ["Long o", "Short o", "Ow"], a: 0, explanation: "'oa' makes a long 'o' sound, like saying the letter O. Boat, coat, and goat all have this sound." },
-                    { q: "Which has the /oo/ sound like 'moon'?", options: ["Soon", "Book", "Foot"], a: 0, explanation: "'Soon' has the long /oo/ sound like 'moon'. 'Book' and 'foot' have the short /oo/ sound." }
-                ],
-                medium: [
-                    { q: "Which word has the long 'a' sound?", options: ["Cat", "Cake", "Car"], a: 1, explanation: "'Cake' has the long 'a' sound because of the magic 'e' at the end. The 'e' makes the 'a' say its name." },
-                    { q: "Find the word with /igh/ sound:", options: ["Bright", "Bit", "Boat"], a: 0, explanation: "'Bright' has the /igh/ sound. The 'igh' makes a long 'i' sound like in 'night' and 'light'." },
-                    { q: "Which uses 'ea' for /ee/?", options: ["Bread", "Beach", "Break"], a: 1, explanation: "'Beach' uses 'ea' to make the /ee/ sound. But be careful - 'bread' and 'break' use 'ea' differently!" },
-                    { q: "Pick the word with long 'o':", options: ["Hope", "Hop", "Hot"], a: 0, explanation: "'Hope' has the long 'o' because of the magic 'e'. Without it, 'hop' has a short 'o' sound." },
-                    { q: "Which word has /ow/ like 'snow'?", options: ["Grow", "Now", "How"], a: 0, explanation: "'Grow' has the /ow/ sound like 'snow'. 'Now' and 'how' have a different 'ow' sound like 'cow'." }
-                ],
-                hard: [
-                    { q: "Which has 'ough' making /oo/?", options: ["Through", "Tough", "Though"], a: 0, explanation: "'Through' has 'ough' making /oo/. English is tricky - 'tough' sounds like 'uff' and 'though' sounds like 'oh'!" },
-                    { q: "Find the silent 'e' word:", options: ["Have", "Make", "Give"], a: 1, explanation: "'Make' has a silent 'e' that makes the 'a' long. 'Have' and 'give' are tricky words where 'e' doesn't follow the rule." },
-                    { q: "Which 'ei' makes /ee/?", options: ["Receive", "Eight", "Vein"], a: 0, explanation: "'Receive' uses 'ei' to make /ee/. Remember: 'i before e except after c' - receive has 'c' before it!" },
-                    { q: "Pick the word where 'y' sounds like /ee/:", options: ["My", "Happy", "Yes"], a: 1, explanation: "'Happy' ends with 'y' that sounds like /ee/. At the end of words, 'y' often makes the /ee/ sound." },
-                    { q: "Which has /or/ sound?", options: ["Word", "Worn", "Worm"], a: 1, explanation: "'Worn' has the clear /or/ sound. 'Word' and 'worm' have 'or' but sound like /er/ - tricky!" }
-                ]
-            }
-        },
-        {
-            id: 'consonant-blends',
-            name: 'Blend Boulevard',
-            icon: '🔤',
-            color: '#3b82f6',
-            description: 'Consonant digraphs & blends (ch, sh, th, bl, str)',
-            questions: {
-                easy: [
-                    { q: "Which word starts with 'ch'?", options: ["Chip", "Ship", "Trip"], a: 0, explanation: "'Chip' starts with 'ch'. The 'ch' sound is different from 'sh' - try saying them both!" },
-                    { q: "What makes the /sh/ sound?", options: ["s", "sh", "ch"], a: 1, explanation: "'sh' makes the /sh/ sound like in 'ship', 'shop', and 'shell'. Put your finger to your lips - shhh!" },
-                    { q: "Which starts with 'th'?", options: ["That", "Cat", "Fat"], a: 0, explanation: "'That' starts with 'th'. Put your tongue between your teeth to make the /th/ sound!" },
-                    { q: "Pick the 'bl' blend word:", options: ["Black", "Back", "Brick"], a: 0, explanation: "'Black' starts with 'bl' blend. You hear both the 'b' and 'l' sounds together quickly." },
-                    { q: "Which ends with 'ck'?", options: ["Duck", "Dug", "Duke"], a: 0, explanation: "'Duck' ends with 'ck'. After a short vowel, we usually use 'ck' not just 'k'." }
-                ],
-                medium: [
-                    { q: "Find the 'str' blend:", options: ["Strong", "Song", "Sting"], a: 0, explanation: "'Strong' has the 'str' blend - three consonants together! Say it slowly: s-t-r-ong." },
-                    { q: "Which has 'wh' sound?", options: ["What", "Wet", "Want"], a: 0, explanation: "'What' starts with 'wh'. Some people say /w/ and some say /hw/ - both are correct!" },
-                    { q: "Pick the word with 'ng':", options: ["Ring", "Rig", "Rim"], a: 0, explanation: "'Ring' has 'ng' at the end. This makes a special sound at the back of your throat - try it!" },
-                    { q: "Which starts with 'spr'?", options: ["Spring", "Sing", "String"], a: 0, explanation: "'Spring' has the 'spr' blend - three sounds s-p-r together at the start." },
-                    { q: "Find the 'nch' ending:", options: ["Lunch", "Lung", "Lush"], a: 0, explanation: "'Lunch' ends with 'nch'. You can hear 'n' then 'ch' - like 'bunch' and 'punch'." }
-                ],
-                hard: [
-                    { q: "Which has 'tch' making /ch/?", options: ["Catch", "Chat", "Much"], a: 0, explanation: "'Catch' uses 'tch' for the /ch/ sound. After a short vowel, we often use 'tch' instead of 'ch'." },
-                    { q: "Find the 'dge' sound:", options: ["Bridge", "Big", "Bring"], a: 0, explanation: "'Bridge' has 'dge' making a /j/ sound. After a short vowel, we use 'dge' not just 'ge'." },
-                    { q: "Which 'ph' makes /f/?", options: ["Phone", "Hop", "Pen"], a: 0, explanation: "'Phone' uses 'ph' to make the /f/ sound. This comes from Greek words - like 'photo' and 'elephant'." },
-                    { q: "Pick the silent 'w' word:", options: ["Write", "Wait", "Want"], a: 0, explanation: "'Write' has a silent 'w'. We don't say the 'w' in 'write', 'wrong', or 'wrist'." },
-                    { q: "Which has silent 'k'?", options: ["Knee", "Keep", "Key"], a: 0, explanation: "'Knee' has a silent 'k'. When 'kn' starts a word, the 'k' is silent - like 'know' and 'knife'." }
-                ]
-            }
-        },
-        {
             id: 'spelling-patterns',
             name: 'Spelling Speedway',
             icon: '✏️',
@@ -419,81 +418,36 @@
                     { q: "Which is spelled right?", options: ["Sed", "Said", "Sayd"], a: 1, explanation: "'Said' is correct. This is a tricky word - it doesn't sound like it's spelled!" },
                     { q: "Pick the correct spelling:", options: ["Wen", "When", "Whn"], a: 1, explanation: "'When' is correct. It starts with 'wh' and has an 'e' in the middle." },
                     { q: "Which is a real word?", options: ["Frog", "Frug", "Frag"], a: 0, explanation: "'Frog' is the real word - it's a green animal that hops and says ribbit!" },
-                    { q: "Correct spelling?", options: ["Thay", "They", "Thei"], a: 1, explanation: "'They' is correct. This is a tricky word you need to remember - t-h-e-y." }
+                    { q: "Correct spelling?", options: ["Thay", "They", "Thei"], a: 1, explanation: "'They' is correct. This is a tricky word you need to remember - t-h-e-y." },
+                    { q: "Spot the tricky word:", options: ["Becaws", "Because", "Becauss"], a: 1, explanation: "'Because' is a common exception word. Remember the rhyme 'big elephants can always understand small elephants'!" },
+                    { q: "Which word is spelled correctly?", options: ["House", "Howse", "Housse"], a: 0, explanation: "'House' has the sneaky 'ou' that sounds like /ow/." },
+                    { q: "Choose the right ending:", options: ["Play", "Plae", "Plei"], a: 0, explanation: "'Play' uses 'ay' for the long a sound at the end." },
+                    { q: "Which tricky word is right?", options: ["People", "Peaple", "Peopel"], a: 0, explanation: "'People' is correct. Say it like 'pee-pul' to remember the 'eo'." },
+                    { q: "Find the correct spelling:", options: ["Floor", "Flor", "Flloor"], a: 0, explanation: "'Floor' has the double 'o' to make the /or/ sound." }
                 ],
                 medium: [
                     { q: "Finish the word: Hap__", options: ["py", "pie", "pee"], a: 0, explanation: "'Happy' ends with 'py'. When adding 'y' to make a word happy-sounding, we use 'py'." },
                     { q: "Past tense of 'jump':", options: ["Jumped", "Jumpt", "Jumpd"], a: 0, explanation: "'Jumped' is correct. We add 'ed' to make past tense, and here it sounds like /t/." },
                     { q: "Plural of 'baby':", options: ["Babys", "Babies", "Babyes"], a: 1, explanation: "'Babies' is correct. When a word ends in 'y', change the 'y' to 'i' and add 'es'." },
                     { q: "Past tense of 'stop':", options: ["Stoped", "Stopped", "Stopt"], a: 1, explanation: "'Stopped' is correct. We double the 'p' before adding 'ed' because 'stop' has a short vowel." },
-                    { q: "Plural of 'fox':", options: ["Foxs", "Foxes", "Foxies"], a: 1, explanation: "'Foxes' is correct. Words ending in 'x' need 'es' to make them plural." }
+                    { q: "Plural of 'fox':", options: ["Foxs", "Foxes", "Foxies"], a: 1, explanation: "'Foxes' is correct. Words ending in 'x' need 'es' to make them plural." },
+                    { type: 'drag', q: "Drag the tricky word to finish the sentence: '____ are going to the park.'", options: ["They", "Thay", "Thei"], a: 0, answer: "They", explanation: "'They' is the tricky word spelled t-h-e-y. It doesn't follow the sound you hear." },
+                    { type: 'drag', q: "Drag the correct word: 'I can spell it ______ I practise.'", options: ["because", "becos", "becosz"], a: 0, answer: "because", explanation: "'Because' is an exception word. Use 'be-cause' to remember the parts." },
+                    { q: "Pick the right homophone:", options: ["There", "Their", "They're"], a: 1, explanation: "'Their' shows something belongs to them. Look for the 'ir' like in 'pair'—their pair of shoes." },
+                    { q: "Which ending makes sense?", options: ["Hoping", "Hopeing", "Hopeingg"], a: 0, explanation: "Drop the 'e' before adding 'ing' to get 'hoping'." },
+                    { q: "Choose the tricky word:", options: ["After", "Aftur", "Aphter"], a: 0, explanation: "'After' has the /f/ sound spelled with 'ft'." }
                 ],
                 hard: [
                     { q: "Correct spelling:", options: ["Beutiful", "Beautiful", "Beatiful"], a: 1, explanation: "'Beautiful' is correct. Remember: b-e-a-u-t-i-f-u-l. 'Beau' means beautiful in French!" },
                     { q: "Add suffix: happy + est =", options: ["Happyest", "Happiest", "Hapiest"], a: 1, explanation: "'Happiest' is correct. Change 'y' to 'i' before adding 'est'." },
                     { q: "Past tense of 'try':", options: ["Tryed", "Tried", "Tryd"], a: 1, explanation: "'Tried' is correct. Change 'y' to 'i' before adding 'ed'." },
                     { q: "Choose the tricky word:", options: ["Should", "Shoud", "Shood"], a: 0, explanation: "'Should' is correct. The 'oul' is silent - we just say /shud/. Same pattern in 'could' and 'would'." },
-                    { q: "Correct spelling:", options: ["Diffrent", "Different", "Diferent"], a: 1, explanation: "'Different' is correct. It has two 'f's and an 'e' - dif-fer-ent." }
-                ]
-            }
-        },
-        {
-            id: 'homophones',
-            name: 'Homophone Highway',
-            icon: '👯',
-            color: '#eab308',
-            description: 'Words that sound the same but spell differently',
-            questions: {
-                easy: [
-                    { q: "I can ___ with my eyes.", options: ["See", "Sea", "Cee"], a: 0, explanation: "'See' means to look with your eyes. 'Sea' is the ocean water. They sound the same but mean different things!" },
-                    { q: "I ___ to the shop.", options: ["Went", "Want", "Won't"], a: 0, explanation: "'Went' is past tense of 'go'. 'Want' means to wish for something." },
-                    { q: "The sky is ___.", options: ["Blew", "Blue", "Blu"], a: 1, explanation: "'Blue' is the color. 'Blew' is past tense of 'blow' - like the wind blew." },
-                    { q: "I have ___ books.", options: ["Too", "Two", "To"], a: 1, explanation: "'Two' is the number 2. 'Too' means also or very much. 'To' shows direction." },
-                    { q: "I can ___ the bell.", options: ["Here", "Hear", "Heer"], a: 1, explanation: "'Hear' means to listen with your ears. 'Here' means in this place." }
-                ],
-                medium: [
-                    { q: "The dog wagged its ___.", options: ["Tail", "Tale", "Tael"], a: 0, explanation: "'Tail' is the body part animals have. 'Tale' is a story - like a fairy tale!" },
-                    { q: "I ___ a letter.", options: ["Wrote", "Rote", "Right"], a: 0, explanation: "'Wrote' is past tense of write. 'Right' means correct or a direction." },
-                    { q: "Pick the homophone for 'Flour':", options: ["Floor", "Flower", "Flow"], a: 1, explanation: "'Flower' sounds like 'flour' (what we bake with). They're homophones - same sound, different meaning!" },
-                    { q: "We ___ the whole cake!", options: ["Ate", "Eight", "Ait"], a: 0, explanation: "'Ate' is past tense of eat. 'Eight' is the number 8. They sound exactly the same!" },
-                    { q: "The ___ is shining.", options: ["Sun", "Son", "Sunn"], a: 0, explanation: "'Sun' is the star in the sky. 'Son' is a male child. Same sound, different spelling!" }
-                ],
-                hard: [
-                    { q: "Which is the homophone for 'There'?", options: ["Their", "They're", "Both"], a: 2, explanation: "Both 'their' (belonging to them) and 'they're' (they are) sound like 'there' (a place). Three homophones!" },
-                    { q: "I ___ a bike yesterday.", options: ["Road", "Rode", "Rowed"], a: 1, explanation: "'Rode' is past tense of ride. 'Road' is a street. 'Rowed' means used oars in a boat." },
-                    { q: "Homophone for 'Piece':", options: ["Peace", "Peas", "Peice"], a: 0, explanation: "'Peace' (calm, no fighting) sounds like 'piece' (a part of something). Different meanings!" },
-                    { q: "The ___ is heavy.", options: ["Wait", "Weight", "Wate"], a: 1, explanation: "'Weight' is how heavy something is. 'Wait' means to stay and not go yet." },
-                    { q: "___ going to the park.", options: ["There", "Their", "They're"], a: 2, explanation: "'They're' means 'they are' going to the park. It's short for two words joined together." }
-                ]
-            }
-        },
-        {
-            id: 'suffixes-prefixes',
-            name: 'Prefix Peak',
-            icon: '🏔️',
-            color: '#8b5cf6',
-            description: 'Word beginnings & endings (un-, re-, -ed, -ing, -ful)',
-            questions: {
-                easy: [
-                    { q: "Which word has 'ing'?", options: ["Running", "Run", "Ran"], a: 0, explanation: "'Running' has 'ing' added to 'run'. We add 'ing' to show something is happening right now." },
-                    { q: "Add 'ed' to 'jump':", options: ["Jumped", "Jumping", "Jumper"], a: 0, explanation: "'Jumped' has 'ed' added. We use 'ed' to show something already happened in the past." },
-                    { q: "Which has 's' added?", options: ["Cats", "Cat", "Catch"], a: 0, explanation: "'Cats' has 's' added to show more than one cat. This is called making it plural." },
-                    { q: "'Un' means:", options: ["Not", "Again", "Before"], a: 0, explanation: "'Un' means not. Unhappy = not happy. Unkind = not kind." },
-                    { q: "Which word ends in 'er'?", options: ["Bigger", "Big", "Bigg"], a: 0, explanation: "'Bigger' ends in 'er' which means more. Big → bigger → biggest." }
-                ],
-                medium: [
-                    { q: "Which suffix means 'more'?", options: ["-ed", "-er", "-est"], a: 1, explanation: "'-er' means more. Tall → taller (more tall). Fast → faster (more fast)." },
-                    { q: "'Re' in 'redo' means:", options: ["Not", "Again", "Before"], a: 1, explanation: "'Re' means again. Redo = do again. Replay = play again. Reread = read again." },
-                    { q: "Add prefix: un + happy =", options: ["Unhappy", "Rehappy", "Dishappy"], a: 0, explanation: "'Unhappy' means not happy. 'Un-' goes at the start to make the opposite meaning." },
-                    { q: "Which has suffix '-ful'?", options: ["Careful", "Careless", "Caring"], a: 0, explanation: "'Careful' has '-ful' meaning full of care. 'Careless' has '-less' meaning without care." },
-                    { q: "Add suffix: play + ing =", options: ["Playing", "Played", "Player"], a: 0, explanation: "'Playing' adds 'ing' to show the action is happening now. Just add 'ing' to 'play'." }
-                ],
-                hard: [
-                    { q: "happy + ness =", options: ["Happyness", "Happiness", "Happness"], a: 1, explanation: "'Happiness' is correct. Change 'y' to 'i' before adding 'ness'." },
-                    { q: "Which uses '-less'?", options: ["Hopeless", "Hopeful", "Hoping"], a: 0, explanation: "'Hopeless' uses '-less' meaning without hope. '-less' means without something." },
-                    { q: "'Dis' in 'disagree' means:", options: ["Again", "Not", "Before"], a: 1, explanation: "'Dis' means not or opposite. Disagree = not agree. Disappear = not appear." },
-                    { q: "run + er =", options: ["Runer", "Runner", "Runing"], a: 1, explanation: "'Runner' doubles the 'n'. When adding 'er' to short words with short vowels, double the last letter." },
-                    { q: "Which suffix makes a noun?", options: ["-ment", "-ly", "-ed"], a: 0, explanation: "'-ment' makes nouns: enjoy → enjoyment, move → movement. '-ly' makes adverbs, '-ed' makes past tense." }
+                    { q: "Correct spelling:", options: ["Diffrent", "Different", "Diferent"], a: 1, explanation: "'Different' is correct. It has two 'f's and an 'e' - dif-fer-ent." },
+                    { type: 'drag', q: "Drag the correct tricky word: 'The boy scored a goal ______ he aimed carefully.'", options: ["because", "becaus", "becoz"], a: 0, answer: "because", explanation: "'Because' links the reason. It's spelled b-e-c-a-u-s-e." },
+                    { type: 'drag', q: "Drag the missing word: 'My friends and I will meet ______ the stadium.'", options: ["at", "att", "et"], a: 0, answer: "at", explanation: "'At' is the correct short word to show the place." },
+                    { q: "Choose the exception word:", options: ["People", "Peepol", "Peopal"], a: 0, explanation: "'People' doesn't sound like it's spelled. Remember 'eo' makes the /ee/ sound here." },
+                    { q: "Which spelling is correct?", options: ["Water", "Woter", "Waterr"], a: 0, explanation: "'Water' has the /or/ sound spelled with 'a'." },
+                    { q: "Pick the correct suffix:", options: ["Caring", "Careing", "Caaring"], a: 0, explanation: "Drop the silent 'e' before adding 'ing' to make 'caring'." }
                 ]
             }
         },
@@ -567,6 +521,42 @@
                 { q: "Who said the pictures were wonderful?", options: ["Mrs Cole", "Ms O'Shea", "Susan"], a: 1, explanation: "'Ms O'Shea came to look and said their pictures were wonderful.' She was the one who said they were wonderful." },
                 { q: "Who helped clean up?", options: ["Susan", "Mr Clay", "Floris"], a: 0, explanation: "'Susan helped them clean up afterwards.' Look for who did the action - Susan helped with cleaning." }
             ]
+        },
+        {
+            passage: "Maurits went to football practice with his friend Hugo. Coach Zara asked them to pass the ball five times before shooting. Maurits scored a goal and everyone cheered.",
+            questions: [
+                { q: "Who did Maurits go to football with?", options: ["Jules", "Hugo", "Wilbur"], a: 1, explanation: "The passage says 'with his friend Hugo'. Look for the name right after 'with'." },
+                { q: "What did Coach Zara ask them to do first?", options: ["Shoot right away", "Pass five times", "Kick the cones"], a: 1, explanation: "Coach Zara said 'pass the ball five times before shooting.' That was the instruction." },
+                { q: "What happened after Maurits followed the instructions?", options: ["He fell", "He scored a goal", "He went home"], a: 1, explanation: "The story states 'Maurits scored a goal and everyone cheered.'" },
+                { q: "How did the others react?", options: ["They were silent", "They cheered", "They left"], a: 1, explanation: "'Everyone cheered' shows their reaction. Cheering means they were happy!" }
+            ]
+        },
+        {
+            passage: "On Story Street, Maurits imagined driving a blue kart like Mario. He zoomed past the library, waved at Ms O'Shea, and slid around the final corner to cross the finish line first.",
+            questions: [
+                { q: "What colour was Maurits's kart in his story?", options: ["Red", "Blue", "Green"], a: 1, explanation: "It says 'driving a blue kart like Mario'. The colour is given clearly." },
+                { q: "Who did he wave at?", options: ["Coach Zara", "Ms O'Shea", "Mr Clay"], a: 1, explanation: "The passage states he 'waved at Ms O'Shea' when zooming past." },
+                { q: "Where did he imagine racing?", options: ["In a forest", "Past the library", "In the mountains"], a: 1, explanation: "He 'zoomed past the library,' so the race is along Story Street near the library." },
+                { q: "What happened at the end of the race?", options: ["He stopped", "He crashed", "He crossed first"], a: 2, explanation: "The passage says he 'cross the finish line first.'" }
+            ]
+        },
+        {
+            passage: "Maurits wrote his own short comic about a football match. In the story, he and Jules were the strikers, and Wilbur was the speedy winger. They worked together to win 3-2 with a last-minute kick.",
+            questions: [
+                { q: "What did Maurits make?", options: ["A song", "A short comic", "A painting"], a: 1, explanation: "The passage opens with 'Maurits wrote his own short comic.'" },
+                { q: "Who were the strikers?", options: ["Maurits and Jules", "Hugo and Wilbur", "Zane and Harvey"], a: 0, explanation: "It says 'he and Jules were the strikers'." },
+                { q: "What position was Wilbur?", options: ["Goalkeeper", "Speedy winger", "Referee"], a: 1, explanation: "Wilbur was 'the speedy winger'—a winger runs down the side to cross the ball." },
+                { q: "What was the final score in the comic?", options: ["1-0", "3-2", "5-4"], a: 1, explanation: "They 'win 3-2 with a last-minute kick.'" }
+            ]
+        },
+        {
+            passage: "During a rainy afternoon, Maurits and Sophie read a story about a kart race in a forest. The racer had to dodge puddles and fallen leaves. In the end, the kart splashed through a big puddle but still won.",
+            questions: [
+                { q: "What was the weather like?", options: ["Sunny", "Snowy", "Rainy"], a: 2, explanation: "It was 'a rainy afternoon'—that sets the scene." },
+                { q: "Who read with Maurits?", options: ["Hugo", "Sophie", "Coach Zara"], a: 1, explanation: "The passage notes 'Maurits and Sophie read a story' together." },
+                { q: "What did the racer have to dodge?", options: ["Other karts", "Puddles and leaves", "Football cones"], a: 1, explanation: "It says 'dodge puddles and fallen leaves.'" },
+                { q: "What happened at the end?", options: ["The kart stopped", "The kart splashed but won", "The kart broke"], a: 1, explanation: "The racer 'splashed through a big puddle but still won.'" }
+            ]
         }
     ];
 
@@ -577,18 +567,19 @@
     // Game State
     let gameState = 'start'; // start, racing, quiz, finished
     let frameId;
-    let currentDifficulty = 'easy'; // easy, medium, hard
+    let currentDifficulty = 'mild'; // mild, medium, spicy
     let questionsAsked = []; // Track asked questions to avoid repeats
     let comprehensionPassageUsed = []; // Track used passages
     let opponentsFrozen = false; // Track if opponents are frozen
     let freezeEndTime = 0; // Timestamp when freeze ends
     let opponentsSlowed = false; // Track if opponents are slowed (lightning)
     let slowEndTime = 0; // Timestamp when slow effect ends
+    let playerShieldUntil = 0; // Timestamp when shield expires
+    let playerBoostUntil = 0; // Timestamp when turbo dash expires
     let redShells = []; // Active red shells in the game
     let bananas = []; // Banana peels on track
     let slotMachineActive = false; // Is slot machine spinning?
     let slotMachineResult = null; // Result of slot machine
-    let currentRaceSpeed = 'slow'; // slow, medium, fast - starts on slow for younger players
 
     // Track Selection
     let selectedTrack = null; // Currently selected track object
@@ -598,71 +589,119 @@
     let score = { correct: 0, total: 0 };
     let wrongAnswers = []; // Store wrong answers for review
     let currentQuestion = null; // Currently displayed question (for tracking wrong answers)
+    let currentStreak = 0; // Track consecutive correct answers
+    let bestStreak = 0; // Highest streak for the session
+    let questionStartTime = 0; // Timestamp when a question appears
+    let totalResponseTime = 0; // Sum of all response durations
+    let raceStartTime = 0; // Timestamp when the race begins
 
-    // Easy Mode (makes game easier for younger players)
-    let easyMode = true; // Slower AI opponents
-
-    // Speed Presets
+    // Speed Presets and difficulty tuning
     const SPEED_PRESETS = {
-        slow: {
-            MAX_SPEED: 4,
-            BOOST_SPEED: 8,
-            OFFROAD_SPEED: 1.5,
-            ACCELERATION: 0.08,
-            TURN_SPEED: 0.05,
-            RED_SHELL_SPEED: 6
+        mild: {
+            MAX_SPEED: 5,
+            BOOST_SPEED: 9.5,
+            OFFROAD_SPEED: 1.7,
+            ACCELERATION: 0.085,
+            TURN_SPEED: 0.055,
+            RED_SHELL_SPEED: 7
         },
         medium: {
-            MAX_SPEED: 6,
-            BOOST_SPEED: 12,
-            OFFROAD_SPEED: 2,
-            ACCELERATION: 0.1,
+            MAX_SPEED: 5.9,
+            BOOST_SPEED: 10.6,
+            OFFROAD_SPEED: 1.85,
+            ACCELERATION: 0.098,
             TURN_SPEED: 0.06,
-            RED_SHELL_SPEED: 8
+            RED_SHELL_SPEED: 7.6
         },
-        fast: {
-            MAX_SPEED: 8.5,
-            BOOST_SPEED: 15,
-            OFFROAD_SPEED: 3,
-            ACCELERATION: 0.15,
-            TURN_SPEED: 0.08,
-            RED_SHELL_SPEED: 11
+        spicy: {
+            MAX_SPEED: 6.6,
+            BOOST_SPEED: 11.6,
+            OFFROAD_SPEED: 2,
+            ACCELERATION: 0.112,
+            TURN_SPEED: 0.07,
+            RED_SHELL_SPEED: 8.6
         }
     };
 
-    // Physics Constants (mutable based on speed setting) - defaults to slow for younger players
-    let MAX_SPEED = SPEED_PRESETS.slow.MAX_SPEED;
-    let BOOST_SPEED = SPEED_PRESETS.slow.BOOST_SPEED;
-    let OFFROAD_SPEED = SPEED_PRESETS.slow.OFFROAD_SPEED;
-    let ACCELERATION = SPEED_PRESETS.slow.ACCELERATION;
-    let TURN_SPEED = SPEED_PRESETS.slow.TURN_SPEED;
-    let RED_SHELL_SPEED = SPEED_PRESETS.slow.RED_SHELL_SPEED;
+    const DIFFICULTY_SETTINGS = {
+        mild: {
+            aiBase: 0.26,
+            aiVariance: 0.1,
+            offroadForgiveness: 1.6,
+            description: 'Gentle laps with forgiving grass edges.'
+        },
+        medium: {
+            aiBase: 0.36,
+            aiVariance: 0.12,
+            offroadForgiveness: 1.2,
+            description: 'Balanced pace and snappier rivals.'
+        },
+        spicy: {
+            aiBase: 0.48,
+            aiVariance: 0.14,
+            offroadForgiveness: 1,
+            description: 'Tight lines, faster rivals, hold on!'
+        }
+    };
+
+    const DIFFICULTY_QUESTION_MAP = {
+        mild: 'easy',
+        medium: 'medium',
+        spicy: 'hard'
+    };
+
+    // Physics Constants (mutable based on difficulty) - defaults to mild for younger players
+    let MAX_SPEED = SPEED_PRESETS.mild.MAX_SPEED;
+    let BOOST_SPEED = SPEED_PRESETS.mild.BOOST_SPEED;
+    let OFFROAD_SPEED = SPEED_PRESETS.mild.OFFROAD_SPEED;
+    let ACCELERATION = SPEED_PRESETS.mild.ACCELERATION;
+    let TURN_SPEED = SPEED_PRESETS.mild.TURN_SPEED;
+    let RED_SHELL_SPEED = SPEED_PRESETS.mild.RED_SHELL_SPEED;
     const FRICTION = 0.96;
     
     // Base track design (at 800x600 reference)
     const BASE_WIDTH = 800;
     const BASE_HEIGHT = 600;
 
-    // Track Logic (Waypoints for AI and Drawing) - Base coordinates
-    const BASE_TRACK_POINTS = [
-        {x: 100, y: 300}, {x: 200, y: 100}, {x: 500, y: 100},
-        {x: 700, y: 300}, {x: 600, y: 500}, {x: 400, y: 400},
-        {x: 200, y: 500}, {x: 100, y: 300}
+    // Track Logic (Waypoints for AI and Drawing) - single angular layout
+    const TRACK_SHAPES = [
+        {
+            id: 'angled-classic',
+            name: 'Angled Classic',
+            description: 'Jagged bends like the original course with no crossovers.',
+            points: [
+                {x: 130, y: 330}, {x: 210, y: 190}, {x: 380, y: 150},
+                {x: 560, y: 190}, {x: 720, y: 150}, {x: 710, y: 320},
+                {x: 630, y: 470}, {x: 430, y: 520}, {x: 240, y: 500}, {x: 130, y: 380}, {x: 130, y: 330}
+            ],
+            finishSegment: [2, 3],
+            startAngle: -Math.PI / 12,
+            startGrid: [
+                {x: 190, y: 340}, {x: 190, y: 380}, {x: 160, y: 350}, {x: 160, y: 390}
+            ],
+            itemBoxes: [
+                {x: 340, y: 160, active: true, type: 'question'},
+                {x: 640, y: 260, active: true, type: 'question'},
+                {x: 360, y: 500, active: true, type: 'question'}
+            ],
+            powerupBoxes: [
+                {x: 240, y: 230, active: false, type: 'powerup'},
+                {x: 520, y: 210, active: false, type: 'powerup'},
+                {x: 480, y: 430, active: false, type: 'powerup'}
+            ],
+            trees: [
+                {x: 120, y: 150, size: 0.9}, {x: 730, y: 160, size: 1.05}, {x: 740, y: 470, size: 1.1},
+                {x: 120, y: 480, size: 1}, {x: 430, y: 320, size: 1.15}
+            ]
+        }
     ];
 
-    // Item Boxes (Question boxes) - Base coordinates
-    const BASE_ITEM_BOXES = [
-        {x: 350, y: 100, active: true, type: 'question'},
-        {x: 650, y: 300, active: true, type: 'question'},
-        {x: 300, y: 450, active: true, type: 'question'}
-    ];
+    const QUESTIONS_PER_LAP = 3;
+    let questionsThisLap = 0;
 
-    // Power-up Boxes (appear from lap 2+) - Base coordinates
-    const BASE_POWERUP_BOXES = [
-        {x: 200, y: 200, active: false, type: 'powerup'},
-        {x: 550, y: 200, active: false, type: 'powerup'},
-        {x: 450, y: 350, active: false, type: 'powerup'}
-    ];
+    // Start/Finish band sizing (applied after scaling)
+    const FINISH_BAND_DEPTH = 28;
+    const FINISH_LINE_HEIGHT_FACTOR = 1.6;
 
     // Get scale factors based on current canvas size
     function getScale() {
@@ -672,32 +711,113 @@
         };
     }
 
+    let selectedTrackShape = TRACK_SHAPES[0];
+
     // Scaled track points (updated on resize)
     let TRACK_POINTS = [];
     let ITEM_BOXES = [];
     let POWERUP_BOXES = [];
+    let startGridPositions = [];
+    let trackTrees = [];
+    let trackStartAngle = -Math.PI / 4;
+    let startFinishAnchor = { x: 0, y: 0 };
+    let startFinishAngle = 0;
+
+    function getTrackHalfWidth() {
+        const scale = getScale();
+        const avgScale = (scale.x + scale.y) / 2;
+        return 50 * avgScale;
+    }
+
+    // Calculate offset points from the centerline for crisp bands and edges
+    function offsetTrack(points, offset) {
+        const result = [];
+        for (let i = 0; i < points.length; i++) {
+            const prev = points[(i - 1 + points.length) % points.length];
+            const curr = points[i];
+            const next = points[(i + 1) % points.length];
+
+            const v1x = curr.x - prev.x;
+            const v1y = curr.y - prev.y;
+            const v2x = next.x - curr.x;
+            const v2y = next.y - curr.y;
+
+            // Outward-facing average normal
+            const n1x = -v1y;
+            const n1y = v1x;
+            const n2x = -v2y;
+            const n2y = v2x;
+
+            let nx = n1x + n2x;
+            let ny = n1y + n2y;
+            let len = Math.hypot(nx, ny);
+
+            if (len === 0) {
+                nx = -v1y;
+                ny = v1x;
+                len = Math.hypot(nx, ny);
+            }
+
+            nx /= len;
+            ny /= len;
+
+            result.push({ x: curr.x + nx * offset, y: curr.y + ny * offset });
+        }
+        return result;
+    }
+
+    function fillBand(outerPoints, innerPoints, style) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(outerPoints[0].x, outerPoints[0].y);
+        for (let i = 1; i < outerPoints.length; i++) {
+            ctx.lineTo(outerPoints[i].x, outerPoints[i].y);
+        }
+        for (let i = innerPoints.length - 1; i >= 0; i--) {
+            ctx.lineTo(innerPoints[i].x, innerPoints[i].y);
+        }
+        ctx.closePath();
+        ctx.fillStyle = style;
+        ctx.fill();
+        ctx.restore();
+    }
 
     function updateScaledPositions() {
         const scale = getScale();
+        const shape = selectedTrackShape || TRACK_SHAPES[0];
 
-        TRACK_POINTS = BASE_TRACK_POINTS.map(p => ({
+        TRACK_POINTS = shape.points.map(p => ({
             x: p.x * scale.x,
             y: p.y * scale.y
         }));
 
-        ITEM_BOXES = BASE_ITEM_BOXES.map(b => ({
+        ITEM_BOXES = shape.itemBoxes.map(b => ({
             x: b.x * scale.x,
             y: b.y * scale.y,
             active: b.active,
             type: b.type
         }));
 
-        POWERUP_BOXES = BASE_POWERUP_BOXES.map(b => ({
+        POWERUP_BOXES = shape.powerupBoxes.map(b => ({
             x: b.x * scale.x,
             y: b.y * scale.y,
             active: b.active,
             type: b.type
         }));
+
+        startGridPositions = shape.startGrid.map(p => ({ x: p.x * scale.x, y: p.y * scale.y }));
+        trackTrees = (shape.trees || []).map(t => ({ x: t.x * scale.x, y: t.y * scale.y, size: t.size }));
+
+        // Anchor the start/finish band on a clean straight between configured nodes
+        const segment = shape.finishSegment || [1, 2];
+        const startNode = TRACK_POINTS[segment[0]];
+        const endNode = TRACK_POINTS[segment[1]];
+        startFinishAnchor = {
+            x: (startNode.x + endNode.x) / 2,
+            y: (startNode.y + endNode.y) / 2
+        };
+        startFinishAngle = Math.atan2(endNode.y - startNode.y, endNode.x - startNode.x);
+        trackStartAngle = shape.startAngle ?? startFinishAngle;
     }
 
     let lapsTotal = 3;
@@ -735,6 +855,11 @@
     bowserImg.onerror = () => { console.error('Failed to load bowser.png'); bowserImgLoaded = false; };
 
 
+    function getAiSpeedMod() {
+        const config = DIFFICULTY_SETTINGS[currentDifficulty] || DIFFICULTY_SETTINGS.mild;
+        return config.aiBase + Math.random() * config.aiVariance;
+    }
+
     // --- Classes ---
 
     class Kart {
@@ -748,6 +873,8 @@
             this.lap = 1;
             this.checkpointIndex = 0; // To track progress
             this.finished = false;
+            this.passedMidpoint = false;
+            this.inFinishZone = false;
             this.spinUntil = 0; // Timestamp for spin effect
             this.characterImg = characterImg; // Character image
             this.imgLoaded = imgLoaded; // Function to check if image is loaded
@@ -755,8 +882,8 @@
             // AI specific
             this.waypointIndex = 1;
             this.startOffset = startOffset; // Stagger AI start
-            // AI speed - much slower in easy mode so younger players can win
-            this.aiSpeedMod = easyMode ? (0.35 + Math.random() * 0.15) : (0.8 + Math.random() * 0.3);
+            // AI speed tuned by difficulty
+            this.aiSpeedMod = getAiSpeedMod();
         }
 
         update() {
@@ -984,6 +1111,39 @@
                 ctx.fillText("👻", 0, -20);
             }
 
+            // Draw bubble shield effect if active
+            if (this.isPlayer && Date.now() < playerShieldUntil) {
+                ctx.strokeStyle = "rgba(20, 184, 166, 0.8)";
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.arc(0, 0, 28, 0, Math.PI * 2);
+                ctx.stroke();
+
+                ctx.fillStyle = "rgba(20, 184, 166, 0.15)";
+                ctx.beginPath();
+                ctx.arc(0, 0, 28, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Draw turbo dash flames when boost is active
+            if (this.isPlayer && Date.now() < playerBoostUntil) {
+                ctx.fillStyle = "#fb923c";
+                ctx.beginPath();
+                ctx.moveTo(-28, 6);
+                ctx.lineTo(-45, 0);
+                ctx.lineTo(-28, -6);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.fillStyle = "#f97316";
+                ctx.beginPath();
+                ctx.moveTo(-24, 4);
+                ctx.lineTo(-38, 0);
+                ctx.lineTo(-24, -4);
+                ctx.closePath();
+                ctx.fill();
+            }
+
             ctx.restore();
         }
     }
@@ -1156,6 +1316,7 @@
     function showTrackSelection() {
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('track-selection').classList.remove('hidden');
+        setDifficulty(currentDifficulty);
 
         // Generate track buttons
         const container = document.getElementById('track-buttons');
@@ -1200,11 +1361,20 @@
         document.getElementById('hud-score').classList.remove('hidden');
         document.getElementById('speed-toggle').classList.remove('hidden');
 
+        // Reset track geometry, item boxes, and trees for the chosen layout
+        updateScaledPositions();
+
         // Reset scoring
         score = { correct: 0, total: 0 };
         wrongAnswers = [];
         questionsAsked = [];
         comprehensionPassageUsed = [];
+        currentStreak = 0;
+        bestStreak = 0;
+        totalResponseTime = 0;
+        questionStartTime = 0;
+        raceStartTime = Date.now();
+        questionsThisLap = 0;
         updateScoreDisplay();
 
         // Show mobile controls if on mobile
@@ -1213,32 +1383,38 @@
         }
 
         // Initialize Karts with character images - scale positions to current canvas size
-        const scale = getScale();
+        const grid = startGridPositions.length ? startGridPositions : [
+            {x: 100 * getScale().x, y: 280 * getScale().y},
+            {x: 100 * getScale().x, y: 320 * getScale().y},
+            {x: 80 * getScale().x, y: 290 * getScale().y},
+            {x: 80 * getScale().x, y: 330 * getScale().y}
+        ];
+
         karts = [
-            new Kart(100 * scale.x, 280 * scale.y, '#ef4444', true, 0, playerKartImg, () => playerKartImgLoaded), // Player - Mario
-            new Kart(100 * scale.x, 320 * scale.y, '#3b82f6', false, 100, warioImg, () => warioImgLoaded), // AI 1 - Wario
-            new Kart(80 * scale.x, 290 * scale.y, '#22c55e', false, 200, kongImg, () => kongImgLoaded), // AI 2 - Donkey Kong
-            new Kart(80 * scale.x, 330 * scale.y, '#eab308', false, 300, bowserImg, () => bowserImgLoaded)  // AI 3 - Bowser
+            new Kart(grid[0].x, grid[0].y, '#ef4444', true, 0, playerKartImg, () => playerKartImgLoaded), // Player - Mario
+            new Kart(grid[1].x, grid[1].y, '#3b82f6', false, 100, warioImg, () => warioImgLoaded), // AI 1 - Wario
+            new Kart(grid[2].x, grid[2].y, '#22c55e', false, 200, kongImg, () => kongImgLoaded), // AI 2 - Donkey Kong
+            new Kart(grid[3].x, grid[3].y, '#eab308', false, 300, bowserImg, () => bowserImgLoaded)  // AI 3 - Bowser
         ];
         playerKart = karts[0];
-        playerKart.angle = -Math.PI / 4; // Face start direction
+        playerKart.angle = trackStartAngle;
 
         // Set AI angles
-        karts.slice(1).forEach(k => k.angle = -Math.PI/4);
+        karts.slice(1).forEach(k => k.angle = trackStartAngle);
 
         gameState = 'racing';
         gameLoop();
     }
 
     function updateScoreDisplay() {
-        document.getElementById('hud-score').innerText = `Score: ${score.correct}/${score.total}`;
+        document.getElementById('hud-score').innerText = `Score: ${score.correct}/${score.total} | Lap Q: ${Math.min(questionsThisLap, QUESTIONS_PER_LAP)}/${QUESTIONS_PER_LAP}`;
     }
 
-    function setRaceSpeed(speed) {
-        if (!SPEED_PRESETS[speed]) return;
+    function setDifficulty(level) {
+        if (!SPEED_PRESETS[level]) return;
 
-        currentRaceSpeed = speed;
-        const preset = SPEED_PRESETS[speed];
+        currentDifficulty = level;
+        const preset = SPEED_PRESETS[level];
 
         // Update physics constants
         MAX_SPEED = preset.MAX_SPEED;
@@ -1248,19 +1424,28 @@
         TURN_SPEED = preset.TURN_SPEED;
         RED_SHELL_SPEED = preset.RED_SHELL_SPEED;
 
-        // Update active button state using IDs
-        document.getElementById('speed-slow').classList.remove('active');
-        document.getElementById('speed-medium').classList.remove('active');
-        document.getElementById('speed-fast').classList.remove('active');
-        document.getElementById('speed-' + speed).classList.add('active');
+        // Retune AI speeds to match the new spice level
+        karts.filter(k => !k.isPlayer).forEach(k => {
+            k.aiSpeedMod = getAiSpeedMod();
+        });
 
-        console.log(`Race speed set to: ${speed}`);
+        // Update active button state using IDs (both overlays share the same classes)
+        ['speed-mild','speed-medium','speed-spicy','shape-mild','shape-medium','shape-spicy'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.remove('active');
+        });
+        ['speed-' + level, 'shape-' + level].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('active');
+        });
+
+        console.log(`Race difficulty set to: ${level} (${DIFFICULTY_SETTINGS[level].description})`);
     }
 
     function drawTrack() {
         const scale = getScale();
         const avgScale = (scale.x + scale.y) / 2;
-        const trackHalfWidth = 50 * avgScale;
+        const trackHalfWidth = getTrackHalfWidth();
         const barrierWidth = 10 * avgScale;
 
         // Premium grass with gradient
@@ -1282,15 +1467,16 @@
         }
 
         // Premium trees with shadows and 3D effect
-        const baseTrees = [
-            {x:400, y:300, size: 1.2}, {x:150, y:150, size: 1}, {x:650, y:450, size: 1.1},
-            {x:50, y:50, size: 0.8}, {x:750, y:550, size: 1.3}, {x:720, y:120, size: 0.9},
-            {x:80, y:450, size: 1}, {x:420, y:520, size: 0.85}
+        const fallbackTrees = [
+            {x:400 * scale.x, y:300 * scale.y, size: 1.2}, {x:150 * scale.x, y:150 * scale.y, size: 1}, {x:650 * scale.x, y:450 * scale.y, size: 1.1},
+            {x:50 * scale.x, y:50 * scale.y, size: 0.8}, {x:750 * scale.x, y:550 * scale.y, size: 1.3}, {x:720 * scale.x, y:120 * scale.y, size: 0.9},
+            {x:80 * scale.x, y:450 * scale.y, size: 1}, {x:420 * scale.x, y:520 * scale.y, size: 0.85}
         ];
-        baseTrees.forEach(t => {
+        const trees = trackTrees.length ? trackTrees : fallbackTrees;
+        trees.forEach(t => {
             const treeSize = 28 * avgScale * t.size;
-            const tx = t.x * scale.x;
-            const ty = t.y * scale.y;
+            const tx = t.x;
+            const ty = t.y;
 
             // Tree shadow
             ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
@@ -1321,41 +1507,44 @@
 
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
+        const curbWidth = Math.min(barrierWidth * 1.1, trackHalfWidth * 0.35);
 
-        // Track shadow (underneath)
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
-        ctx.lineWidth = 115 * avgScale;
-        ctx.beginPath();
-        ctx.moveTo(TRACK_POINTS[0].x + 4, TRACK_POINTS[0].y + 4);
-        for(let i=1; i<TRACK_POINTS.length; i++) {
-            ctx.lineTo(TRACK_POINTS[i].x + 4, TRACK_POINTS[i].y + 4);
-        }
-        ctx.closePath();
-        ctx.stroke();
+        const asphaltOuter = offsetTrack(TRACK_POINTS, trackHalfWidth - curbWidth);
+        const asphaltInner = offsetTrack(TRACK_POINTS, -trackHalfWidth + curbWidth);
+        const outerEdgeLine = offsetTrack(TRACK_POINTS, trackHalfWidth);
+        const innerEdgeLine = offsetTrack(TRACK_POINTS, -trackHalfWidth);
+        const outerCurbOuter = offsetTrack(TRACK_POINTS, trackHalfWidth + curbWidth);
+        const outerCurbInner = offsetTrack(TRACK_POINTS, trackHalfWidth - curbWidth);
+        const innerCurbOuter = offsetTrack(TRACK_POINTS, -trackHalfWidth + curbWidth);
+        const innerCurbInner = offsetTrack(TRACK_POINTS, -trackHalfWidth - curbWidth);
+        const shadowOuter = offsetTrack(TRACK_POINTS, trackHalfWidth + curbWidth * 1.6);
+        const shadowInner = offsetTrack(TRACK_POINTS, -trackHalfWidth - curbWidth * 1.6);
 
-        // Outer curb - Red and white racing stripes
-        ctx.strokeStyle = "#dc2626";
-        ctx.lineWidth = (105 + barrierWidth) * avgScale;
-        ctx.beginPath();
-        ctx.moveTo(TRACK_POINTS[0].x, TRACK_POINTS[0].y);
-        for(let i=1; i<TRACK_POINTS.length; i++) {
-            ctx.lineTo(TRACK_POINTS[i].x, TRACK_POINTS[i].y);
-        }
-        ctx.closePath();
-        ctx.stroke();
+        const strokeLoop = (points, width, color, dash = []) => {
+            ctx.save();
+            ctx.lineWidth = width;
+            ctx.strokeStyle = color;
+            ctx.setLineDash(dash);
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+            }
+            ctx.closePath();
+            ctx.stroke();
+            ctx.restore();
+        };
 
-        // White stripes on curb
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = (105 + barrierWidth) * avgScale;
-        ctx.setLineDash([18 * avgScale, 18 * avgScale]);
-        ctx.beginPath();
-        ctx.moveTo(TRACK_POINTS[0].x, TRACK_POINTS[0].y);
-        for(let i=1; i<TRACK_POINTS.length; i++) {
-            ctx.lineTo(TRACK_POINTS[i].x, TRACK_POINTS[i].y);
-        }
-        ctx.closePath();
-        ctx.stroke();
-        ctx.setLineDash([]);
+        // Track shadow hugging the edges
+        fillBand(shadowOuter, shadowInner, 'rgba(0, 0, 0, 0.18)');
+
+        // Outer curb band with bright striping
+        fillBand(outerCurbOuter, outerCurbInner, '#b91c1c');
+        strokeLoop(outerEdgeLine, curbWidth * 1.6, '#ffffff', [18 * avgScale, 18 * avgScale]);
+
+        // Inner curb band with matching striping
+        fillBand(innerCurbInner, innerCurbOuter, '#b91c1c');
+        strokeLoop(innerEdgeLine, curbWidth * 1.3, '#ffffff', [12 * avgScale, 12 * avgScale]);
 
         // Main asphalt track with gradient for premium look
         const trackGradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
@@ -1363,76 +1552,83 @@
         trackGradient.addColorStop(0.3, '#4b5563');
         trackGradient.addColorStop(0.7, '#374151');
         trackGradient.addColorStop(1, '#1f2937');
-        ctx.strokeStyle = trackGradient;
-        ctx.lineWidth = 100 * avgScale;
-        ctx.beginPath();
-        ctx.moveTo(TRACK_POINTS[0].x, TRACK_POINTS[0].y);
-        for(let i=1; i<TRACK_POINTS.length; i++) {
-            ctx.lineTo(TRACK_POINTS[i].x, TRACK_POINTS[i].y);
+        fillBand(asphaltOuter, asphaltInner, trackGradient);
+
+        // Bridge decking for elevated crossover-safe layout
+        if (selectedTrackShape.id === 'canyon-bridge') {
+            const segment = selectedTrackShape.finishSegment || [2, 3];
+            const a = TRACK_POINTS[segment[0]];
+            const b = TRACK_POINTS[segment[1]];
+            const vx = b.x - a.x;
+            const vy = b.y - a.y;
+            const len = Math.hypot(vx, vy) || 1;
+            const nx = -vy / len;
+            const ny = vx / len;
+            const halfW = trackHalfWidth * 1.25;
+
+            const bridgePoints = [
+                { x: a.x + nx * halfW, y: a.y + ny * halfW },
+                { x: b.x + nx * halfW, y: b.y + ny * halfW },
+                { x: b.x - nx * halfW, y: b.y - ny * halfW },
+                { x: a.x - nx * halfW, y: a.y - ny * halfW }
+            ];
+
+            const bridgeGrad = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+            bridgeGrad.addColorStop(0, '#fcd34d');
+            bridgeGrad.addColorStop(1, '#f59e0b');
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(bridgePoints[0].x, bridgePoints[0].y);
+            bridgePoints.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+            ctx.closePath();
+            ctx.fillStyle = bridgeGrad;
+            ctx.fill();
+
+            ctx.strokeStyle = '#92400e';
+            ctx.lineWidth = 4 * avgScale;
+            ctx.stroke();
+            ctx.restore();
         }
-        ctx.closePath();
-        ctx.stroke();
 
         // Track edge lines (white racing lines)
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-        ctx.lineWidth = 3 * avgScale;
-        // Outer edge
-        ctx.beginPath();
-        ctx.moveTo(TRACK_POINTS[0].x, TRACK_POINTS[0].y);
-        for(let i=1; i<TRACK_POINTS.length; i++) {
-            ctx.lineTo(TRACK_POINTS[i].x, TRACK_POINTS[i].y);
-        }
-        ctx.closePath();
-        ctx.stroke();
+        strokeLoop(outerEdgeLine, 3 * avgScale, 'rgba(255, 255, 255, 0.9)');
+        strokeLoop(innerEdgeLine, 3 * avgScale, 'rgba(255, 255, 255, 0.9)');
 
-        // Inner curb markings
-        ctx.strokeStyle = "#dc2626";
-        ctx.lineWidth = barrierWidth * 0.8;
-        ctx.beginPath();
-        for(let i=0; i<TRACK_POINTS.length; i++) {
-            let prev = TRACK_POINTS[(i - 1 + TRACK_POINTS.length) % TRACK_POINTS.length];
-            let curr = TRACK_POINTS[i];
-            let next = TRACK_POINTS[(i + 1) % TRACK_POINTS.length];
-
-            let dx1 = curr.x - prev.x;
-            let dy1 = curr.y - prev.y;
-            let dx2 = next.x - curr.x;
-            let dy2 = next.y - curr.y;
-
-            let avgDx = (dx1 + dx2) / 2;
-            let avgDy = (dy1 + dy2) / 2;
-            let len = Math.sqrt(avgDx * avgDx + avgDy * avgDy);
-            if (len > 0) {
-                let perpX = -avgDy / len;
-                let perpY = avgDx / len;
-                let innerX = curr.x + perpX * (trackHalfWidth - barrierWidth * 0.5);
-                let innerY = curr.y + perpY * (trackHalfWidth - barrierWidth * 0.5);
-
-                if (i === 0) ctx.moveTo(innerX, innerY);
-                else ctx.lineTo(innerX, innerY);
-            }
-        }
-        ctx.closePath();
-        ctx.stroke();
-
-        // White dashes on inner curb
-        ctx.strokeStyle = "#ffffff";
-        ctx.setLineDash([12 * avgScale, 12 * avgScale]);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        // Start Line - scaled position and size
+        // Start/Finish Line - crisp checkerboard band set on the long top straight
         ctx.save();
-        ctx.translate(100 * scale.x, 300 * scale.y);
-        ctx.rotate(-Math.PI/4);
-        ctx.fillStyle = "#fff";
+        ctx.translate(startFinishAnchor.x, startFinishAnchor.y);
+        ctx.rotate(startFinishAngle);
+
         const checkSize = 10 * avgScale;
-        for(let i=0; i<4; i++) {
-            for(let j=0; j<10; j++) {
-                ctx.fillStyle = (i+j)%2===0 ? "white" : "black";
-                ctx.fillRect(i*checkSize - 20*avgScale, j*checkSize - 50*avgScale, checkSize, checkSize);
+        const bandDepth = FINISH_BAND_DEPTH * avgScale; // thickness along the driving direction
+        const lineHeight = trackHalfWidth * FINISH_LINE_HEIGHT_FACTOR; // span across the full track width
+        const cols = Math.ceil(bandDepth / checkSize) + 1;
+        const rows = Math.ceil(lineHeight / checkSize) + 1;
+        const xStart = -bandDepth / 2;
+        const yStart = -lineHeight / 2;
+
+        // Base to tidy up underlying curbs
+        ctx.fillStyle = '#2f2f2f';
+        ctx.fillRect(xStart, yStart, bandDepth, lineHeight);
+
+        // Clip to the band so checker edges stay clean
+        ctx.beginPath();
+        ctx.rect(xStart, yStart, bandDepth, lineHeight);
+        ctx.clip();
+
+        for (let i = 0; i < cols; i++) {
+            for (let j = 0; j < rows; j++) {
+                ctx.fillStyle = (i + j) % 2 === 0 ? 'white' : 'black';
+                ctx.fillRect(xStart + i * checkSize, yStart + j * checkSize, checkSize, checkSize);
             }
         }
+
+        // Crisp outline for definition
+        ctx.lineWidth = 2 * avgScale;
+        ctx.strokeStyle = 'white';
+        ctx.strokeRect(xStart, yStart, bandDepth, lineHeight);
+
         ctx.restore();
 
         // Center dashed line - scaled
@@ -1699,45 +1895,71 @@
         bananas.forEach(banana => banana.draw());
     }
 
+    function isInFinishBand(kart) {
+        const scale = getScale();
+        const avgScale = (scale.x + scale.y) / 2;
+        const trackHalfWidth = getTrackHalfWidth();
+        const bandDepth = FINISH_BAND_DEPTH * avgScale;
+        const lineHeight = trackHalfWidth * FINISH_LINE_HEIGHT_FACTOR;
+
+        const dx = kart.x - startFinishAnchor.x;
+        const dy = kart.y - startFinishAnchor.y;
+        const cosA = Math.cos(-startFinishAngle);
+        const sinA = Math.sin(-startFinishAngle);
+
+        // Rotate into band space (x = travel direction, y = across track)
+        const localX = dx * cosA - dy * sinA;
+        const localY = dx * sinA + dy * cosA;
+
+        const withinAlongTrack = Math.abs(localX) <= bandDepth * 0.7; // generous depth to avoid missed laps
+        const withinAcrossTrack = Math.abs(localY) <= lineHeight / 2;
+
+        return withinAlongTrack && withinAcrossTrack;
+    }
+
     function checkLapLogic() {
         // Determine player progress.
-        // Simplified: Check distance to start line (index 0)
+        // Simplified: Check distance to midpoint and crossing through finish band on the top straight
         let p = playerKart;
-        let startNode = TRACK_POINTS[0];
-        let dist = Math.sqrt((p.x - startNode.x)**2 + (p.y - startNode.y)**2);
-
-        // Very basic lap counter: must pass midpoint (index 4) then reach start
         let midNode = TRACK_POINTS[4];
         let midDist = Math.sqrt((p.x - midNode.x)**2 + (p.y - midNode.y)**2);
+        const midThreshold = getTrackHalfWidth() * 2;
 
-        if(midDist < 100) {
+        if(midDist < midThreshold) {
             p.passedMidpoint = true;
         }
 
-        if(p.passedMidpoint && dist < 100) {
-            p.lap++;
-            p.passedMidpoint = false;
+        const onFinishBand = isInFinishBand(p);
 
-            // Respawn item boxes on new lap
-            ITEM_BOXES.forEach(b => b.active = true);
+        if(onFinishBand) {
+            if (!p.inFinishZone && p.passedMidpoint) {
+                if (questionsThisLap < QUESTIONS_PER_LAP) {
+                    const remaining = QUESTIONS_PER_LAP - questionsThisLap;
+                    showFloatingText(`Answer ${remaining} more question${remaining === 1 ? '' : 's'}!`, p.x, p.y, '#facc15');
+                } else {
+                    p.lap++;
+                    p.passedMidpoint = false;
+                    questionsThisLap = 0;
 
-            // Enable power-up boxes from lap 2+
-            if(p.lap >= 2) {
-                POWERUP_BOXES.forEach(b => b.active = true);
+                    // Respawn item boxes on new lap
+                    ITEM_BOXES.forEach(b => b.active = true);
+
+                    // Enable power-up boxes from lap 2+
+                    if(p.lap >= 2) {
+                        POWERUP_BOXES.forEach(b => b.active = true);
+                    }
+
+                    document.getElementById('hud-lap').innerText = `Lap: ${p.lap}/${lapsTotal}`;
+                    updateScoreDisplay();
+
+                    if(p.lap > lapsTotal) {
+                        finishGame();
+                    }
+                }
             }
-
-            // Update difficulty based on lap
-            if(p.lap === 2) {
-                currentDifficulty = 'medium';
-            } else if(p.lap === 3) {
-                currentDifficulty = 'hard';
-            }
-
-            document.getElementById('hud-lap').innerText = `Lap: ${p.lap}/${lapsTotal}`;
-
-            if(p.lap > lapsTotal) {
-                finishGame();
-            }
+            p.inFinishZone = true;
+        } else {
+            p.inFinishZone = false;
         }
     }
 
@@ -1758,8 +1980,18 @@
         redShells.forEach(shell => shell.update());
         redShells = redShells.filter(shell => shell.active);
 
+        const shieldActive = Date.now() < playerShieldUntil;
+
+        // Clear any ghost curse if the shield is active
+        if (shieldActive && playerKart.ghostCurse) {
+            playerKart.ghostCurse = 0;
+        }
+
         // Check if ghost curse is active
         let isGhostCursed = playerKart.ghostCurse && Date.now() < playerKart.ghostCurse;
+
+        // Check if turbo dash is active
+        const boostActive = Date.now() < playerBoostUntil;
 
         // Player Controls (disabled during ghost curse)
         if (!isGhostCursed) {
@@ -1771,11 +2003,12 @@
         }
 
         // Auto accelerate (Mario Kart style) - always moving forward
-        let targetSpeed = MAX_SPEED;
+        let targetSpeed = boostActive ? BOOST_SPEED : MAX_SPEED;
 
-        // Check Terrain - reduced offroad penalty in easy mode
+        // Check Terrain - tuning based on difficulty forgiveness
         if(!checkOnTrack(playerKart.x, playerKart.y)) {
-            targetSpeed = easyMode ? OFFROAD_SPEED * 1.5 : OFFROAD_SPEED;
+            const forgiveness = (DIFFICULTY_SETTINGS[currentDifficulty]?.offroadForgiveness) || 1;
+            targetSpeed = OFFROAD_SPEED * forgiveness;
         }
 
         // Apply Speed
@@ -1859,6 +2092,10 @@
         }
     }
 
+    function getQuestionDifficulty(level = currentDifficulty) {
+        return DIFFICULTY_QUESTION_MAP[level] || 'easy';
+    }
+
     // --- Quiz Logic ---
 
     function triggerQuiz() {
@@ -1903,17 +2140,18 @@
             // Track-specific questions
             passageContainer.classList.add('hidden');
 
-            let pool = selectedTrack.questions[currentDifficulty] || [];
+            const questionTier = getQuestionDifficulty();
+            let pool = selectedTrack.questions[questionTier] || [];
 
             // Filter out already asked questions
             let availableQuestions = pool.filter((q, idx) => {
-                questionKey = `${selectedTrack.id}-${currentDifficulty}-${idx}`;
+                questionKey = `${selectedTrack.id}-${questionTier}-${idx}`;
                 return !questionsAsked.includes(questionKey);
             });
 
             // Reset if all questions asked
             if(availableQuestions.length === 0) {
-                questionsAsked = questionsAsked.filter(q => !q.startsWith(`${selectedTrack.id}-${currentDifficulty}`));
+                questionsAsked = questionsAsked.filter(q => !q.startsWith(`${selectedTrack.id}-${questionTier}`));
                 availableQuestions = pool;
             }
 
@@ -1923,14 +2161,15 @@
 
             // Track this question
             const actualIdx = pool.indexOf(qObj);
-            questionKey = `${selectedTrack.id}-${currentDifficulty}-${actualIdx}`;
+            questionKey = `${selectedTrack.id}-${questionTier}-${actualIdx}`;
             questionsAsked.push(questionKey);
 
             // Update difficulty badge with track color
-            let badgeColor = currentDifficulty === 'easy' ? 'bg-green-200 text-green-800' :
-                           currentDifficulty === 'medium' ? 'bg-yellow-200 text-yellow-800' :
+            let badgeColor = questionTier === 'easy' ? 'bg-green-200 text-green-800' :
+                           questionTier === 'medium' ? 'bg-yellow-200 text-yellow-800' :
                            'bg-red-200 text-red-800';
-            difficultyBadge.innerText = `${selectedTrack.icon} ${currentDifficulty.charAt(0).toUpperCase() + currentDifficulty.slice(1)}`;
+            const spiceLabel = currentDifficulty.charAt(0).toUpperCase() + currentDifficulty.slice(1);
+            difficultyBadge.innerText = `${selectedTrack.icon} ${spiceLabel} Questions`;
             difficultyBadge.className = `inline-block px-3 py-1 rounded-full text-xs font-bold mb-3 ${badgeColor}`;
         }
 
@@ -1945,16 +2184,70 @@
         };
 
         // Display question
+        questionStartTime = Date.now();
         qText.innerText = qObj.q;
         container.innerHTML = '';
 
-        qObj.options.forEach((opt, idx) => {
-            const btn = document.createElement('button');
-            btn.className = 'answer-btn';
-            btn.innerText = opt;
-            btn.onclick = () => handleAnswer(idx === qObj.a, opt);
-            container.appendChild(btn);
-        });
+        if (qObj.type === 'drag') {
+            let dragSelectedOption = null;
+
+            const hint = document.createElement('p');
+            hint.className = 'text-sm text-gray-600 mb-2 text-center';
+            hint.innerText = 'Drag a word into the box, then submit your answer.';
+            container.appendChild(hint);
+
+            const dropZone = document.createElement('div');
+            dropZone.className = 'mb-3 p-4 border-2 border-dashed border-purple-300 rounded-lg bg-purple-50 text-center font-bold text-purple-800';
+            dropZone.innerText = 'Drop word here';
+            dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('bg-purple-100'); };
+            dropZone.ondragleave = () => dropZone.classList.remove('bg-purple-100');
+            dropZone.ondrop = (e) => {
+                e.preventDefault();
+                const word = e.dataTransfer.getData('text/plain');
+                if (word) {
+                    dragSelectedOption = word;
+                    dropZone.innerText = `Selected: ${word}`;
+                    dropZone.classList.remove('bg-purple-100');
+                    submitBtn.disabled = false;
+                }
+            };
+            container.appendChild(dropZone);
+
+            const chips = document.createElement('div');
+            chips.className = 'flex flex-wrap gap-2 justify-center';
+
+            qObj.options.forEach((opt, idx) => {
+                const chip = document.createElement('button');
+                chip.className = 'px-4 py-2 rounded-full bg-white border border-purple-200 shadow-sm hover:bg-purple-100 text-sm font-semibold';
+                chip.innerText = opt;
+                chip.draggable = true;
+                chip.ondragstart = (e) => {
+                    e.dataTransfer.setData('text/plain', opt);
+                };
+                chip.onclick = () => {
+                    dragSelectedOption = opt;
+                    dropZone.innerText = `Selected: ${opt}`;
+                    submitBtn.disabled = false;
+                };
+                chips.appendChild(chip);
+            });
+            container.appendChild(chips);
+
+            const submitBtn = document.createElement('button');
+            submitBtn.className = 'mt-4 w-full bg-purple-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-purple-500 shadow-lg disabled:opacity-50';
+            submitBtn.innerText = 'Submit Answer';
+            submitBtn.disabled = true;
+            submitBtn.onclick = () => handleAnswer(dragSelectedOption === qObj.answer, dragSelectedOption || '');
+            container.appendChild(submitBtn);
+        } else {
+            qObj.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'answer-btn';
+                btn.innerText = opt;
+                btn.onclick = () => handleAnswer(idx === qObj.a, opt);
+                container.appendChild(btn);
+            });
+        }
 
         modal.classList.remove('hidden');
     }
@@ -1963,24 +2256,37 @@
         const modal = document.getElementById('quiz-modal');
         modal.classList.add('hidden');
 
+        // Capture response timing for stat cards
+        if (questionStartTime) {
+            totalResponseTime += Date.now() - questionStartTime;
+            questionStartTime = 0;
+        }
+
         // Update score
         score.total++;
         if (isCorrect) {
             score.correct++;
+            currentStreak++;
+            bestStreak = Math.max(bestStreak, currentStreak);
         } else {
+            currentStreak = 0;
             // Store wrong answer for review
             wrongAnswers.push({
                 question: currentQuestion.question,
                 yourAnswer: selectedAnswer,
                 correctAnswer: currentQuestion.correctAnswer,
+                options: currentQuestion.options,
+                correctIndex: currentQuestion.correctIndex,
                 explanation: currentQuestion.explanation,
-                passage: currentQuestion.passage
+                passage: currentQuestion.passage,
+                corrected: false
             });
         }
         updateScoreDisplay();
 
         gameState = 'racing';
 
+        questionsThisLap++;
         if (isCorrect) {
             // Reward system based on lap
             if (playerKart.lap === 1) {
@@ -2017,7 +2323,11 @@
         { icon: '⚡', name: 'Lightning Strike', color: '#fbbf24', type: 'lightning' },
         { icon: '🐢', name: 'Red Shells', color: '#ef4444', type: 'redshell' },
         { icon: '🍌', name: 'Banana Peel', color: '#fde047', type: 'banana' },
-        { icon: '👻', name: 'Ghost Curse!', color: '#a78bfa', type: 'ghost' }
+        { icon: '👻', name: 'Ghost Curse!', color: '#a78bfa', type: 'ghost' },
+        { icon: '❄️', name: 'Mega Freeze', color: '#60a5fa', type: 'megafreeze' },
+        { icon: '🏎️', name: 'Turbo Dash', color: '#22c55e', type: 'boost' },
+        { icon: '🛡️', name: 'Bubble Shield', color: '#14b8a6', type: 'shield' },
+        { icon: '🧹', name: 'Track Sweeper', color: '#f472b6', type: 'sweeper' }
     ];
 
     function triggerSlotMachine() {
@@ -2065,6 +2375,7 @@
 
     function activatePowerUp(type) {
         const opponentKarts = karts.filter(k => !k.isPlayer);
+        const shieldActive = Date.now() < playerShieldUntil;
 
         switch(type) {
             case 'lightning':
@@ -2095,10 +2406,43 @@
                 break;
 
             case 'ghost':
-                // Curse! Player stops for 2 seconds
-                playerKart.speed = 0;
-                playerKart.ghostCurse = Date.now() + 2000;
-                showFloatingText("Ghost Curse! 👻", playerKart.x, playerKart.y, "#a78bfa");
+                // Curse! Player stops for 2 seconds unless shielded
+                if (shieldActive) {
+                    showFloatingText("Shield Blocked the Ghost! 🛡️", playerKart.x, playerKart.y, "#14b8a6");
+                } else {
+                    playerKart.speed = 0;
+                    playerKart.ghostCurse = Date.now() + 2000;
+                    showFloatingText("Ghost Curse! 👻", playerKart.x, playerKart.y, "#a78bfa");
+                }
+                break;
+
+            case 'megafreeze':
+                // Freeze all opponents for longer
+                opponentsFrozen = true;
+                freezeEndTime = Date.now() + 2500;
+                showFloatingText("Mega Freeze! ❄️", playerKart.x, playerKart.y, "#60a5fa");
+                break;
+
+            case 'boost':
+                // Short turbo dash for the player
+                playerBoostUntil = Date.now() + 3000;
+                playerKart.speed = Math.max(playerKart.speed, BOOST_SPEED);
+                showFloatingText("Turbo Dash! 🏎️", playerKart.x, playerKart.y, "#22c55e");
+                break;
+
+            case 'shield':
+                // Protective bubble that blocks the next curse or spin
+                playerShieldUntil = Date.now() + 5000;
+                playerKart.ghostCurse = 0; // clear any existing ghost effect
+                showFloatingText("Bubble Shield! 🛡️", playerKart.x, playerKart.y, "#14b8a6");
+                break;
+
+            case 'sweeper':
+                // Clear hazards and refresh boxes for the lap
+                bananas.forEach(b => b.active = false);
+                bananas = [];
+                POWERUP_BOXES.forEach(box => box.active = true);
+                showFloatingText("Track Sweeper! 🧹", playerKart.x, playerKart.y, "#f472b6");
                 break;
         }
     }
@@ -2121,6 +2465,42 @@
         const percentage = score.total > 0 ? Math.round((score.correct / score.total) * 100) : 0;
         document.getElementById('score-percentage').innerText = `${percentage}% correct`;
 
+        const awardBanner = document.getElementById('award-banner');
+        const awardLabel = document.getElementById('award-label');
+        const awardCriteria = document.getElementById('award-criteria');
+        const fullLapQuestionGoal = lapsTotal * QUESTIONS_PER_LAP;
+
+        let awardName = 'Warm-Up Ribbon';
+        let awardMessage = `Answer at least ${QUESTIONS_PER_LAP} questions each lap to unlock the big trophies.`;
+
+        if (score.total >= fullLapQuestionGoal && percentage >= 90) {
+            awardName = 'Grand Champion Cup';
+            awardMessage = "Earned for answering every lap's questions with 90%+ accuracy—stellar stamina and skill!";
+        } else if (score.total >= fullLapQuestionGoal && percentage >= 75) {
+            awardName = 'Consistency Cup';
+            awardMessage = "Awarded for keeping strong accuracy while tackling every lap's questions.";
+        } else if (score.total >= QUESTIONS_PER_LAP && percentage >= 60) {
+            awardName = 'Determined Driver Medal';
+            awardMessage = `Great effort! Try answering all ${fullLapQuestionGoal} boxes next race to level up the award.`;
+        }
+
+        awardLabel.innerText = awardName;
+        awardCriteria.innerText = awardMessage;
+        awardBanner.classList.remove('hidden');
+
+        // Populate stat cards
+        const avgResponse = score.total > 0 ? (totalResponseTime / score.total) / 1000 : 0;
+        const totalRaceSeconds = raceStartTime ? Math.round((Date.now() - raceStartTime) / 1000) : 0;
+
+        document.getElementById('stat-accuracy').innerText = `${percentage}%`;
+        document.getElementById('stat-streak').innerText = `${bestStreak} in a row`;
+        document.getElementById('stat-time').innerText = `${avgResponse.toFixed(1)}s`;
+        document.getElementById('stat-race-time').innerText = `${totalRaceSeconds}s`;
+
+        const accuracyBar = document.getElementById('accuracy-bar');
+        accuracyBar.style.width = `${Math.min(100, percentage)}%`;
+        accuracyBar.className = `h-2 rounded-full ${percentage >= 80 ? 'bg-green-500' : percentage >= 50 ? 'bg-yellow-400' : 'bg-red-400'}`;
+
         // Color the score based on performance
         const scoreEl = document.getElementById('final-score');
         if (percentage >= 80) {
@@ -2129,6 +2509,69 @@
             scoreEl.className = 'text-yellow-600';
         } else {
             scoreEl.className = 'text-red-600';
+        }
+
+        // Share a tailored encouragement message
+        const encouragementEl = document.getElementById('encouragement-text');
+        let encouragementMsg = '';
+        if (score.total === 0) {
+            encouragementMsg = "You zoomed through the track! Answer the question boxes next race to collect points.";
+        } else if (percentage === 100) {
+            encouragementMsg = "Perfect score! You nailed every question—champion work!";
+        } else if (percentage >= 80) {
+            encouragementMsg = "Awesome effort! A few more practice laps and you'll have every answer locked in.";
+        } else if (percentage >= 50) {
+            encouragementMsg = "Great racing! Keep practicing the tricky ones to boost your score even higher.";
+        } else {
+            encouragementMsg = "Way to finish the race! Let's review those tough questions together and try again.";
+        }
+        if (wrongAnswers.length > 0) {
+            encouragementMsg += " Tap \"Review Mistakes\" to fix any answers now.";
+        }
+        encouragementEl.innerText = encouragementMsg;
+
+        // Badge + growth tips to keep players motivated
+        const badgeEl = document.getElementById('performance-badge');
+        if (percentage === 100) {
+            badgeEl.innerText = 'Flawless Driver';
+            badgeEl.className = 'px-3 py-1 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800';
+        } else if (percentage >= 80) {
+            badgeEl.innerText = 'Speed Scholar';
+            badgeEl.className = 'px-3 py-1 text-xs font-bold rounded-full bg-green-100 text-green-800';
+        } else if (percentage >= 50) {
+            badgeEl.innerText = 'Resilient Racer';
+            badgeEl.className = 'px-3 py-1 text-xs font-bold rounded-full bg-yellow-100 text-yellow-800';
+        } else {
+            badgeEl.innerText = 'Never Give Up';
+            badgeEl.className = 'px-3 py-1 text-xs font-bold rounded-full bg-red-100 text-red-800';
+        }
+
+        const tips = [];
+        if (percentage < 80) {
+            tips.push('Aim for 80%+ accuracy to unlock the Speed Scholar badge next race.');
+        }
+        if (bestStreak < 3 && score.total > 0) {
+            tips.push('Build a 3-question streak by slowing down and double-checking choices.');
+        }
+        if (avgResponse > 6) {
+            tips.push('Try to answer in under 6s—read the story once, then pick your best answer.');
+        }
+        if (wrongAnswers.length > 0) {
+            tips.push('Use Review Mistakes to replay tricky questions with hints.');
+        }
+
+        const growthContainer = document.getElementById('growth-tips');
+        const growthList = document.getElementById('growth-list');
+        if (tips.length > 0) {
+            growthList.innerHTML = '';
+            tips.forEach(tip => {
+                const li = document.createElement('li');
+                li.innerText = tip;
+                growthList.appendChild(li);
+            });
+            growthContainer.classList.remove('hidden');
+        } else {
+            growthContainer.classList.add('hidden');
         }
 
         // Show review button if there were wrong answers
@@ -2164,9 +2607,14 @@
                 </div>
                 ${passageHtml}
                 <p class="font-semibold mb-2">${item.question}</p>
-                <div class="space-y-1 text-sm">
+                <div class="space-y-1 text-sm mb-3">
                     <p><span class="text-red-600 font-bold">Your answer:</span> ${item.yourAnswer}</p>
                     <p><span class="text-green-600 font-bold">Correct answer:</span> ${item.correctAnswer}</p>
+                </div>
+                <div class="mb-3">
+                    <p class="text-sm font-semibold text-gray-800 mb-2">Try again:</p>
+                    <div class="space-y-2 retry-options"></div>
+                    <p class="mt-2 text-sm font-bold" id="feedback-${index}"></p>
                 </div>
                 <div class="mt-3 p-3 bg-yellow-50 border border-yellow-300 rounded">
                     <div class="flex items-start gap-2">
@@ -2178,6 +2626,43 @@
                     </div>
                 </div>
             `;
+
+            const optionsContainer = card.querySelector('.retry-options');
+            const feedbackEl = card.querySelector(`#feedback-${index}`);
+
+            item.options.forEach((opt, idx) => {
+                const optBtn = document.createElement('button');
+                optBtn.className = 'w-full text-left px-3 py-2 rounded-lg border-2 border-gray-200 bg-white font-semibold text-sm hover:border-green-400 transition';
+                optBtn.innerText = opt;
+
+                optBtn.onclick = () => {
+                    if (item.corrected && idx !== item.correctIndex) {
+                        return; // Already corrected; avoid extra toggles
+                    }
+
+                    if (idx === item.correctIndex) {
+                        feedbackEl.innerText = 'You fixed it! Great job!';
+                        feedbackEl.className = 'mt-2 text-sm font-bold text-green-700';
+                        optBtn.classList.remove('border-gray-200');
+                        optBtn.classList.add('border-green-400', 'bg-green-50');
+                        item.corrected = true;
+
+                        // Dim other buttons once corrected
+                        Array.from(optionsContainer.children).forEach(btn => {
+                            btn.disabled = true;
+                            btn.classList.add('opacity-80');
+                        });
+                    } else {
+                        feedbackEl.innerText = 'Not quite. Check the hints and try another option!';
+                        feedbackEl.className = 'mt-2 text-sm font-bold text-red-700';
+                        optBtn.classList.remove('border-gray-200');
+                        optBtn.classList.add('border-red-300', 'bg-red-50');
+                    }
+                };
+
+                optionsContainer.appendChild(optBtn);
+            });
+
             container.appendChild(card);
         });
     }
