@@ -666,6 +666,59 @@
         return 50 * avgScale;
     }
 
+    // Calculate offset points from the centerline for crisp bands and edges
+    function offsetTrack(points, offset) {
+        const result = [];
+        for (let i = 0; i < points.length; i++) {
+            const prev = points[(i - 1 + points.length) % points.length];
+            const curr = points[i];
+            const next = points[(i + 1) % points.length];
+
+            const v1x = curr.x - prev.x;
+            const v1y = curr.y - prev.y;
+            const v2x = next.x - curr.x;
+            const v2y = next.y - curr.y;
+
+            // Outward-facing average normal
+            const n1x = -v1y;
+            const n1y = v1x;
+            const n2x = -v2y;
+            const n2y = v2x;
+
+            let nx = n1x + n2x;
+            let ny = n1y + n2y;
+            let len = Math.hypot(nx, ny);
+
+            if (len === 0) {
+                nx = -v1y;
+                ny = v1x;
+                len = Math.hypot(nx, ny);
+            }
+
+            nx /= len;
+            ny /= len;
+
+            result.push({ x: curr.x + nx * offset, y: curr.y + ny * offset });
+        }
+        return result;
+    }
+
+    function fillBand(outerPoints, innerPoints, style) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(outerPoints[0].x, outerPoints[0].y);
+        for (let i = 1; i < outerPoints.length; i++) {
+            ctx.lineTo(outerPoints[i].x, outerPoints[i].y);
+        }
+        for (let i = innerPoints.length - 1; i >= 0; i--) {
+            ctx.lineTo(innerPoints[i].x, innerPoints[i].y);
+        }
+        ctx.closePath();
+        ctx.fillStyle = style;
+        ctx.fill();
+        ctx.restore();
+    }
+
     function updateScaledPositions() {
         const scale = getScale();
 
@@ -1359,41 +1412,44 @@
 
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
+        const curbWidth = Math.min(barrierWidth * 1.1, trackHalfWidth * 0.35);
 
-        // Track shadow (underneath)
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
-        ctx.lineWidth = 115 * avgScale;
-        ctx.beginPath();
-        ctx.moveTo(TRACK_POINTS[0].x + 4, TRACK_POINTS[0].y + 4);
-        for(let i=1; i<TRACK_POINTS.length; i++) {
-            ctx.lineTo(TRACK_POINTS[i].x + 4, TRACK_POINTS[i].y + 4);
-        }
-        ctx.closePath();
-        ctx.stroke();
+        const asphaltOuter = offsetTrack(TRACK_POINTS, trackHalfWidth - curbWidth);
+        const asphaltInner = offsetTrack(TRACK_POINTS, -trackHalfWidth + curbWidth);
+        const outerEdgeLine = offsetTrack(TRACK_POINTS, trackHalfWidth);
+        const innerEdgeLine = offsetTrack(TRACK_POINTS, -trackHalfWidth);
+        const outerCurbOuter = offsetTrack(TRACK_POINTS, trackHalfWidth + curbWidth);
+        const outerCurbInner = offsetTrack(TRACK_POINTS, trackHalfWidth - curbWidth);
+        const innerCurbOuter = offsetTrack(TRACK_POINTS, -trackHalfWidth + curbWidth);
+        const innerCurbInner = offsetTrack(TRACK_POINTS, -trackHalfWidth - curbWidth);
+        const shadowOuter = offsetTrack(TRACK_POINTS, trackHalfWidth + curbWidth * 1.6);
+        const shadowInner = offsetTrack(TRACK_POINTS, -trackHalfWidth - curbWidth * 1.6);
 
-        // Outer curb - Red and white racing stripes
-        ctx.strokeStyle = "#dc2626";
-        ctx.lineWidth = (105 + barrierWidth) * avgScale;
-        ctx.beginPath();
-        ctx.moveTo(TRACK_POINTS[0].x, TRACK_POINTS[0].y);
-        for(let i=1; i<TRACK_POINTS.length; i++) {
-            ctx.lineTo(TRACK_POINTS[i].x, TRACK_POINTS[i].y);
-        }
-        ctx.closePath();
-        ctx.stroke();
+        const strokeLoop = (points, width, color, dash = []) => {
+            ctx.save();
+            ctx.lineWidth = width;
+            ctx.strokeStyle = color;
+            ctx.setLineDash(dash);
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+            }
+            ctx.closePath();
+            ctx.stroke();
+            ctx.restore();
+        };
 
-        // White stripes on curb
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = (105 + barrierWidth) * avgScale;
-        ctx.setLineDash([18 * avgScale, 18 * avgScale]);
-        ctx.beginPath();
-        ctx.moveTo(TRACK_POINTS[0].x, TRACK_POINTS[0].y);
-        for(let i=1; i<TRACK_POINTS.length; i++) {
-            ctx.lineTo(TRACK_POINTS[i].x, TRACK_POINTS[i].y);
-        }
-        ctx.closePath();
-        ctx.stroke();
-        ctx.setLineDash([]);
+        // Track shadow hugging the edges
+        fillBand(shadowOuter, shadowInner, 'rgba(0, 0, 0, 0.18)');
+
+        // Outer curb band with bright striping
+        fillBand(outerCurbOuter, outerCurbInner, '#b91c1c');
+        strokeLoop(outerEdgeLine, curbWidth * 1.6, '#ffffff', [18 * avgScale, 18 * avgScale]);
+
+        // Inner curb band with matching striping
+        fillBand(innerCurbInner, innerCurbOuter, '#b91c1c');
+        strokeLoop(innerEdgeLine, curbWidth * 1.3, '#ffffff', [12 * avgScale, 12 * avgScale]);
 
         // Main asphalt track with gradient for premium look
         const trackGradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
@@ -1401,63 +1457,11 @@
         trackGradient.addColorStop(0.3, '#4b5563');
         trackGradient.addColorStop(0.7, '#374151');
         trackGradient.addColorStop(1, '#1f2937');
-        ctx.strokeStyle = trackGradient;
-        ctx.lineWidth = 100 * avgScale;
-        ctx.beginPath();
-        ctx.moveTo(TRACK_POINTS[0].x, TRACK_POINTS[0].y);
-        for(let i=1; i<TRACK_POINTS.length; i++) {
-            ctx.lineTo(TRACK_POINTS[i].x, TRACK_POINTS[i].y);
-        }
-        ctx.closePath();
-        ctx.stroke();
+        fillBand(asphaltOuter, asphaltInner, trackGradient);
 
         // Track edge lines (white racing lines)
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-        ctx.lineWidth = 3 * avgScale;
-        // Outer edge
-        ctx.beginPath();
-        ctx.moveTo(TRACK_POINTS[0].x, TRACK_POINTS[0].y);
-        for(let i=1; i<TRACK_POINTS.length; i++) {
-            ctx.lineTo(TRACK_POINTS[i].x, TRACK_POINTS[i].y);
-        }
-        ctx.closePath();
-        ctx.stroke();
-
-        // Inner curb markings
-        ctx.strokeStyle = "#dc2626";
-        ctx.lineWidth = barrierWidth * 0.8;
-        ctx.beginPath();
-        for(let i=0; i<TRACK_POINTS.length; i++) {
-            let prev = TRACK_POINTS[(i - 1 + TRACK_POINTS.length) % TRACK_POINTS.length];
-            let curr = TRACK_POINTS[i];
-            let next = TRACK_POINTS[(i + 1) % TRACK_POINTS.length];
-
-            let dx1 = curr.x - prev.x;
-            let dy1 = curr.y - prev.y;
-            let dx2 = next.x - curr.x;
-            let dy2 = next.y - curr.y;
-
-            let avgDx = (dx1 + dx2) / 2;
-            let avgDy = (dy1 + dy2) / 2;
-            let len = Math.sqrt(avgDx * avgDx + avgDy * avgDy);
-            if (len > 0) {
-                let perpX = -avgDy / len;
-                let perpY = avgDx / len;
-                let innerX = curr.x + perpX * (trackHalfWidth - barrierWidth * 0.5);
-                let innerY = curr.y + perpY * (trackHalfWidth - barrierWidth * 0.5);
-
-                if (i === 0) ctx.moveTo(innerX, innerY);
-                else ctx.lineTo(innerX, innerY);
-            }
-        }
-        ctx.closePath();
-        ctx.stroke();
-
-        // White dashes on inner curb
-        ctx.strokeStyle = "#ffffff";
-        ctx.setLineDash([12 * avgScale, 12 * avgScale]);
-        ctx.stroke();
-        ctx.setLineDash([]);
+        strokeLoop(outerEdgeLine, 3 * avgScale, 'rgba(255, 255, 255, 0.9)');
+        strokeLoop(innerEdgeLine, 3 * avgScale, 'rgba(255, 255, 255, 0.9)');
 
         // Start/Finish Line - crisp checkerboard band set on the long top straight
         ctx.save();
